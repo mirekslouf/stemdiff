@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>stemdiff.psf API documentation</title>
+<meta name="description" content="stemdiff.psf
+Calculate a 2D-PSF function from low-entropy 4D-STEM datafiles …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>stemdiff.psf</code></h1>
+</header>
+<section id="section-intro">
+<h2 id="stemdiffpsf">stemdiff.psf</h2>
+<p>Calculate a 2D-PSF function from low-entropy 4D-STEM datafiles.</p>
+<p>PSF = Point Spread Function = XY-spread of the primary beam</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#39;&#39;&#39;
+stemdiff.psf
+------------
+Calculate a 2D-PSF function from low-entropy 4D-STEM datafiles.
+
+PSF = Point Spread Function = XY-spread of the primary beam
+&#39;&#39;&#39;
+
+import numpy as np
+import matplotlib.pyplot as plt
+import stemdiff.io, stemdiff.dbase
+from stemdiff.const import DET_SIZE, RESCALE
+
+def psf_from_lowS_files(
+        DBASE,SUMMATION,R=RESCALE,S=None,P=None,N=None):
+    &#39;&#39;&#39;
+    Extract 2D-PSF from datafiles with low Shannon entropy S.
+    PSF (= point-spread function) is taken from the central region/spot.
+    
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Filename of database containing
+        names of all datafiles and their Shannon entropy values.
+    SUMMATION : summation object
+        Summation parameters; here we need the size/edge
+        of the central square, from which 2D-PSF will be determined.
+    R : integer
+        Rescale coefficient;
+        PSF function is rescaled/enlarged R-times.
+        Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.
+    S : float
+        Shannon entropy value;
+        if S is given, PSF will be extracted only from files with entropy &lt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, PSF will be extracted only from the P% of low-S files.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, PSF will be extracted only from those N files.
+    
+    Returns:
+    --------
+    2D numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam.
+        The array is a sum of central areas/spots of input datafiles
+        (divided by number of summed datafiles to get reasonable scale).
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#39;&#39;&#39;
+    # Get filenames with low entropy values
+    lowS_datafiles = stemdiff.dbase.get_low_S_files(DBASE, S=S, P=P, N=N)
+    # Get PSF function
+    psf = psf_from_datafiles(lowS_datafiles,SUMMATION, R=R)
+    return(psf)
+
+def psf_from_datafiles(df,SUMMATION,R=RESCALE):
+    &#39;&#39;&#39;
+    Parameters
+    ----------
+    df: pandas DataFrame row iterator
+        DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.
+    SUMMATION: summation object
+        Summation parameters; here we need the SUMMATION.psfsize
+        = edge of the central square, from which 2D-PSF will be determined.
+        If SUMMATION.psfsize is not given =&gt; take PSF from the whole array.
+    R: integer
+        Rescale coefficient;
+        PSF function is rescaled/enlarged R-times.
+        Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.
+   
+    Returns
+    -------
+    2D numpy array
+        The array represents experimental PSF;
+        it is a sum of central areas/spots of input datafiles
+        (divided by number of summed datafiles to get reasonable scale).
+    &#39;&#39;&#39;
+    # Prepare variables
+    # a) number of datafilesr
+    n = 0
+    # b) array for PSF
+    psf = np.zeros((DET_SIZE*R,DET_SIZE*R), dtype=np.float)
+    if SUMMATION.psfsize:
+        # If SUMMATION.psfsize is defined =&gt; reduce array dimension
+        rsize = SUMMATION.psfsize * R
+        xc,yc = ( (DET_SIZE*R)//2, (DET_SIZE*R)//2 )
+        psf = stemdiff.io.reduce_array_size(psf,rsize,xc,yc)    
+    # Go through the files...
+    for index,datafile in df:
+        n += 1
+        arr = stemdiff.io.read_datafile(datafile.DatafileName)
+        # ..rescale array
+        arr = stemdiff.io.rescale_array(arr, R)
+        if SUMMATION.psfsize:
+            # ...read coordinates of the center
+            xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+            # ..cut central square (the area containing central spot)    
+            arr = stemdiff.io.reduce_array_size(arr,rsize,xc,yc)
+        psf += arr
+    # Calculate final experimental PSF
+    # (divide sum by number of summed files in order to get reasonable values
+    psf = np.round(psf/n).astype(np.uint16)
+    # Convert square mask to round mask ~ set corners to zero
+    # psfsize = SUMMATION.psfsize
+    # xc,yc   = (psfsize/2, psfsize/2) 
+    # for x in range(psfsize):
+    #     for y in range(psfsize):
+    #         r = np.sqrt((x-xc)**2 + (y-yc)**2)
+    #         if r &gt; psfsize/2: psf[x,y] = 0
+    # Return final array
+    return(psf)
+
+def save_psf(arr, output_file):
+    &#34;&#34;&#34;
+    Save PSF function;
+    the function is saved in the form of 2D-numpy array.
+
+    Parameters
+    ----------
+    arr : 2D-numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam. 
+    output_file : str
+        Name of the output file (without extension);
+        the saved file will be named [output_file].npy.
+    Returns
+    -------
+    None.
+        The result is the saved array in numpy format = [output_file].npy
+    &#34;&#34;&#34;
+    np.save(output_file, arr)
+
+def read_psf(input_file):
+    &#34;&#34;&#34;
+    Read PSF function;
+    the function is saved in the form of 2D-numpy array.
+
+    Parameters
+    ----------
+    input_file : str
+        The saved file with the PSF function;
+        the function is saved as file in numpy format = [input_file].npy.
+
+    Returns
+    -------
+    2D-numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam.
+    &#34;&#34;&#34;
+    arr = np.load(input_file, allow_pickle=True)
+    return(arr)
+
+def plot_psf(arr, plt_type=&#39;2D&#39;, plt_size=None, output=None):
+    &#39;&#39;&#39;
+    Show plot of PSF function.
+    
+    Parameters
+    ----------
+    arr : 2D numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam. 
+    plt_type : string
+        Either &#39;2D&#39; or &#39;3D&#39; - type of the plot.
+    plt_size : integer, optional, default=None
+        The size of the plot:
+        if plt_size is given, the function plots only the central square
+        with size = plt_size; otherwise it plots the whole array.
+    output : str, optional, default=None
+        The name of the output file:
+        if [output] is given, the function also saves the plot
+        with a filename [output].png; otherwise the plot is just shown.
+        
+    Returns
+    -------
+    Nothing.
+         The function just shows the plot of PSF in 2D or 3D.
+    &#39;&#39;&#39;
+    # Copy of arr variable
+    # (in order not to change original array during (possible) resizing
+    arr2 = arr.copy()
+    # Prepare variables
+    Xsize,Ysize = arr.shape
+    xc,yc = (int(Xsize/2),int(Ysize/2))
+    # Reduce array size for plotting, if required
+    # (here we work with the array copy so as not to change to original
+    if plt_size:
+        arr2 = stemdiff.io.reduce_array_size(arr2,plt_size,xc,yc)
+    if plt_type==&#39;2D&#39;:
+        plt.imshow(arr2)
+        plt.colorbar()
+    else:
+        # Prepare meshgrid for 3D-plotting
+        Xsize,Ysize = arr2.shape
+        Xhalf,Yhalf = int(Xsize/2),int(Ysize/2)
+        X = np.linspace(-Xhalf,Xhalf, num=Xsize, endpoint=True)
+        Y = np.linspace(-Yhalf,Yhalf, num=Ysize, endpoint=True)
+        Xm,Ym = np.meshgrid(X,Y)
+        # Create 3D-plot
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection=&#39;3d&#39;)
+        ax.plot_surface(
+            Xm,Ym,arr2, cmap=&#39;coolwarm&#39;, linewidth=0, antialiased=False)
+        # The following command can be activated if you need defined Z-scale
+        # ax.set_zlim(0,12000)
+        plt.tight_layout()
+    # Final output: show the plot (and save it, if it was requested)
+    if output == None:
+    # (if argument [output] was not given =&gt; just show the plot
+        plt.show()
+    else:
+    # (if argument [output] was given =&gt; save the plot and then show it
+    # (it must be done in this order - because plt.show() clears the plot!
+        plt.savefig(output, dpi=300)
+        plt.show()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="stemdiff.psf.plot_psf"><code class="name flex">
+<span>def <span class="ident">plot_psf</span></span>(<span>arr, plt_type='2D', plt_size=None, output=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Show plot of PSF function.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D numpy array</code></dt>
+<dd>The array with the saved 2D-PSF function, which represents
+the experimentally determined XY-spread of the primary beam.</dd>
+<dt><strong><code>plt_type</code></strong> :&ensp;<code>string</code></dt>
+<dd>Either '2D' or '3D' - type of the plot.</dd>
+<dt><strong><code>plt_size</code></strong> :&ensp;<code>integer</code>, optional, default=<code>None</code></dt>
+<dd>The size of the plot:
+if plt_size is given, the function plots only the central square
+with size = plt_size; otherwise it plots the whole array.</dd>
+<dt><strong><code>output</code></strong> :&ensp;<code>str</code>, optional, default=<code>None</code></dt>
+<dd>The name of the output file:
+if [output] is given, the function also saves the plot
+with a filename [output].png; otherwise the plot is just shown.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Nothing.
+The function just shows the plot of PSF in 2D or 3D.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_psf(arr, plt_type=&#39;2D&#39;, plt_size=None, output=None):
+    &#39;&#39;&#39;
+    Show plot of PSF function.
+    
+    Parameters
+    ----------
+    arr : 2D numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam. 
+    plt_type : string
+        Either &#39;2D&#39; or &#39;3D&#39; - type of the plot.
+    plt_size : integer, optional, default=None
+        The size of the plot:
+        if plt_size is given, the function plots only the central square
+        with size = plt_size; otherwise it plots the whole array.
+    output : str, optional, default=None
+        The name of the output file:
+        if [output] is given, the function also saves the plot
+        with a filename [output].png; otherwise the plot is just shown.
+        
+    Returns
+    -------
+    Nothing.
+         The function just shows the plot of PSF in 2D or 3D.
+    &#39;&#39;&#39;
+    # Copy of arr variable
+    # (in order not to change original array during (possible) resizing
+    arr2 = arr.copy()
+    # Prepare variables
+    Xsize,Ysize = arr.shape
+    xc,yc = (int(Xsize/2),int(Ysize/2))
+    # Reduce array size for plotting, if required
+    # (here we work with the array copy so as not to change to original
+    if plt_size:
+        arr2 = stemdiff.io.reduce_array_size(arr2,plt_size,xc,yc)
+    if plt_type==&#39;2D&#39;:
+        plt.imshow(arr2)
+        plt.colorbar()
+    else:
+        # Prepare meshgrid for 3D-plotting
+        Xsize,Ysize = arr2.shape
+        Xhalf,Yhalf = int(Xsize/2),int(Ysize/2)
+        X = np.linspace(-Xhalf,Xhalf, num=Xsize, endpoint=True)
+        Y = np.linspace(-Yhalf,Yhalf, num=Ysize, endpoint=True)
+        Xm,Ym = np.meshgrid(X,Y)
+        # Create 3D-plot
+        from mpl_toolkits.mplot3d import Axes3D
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection=&#39;3d&#39;)
+        ax.plot_surface(
+            Xm,Ym,arr2, cmap=&#39;coolwarm&#39;, linewidth=0, antialiased=False)
+        # The following command can be activated if you need defined Z-scale
+        # ax.set_zlim(0,12000)
+        plt.tight_layout()
+    # Final output: show the plot (and save it, if it was requested)
+    if output == None:
+    # (if argument [output] was not given =&gt; just show the plot
+        plt.show()
+    else:
+    # (if argument [output] was given =&gt; save the plot and then show it
+    # (it must be done in this order - because plt.show() clears the plot!
+        plt.savefig(output, dpi=300)
+        plt.show()</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.psf.psf_from_datafiles"><code class="name flex">
+<span>def <span class="ident">psf_from_datafiles</span></span>(<span>df, SUMMATION, R=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame row iterator</code></dt>
+<dd>DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.</dd>
+<dt><strong><code>SUMMATION</code></strong> :&ensp;<code>summation object</code></dt>
+<dd>Summation parameters; here we need the SUMMATION.psfsize
+= edge of the central square, from which 2D-PSF will be determined.
+If SUMMATION.psfsize is not given =&gt; take PSF from the whole array.</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Rescale coefficient;
+PSF function is rescaled/enlarged R-times.
+Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>2D numpy array</code></dt>
+<dd>The array represents experimental PSF;
+it is a sum of central areas/spots of input datafiles
+(divided by number of summed datafiles to get reasonable scale).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def psf_from_datafiles(df,SUMMATION,R=RESCALE):
+    &#39;&#39;&#39;
+    Parameters
+    ----------
+    df: pandas DataFrame row iterator
+        DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.
+    SUMMATION: summation object
+        Summation parameters; here we need the SUMMATION.psfsize
+        = edge of the central square, from which 2D-PSF will be determined.
+        If SUMMATION.psfsize is not given =&gt; take PSF from the whole array.
+    R: integer
+        Rescale coefficient;
+        PSF function is rescaled/enlarged R-times.
+        Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.
+   
+    Returns
+    -------
+    2D numpy array
+        The array represents experimental PSF;
+        it is a sum of central areas/spots of input datafiles
+        (divided by number of summed datafiles to get reasonable scale).
+    &#39;&#39;&#39;
+    # Prepare variables
+    # a) number of datafilesr
+    n = 0
+    # b) array for PSF
+    psf = np.zeros((DET_SIZE*R,DET_SIZE*R), dtype=np.float)
+    if SUMMATION.psfsize:
+        # If SUMMATION.psfsize is defined =&gt; reduce array dimension
+        rsize = SUMMATION.psfsize * R
+        xc,yc = ( (DET_SIZE*R)//2, (DET_SIZE*R)//2 )
+        psf = stemdiff.io.reduce_array_size(psf,rsize,xc,yc)    
+    # Go through the files...
+    for index,datafile in df:
+        n += 1
+        arr = stemdiff.io.read_datafile(datafile.DatafileName)
+        # ..rescale array
+        arr = stemdiff.io.rescale_array(arr, R)
+        if SUMMATION.psfsize:
+            # ...read coordinates of the center
+            xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+            # ..cut central square (the area containing central spot)    
+            arr = stemdiff.io.reduce_array_size(arr,rsize,xc,yc)
+        psf += arr
+    # Calculate final experimental PSF
+    # (divide sum by number of summed files in order to get reasonable values
+    psf = np.round(psf/n).astype(np.uint16)
+    # Convert square mask to round mask ~ set corners to zero
+    # psfsize = SUMMATION.psfsize
+    # xc,yc   = (psfsize/2, psfsize/2) 
+    # for x in range(psfsize):
+    #     for y in range(psfsize):
+    #         r = np.sqrt((x-xc)**2 + (y-yc)**2)
+    #         if r &gt; psfsize/2: psf[x,y] = 0
+    # Return final array
+    return(psf)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.psf.psf_from_lowS_files"><code class="name flex">
+<span>def <span class="ident">psf_from_lowS_files</span></span>(<span>DBASE, SUMMATION, R=4, S=None, P=None, N=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extract 2D-PSF from datafiles with low Shannon entropy S.
+PSF (= point-spread function) is taken from the central region/spot.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>DBASE</code></strong> :&ensp;<code>str</code> or <code>pathlib object</code></dt>
+<dd>Filename of database containing
+names of all datafiles and their Shannon entropy values.</dd>
+<dt><strong><code>SUMMATION</code></strong> :&ensp;<code>summation object</code></dt>
+<dd>Summation parameters; here we need the size/edge
+of the central square, from which 2D-PSF will be determined.</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Rescale coefficient;
+PSF function is rescaled/enlarged R-times.
+Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>float</code></dt>
+<dd>Shannon entropy value;
+if S is given, PSF will be extracted only from files with entropy &lt; S.</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>float</code></dt>
+<dd>Percent of files with the lowest entropy;
+if P is given, PSF will be extracted only from the P% of low-S files.</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of files with the lowest entropy;
+if N is given, PSF will be extracted only from those N files.</dd>
+</dl>
+<h2 id="returns">Returns:</h2>
+<p>2D numpy array
+The array with the saved 2D-PSF function, which represents
+the experimentally determined XY-spread of the primary beam.
+The array is a sum of central areas/spots of input datafiles
+(divided by number of summed datafiles to get reasonable scale).</p>
+<h2 id="note">Note:</h2>
+<p>Priority of parameters : S &gt; P &gt; N
+i.e. if S is given, P and N are ignored etc.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def psf_from_lowS_files(
+        DBASE,SUMMATION,R=RESCALE,S=None,P=None,N=None):
+    &#39;&#39;&#39;
+    Extract 2D-PSF from datafiles with low Shannon entropy S.
+    PSF (= point-spread function) is taken from the central region/spot.
+    
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Filename of database containing
+        names of all datafiles and their Shannon entropy values.
+    SUMMATION : summation object
+        Summation parameters; here we need the size/edge
+        of the central square, from which 2D-PSF will be determined.
+    R : integer
+        Rescale coefficient;
+        PSF function is rescaled/enlarged R-times.
+        Typical values of R are 2 or 4; default is stemdiff.const.RESCALE.
+    S : float
+        Shannon entropy value;
+        if S is given, PSF will be extracted only from files with entropy &lt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, PSF will be extracted only from the P% of low-S files.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, PSF will be extracted only from those N files.
+    
+    Returns:
+    --------
+    2D numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam.
+        The array is a sum of central areas/spots of input datafiles
+        (divided by number of summed datafiles to get reasonable scale).
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#39;&#39;&#39;
+    # Get filenames with low entropy values
+    lowS_datafiles = stemdiff.dbase.get_low_S_files(DBASE, S=S, P=P, N=N)
+    # Get PSF function
+    psf = psf_from_datafiles(lowS_datafiles,SUMMATION, R=R)
+    return(psf)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.psf.read_psf"><code class="name flex">
+<span>def <span class="ident">read_psf</span></span>(<span>input_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read PSF function;
+the function is saved in the form of 2D-numpy array.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>The saved file with the PSF function;
+the function is saved as file in numpy format = [input_file].npy.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>2D-numpy array</code></dt>
+<dd>The array with the saved 2D-PSF function, which represents
+the experimentally determined XY-spread of the primary beam.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_psf(input_file):
+    &#34;&#34;&#34;
+    Read PSF function;
+    the function is saved in the form of 2D-numpy array.
+
+    Parameters
+    ----------
+    input_file : str
+        The saved file with the PSF function;
+        the function is saved as file in numpy format = [input_file].npy.
+
+    Returns
+    -------
+    2D-numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam.
+    &#34;&#34;&#34;
+    arr = np.load(input_file, allow_pickle=True)
+    return(arr)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.psf.save_psf"><code class="name flex">
+<span>def <span class="ident">save_psf</span></span>(<span>arr, output_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Save PSF function;
+the function is saved in the form of 2D-numpy array.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D-numpy array</code></dt>
+<dd>The array with the saved 2D-PSF function, which represents
+the experimentally determined XY-spread of the primary beam.</dd>
+<dt><strong><code>output_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Name of the output file (without extension);
+the saved file will be named [output_file].npy.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.
+The result is the saved array in numpy format = [output_file].npy</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_psf(arr, output_file):
+    &#34;&#34;&#34;
+    Save PSF function;
+    the function is saved in the form of 2D-numpy array.
+
+    Parameters
+    ----------
+    arr : 2D-numpy array
+        The array with the saved 2D-PSF function, which represents
+        the experimentally determined XY-spread of the primary beam. 
+    output_file : str
+        Name of the output file (without extension);
+        the saved file will be named [output_file].npy.
+    Returns
+    -------
+    None.
+        The result is the saved array in numpy format = [output_file].npy
+    &#34;&#34;&#34;
+    np.save(output_file, arr)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#stemdiffpsf">stemdiff.psf</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="stemdiff" href="index.html">stemdiff</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="stemdiff.psf.plot_psf" href="#stemdiff.psf.plot_psf">plot_psf</a></code></li>
+<li><code><a title="stemdiff.psf.psf_from_datafiles" href="#stemdiff.psf.psf_from_datafiles">psf_from_datafiles</a></code></li>
+<li><code><a title="stemdiff.psf.psf_from_lowS_files" href="#stemdiff.psf.psf_from_lowS_files">psf_from_lowS_files</a></code></li>
+<li><code><a title="stemdiff.psf.read_psf" href="#stemdiff.psf.read_psf">read_psf</a></code></li>
+<li><code><a title="stemdiff.psf.save_psf" href="#stemdiff.psf.save_psf">save_psf</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

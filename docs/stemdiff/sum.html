@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>stemdiff.sum API documentation</title>
+<meta name="description" content="stemdiff.sum
+Sum 4D-STEM datafiles to create one 2D powder diffraction file." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>stemdiff.sum</code></h1>
+</header>
+<section id="section-intro">
+<h2 id="stemdiffsum">stemdiff.sum</h2>
+<p>Sum 4D-STEM datafiles to create one 2D powder diffraction file.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#39;&#39;&#39;
+stemdiff.sum
+------------
+Sum 4D-STEM datafiles to create one 2D powder diffraction file.
+&#39;&#39;&#39;
+
+import numpy as np
+import stemdiff.io
+import stemdiff.dbase
+import stemdiff.radial
+from stemdiff.const import DET_SIZE, RESCALE
+from skimage import transform, restoration
+
+def sum_all(DBASE,SUMMATION,R=RESCALE):
+    &#34;&#34;&#34;
+    Sum all datafiles from 4D-STEM dataset.
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+            
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+            
+        More information about the summation parameters:
+                
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+            
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value of R is 4 ~ we use 4-times upscaling.
+        * It is not recommened to change this default.
+        
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34;
+    all_datafiles = stemdiff.dbase.get_all_datafiles(DBASE)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        all_datafiles, R=R, imgsize=SUMMATION.imgsize)
+    return(arr)
+
+def sum_highS(DBASE,SUMMATION,R=RESCALE, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Sum high-entropy datafiles from 4D-STEM dataset;
+    the number of high-entropy files is determined by parameter S, P or N.
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+            
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+        
+        More information about the summation parameters:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+         
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value is R = 4, i.e. we use 4-times upscaling.
+        * It is not recommened to change this default.
+    
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34;
+    highS_datafiles = stemdiff.dbase.get_high_S_files(DBASE, P=P, N=N, S=S)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        highS_datafiles, R=R, imgsize=SUMMATION.imgsize)
+    return(arr)
+
+def sum_highS_deconv(DBASE,SUMMATION,PSF,R=RESCALE, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Sum high-entropy datafiles from 4D-STEM dataset with deconvolution.
+    
+    * the number of high-S files is determined by parameter S, P or N
+    * the number of deconvolution iterations is in SUMMATION parameter
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+        The database is usually created by functions in stemdiff.dbase module.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+        
+        More information about the summation parameters:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+    
+    PSF : str or pathlib object
+        Name of the file that contains 2D-PSF function.
+        The PSF is saved in NPY-file (numpy array in numpy format).
+        The PSF is usually created by: stemdiff.psf.psf_from_lowS_files
+        
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value is R = 4, i.e. we use 4-fold upscaling.
+        * It is not recommened to change this default.
+    
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34; 
+    highS_datafiles = stemdiff.dbase.get_high_S_files(
+        DBASE, P=P, S=S, N=N)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        highS_datafiles, R, PSF,
+        itr=SUMMATION.iterate, imgsize=SUMMATION.imgsize)
+    return(arr)
+
+def sum_4Dstem_datafiles(df,R=RESCALE, PSF=None, itr=None, imgsize=None):
+    &#39;&#39;&#39;
+    Sum input datafiles from a 4D-STEM dataset.
+    This function can be called directly, but typically it is called
+    from functions *sum_all*, *sum_highS*, and *sum_highS_deconv*.
+    
+    Parameters
+    ----------
+    df: pandas DataFrame row iterator
+        DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.
+    R : integer
+        Rescale coefficient;
+        the size of the final array is rescaled/multiplied by factor R.
+        If PSF is given, the rescaling is performed before deconvolution.
+        Note: PSF should the same rescale coefficient as given here!
+    PSF : 2D numpy array
+        PSF = point spread function for deconvolution
+    itr : integer 
+        Number of iterations during R-L deconvolution
+    imgsize: integer
+        Size of array read from the detector is reduced to imgsize.
+        If imgsize is given, we sum only the central square with edge=imgsize.
+        Smaller central area gives higher speed during deconvolution,
+        while the outer area usually contains just the weakest diffractions.
+        
+    Returns
+    -------
+    final_arr : 2D numpy array
+        The array is a sum of datafiles;
+        if the datafiles are pre-filtered, we get sum of filtered datafiles,
+        if PSF is given, we get sum of datafiles with PSF deconvolution.
+    &#39;&#39;&#39;
+    # Prepare variables ......................................................
+    n = 0
+    if imgsize:
+        arr_size = imgsize
+        xc,yc = (None,None)
+    else:
+        arr_size = DET_SIZE
+    # Sum without deconvolution ..............................................
+    if type(PSF)==type(None):
+        # Prepare files
+        # (arr size = detector size =&gt; rescaling at the end - see below
+        sum_arr   = np.zeros((arr_size,arr_size), dtype=np.float)
+        final_arr = np.zeros((arr_size,arr_size), dtype=np.uint16)
+        # Sum datafiles
+        # (rescaling can be done AFTER summation if there is no deconvolution
+        for index,datafile in df:
+            arr = stemdiff.io.read_datafile(datafile.DatafileName)
+            # If rsize was given, reduce array size
+            if imgsize:
+                xc,yc = (round(datafile.Xcenter/R),round(datafile.Ycenter/R))
+                arr = stemdiff.io.reduce_array_size(arr,imgsize,xc,yc)
+            sum_arr += arr
+            n += 1
+        # Rescale final datafile
+        norm_const = np.max(sum_arr)
+        sum_arr = transform.rescale(sum_arr, R, order=3)
+        sum_arr = sum_arr/np.max(sum_arr) * norm_const
+    # Sum with deconvolution .................................................
+    else:
+        # Read PSF and normalize it
+        # (normalization of PSF is necessary for deconvolution algorithm
+        psf = stemdiff.psf.read_psf(PSF)
+        psf = psf/np.sum(psf)
+        # Prepare files
+        # (array size = detector size * R =&gt; rescaling during summation
+        # (if imsize was given, detector size is reduced to imsize
+        sum_arr   = np.zeros((arr_size*R,arr_size*R), dtype=np.float)
+        final_arr = np.zeros((arr_size*R,arr_size*R), dtype=np.uint16)
+        # Sum datafiles with rescaling and deconvolution
+        # (rescaling must be done during summagion BEFORE deconvolution
+        for index,datafile in df:
+            print(&#39;.&#39;,end=&#39;&#39;)
+            arr = stemdiff.io.read_datafile(datafile.DatafileName)
+            # Rescale array
+            # (rescaling is done before reducing detector/array size
+            # (this should result in more precise center determination
+            arr = stemdiff.io.rescale_array(arr, R)
+            # If rsize parameter was given, reduce detector area
+            if imgsize:
+                xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+                arr = stemdiff.io.reduce_array_size(arr,imgsize*R,xc,yc)
+            # Normalize array
+            # (normalization must be done before deconvolution
+            # (BUT we save norm.const to restore orig.intensity at the end            
+            norm_const = np.max(arr)
+            arr = arr/np.max(arr)
+            # Deconvolution
+            arr = restoration.richardson_lucy(arr, psf, iterations=itr)
+            # Multiply by the saved normalization constant
+            arr = arr * norm_const
+            # Add rescaled and deconvoluted file to summation
+            sum_arr += arr
+            n += 1
+        print()
+    # Calculate final array ..................................................
+    # (divide sum by number of summed files in order to get reasonable values
+    final_arr = np.round(sum_arr/n).astype(np.uint16)
+    # Return final array
+    return(final_arr)
+
+def save_results(arr, output, icut=300, itype=&#39;8bit&#39;, rdist=True):
+    &#39;&#39;&#39;
+    Save results of summation (final 2D-image + optional 1D-radial profile).
+
+    Parameters
+    ----------
+    arr : 2D numpy array
+        Array representing 2D-PNBD diffractogram.
+    output : string
+        Filename of output 2D-diffratogram and its 1D-radial distribution;
+        name of 2D-diffractogram will be [output.png],
+        name of 1D-radial distribution will be [output.txt].
+    icut : integer, optional, default=300
+        Cut of intensity;
+        if icut = 300, all image intensities &gt; 300 will be set equal to 300.
+    itype : string (&#39;8bit&#39;  or &#39;16bit&#39;), optional, default=&#39;8bit&#39;
+        Type of the image with 2D-PNBD diffractogram: 8 or 16 bit grayscale.   
+    rdist : boolean, optional, default =True
+        If rdist=True, calculate and save also 1D-radial distribution.
+        The saved file = [output].txt, where output is the argument above.
+        
+    Returns
+    -------
+    None.
+        The outputs are saved 2D-diffractogram and its 1D-profile.
+    &#39;&#39;&#39;
+    # Prepare filenames
+    output_2d_image   = output + &#39;.png&#39;
+    output_1d_profile = output + &#39;.txt&#39;
+    # a) Save summation = 2D-array as image
+    stemdiff.io.save_array(arr, output_2d_image, icut, itype)
+    # b) Calculate and save 1D-radial profile of the image
+    if rdist:
+        stemdiff.radial.save_radial_distribution(arr, output_1d_profile)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="stemdiff.sum.save_results"><code class="name flex">
+<span>def <span class="ident">save_results</span></span>(<span>arr, output, icut=300, itype='8bit', rdist=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Save results of summation (final 2D-image + optional 1D-radial profile).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D numpy array</code></dt>
+<dd>Array representing 2D-PNBD diffractogram.</dd>
+<dt><strong><code>output</code></strong> :&ensp;<code>string</code></dt>
+<dd>Filename of output 2D-diffratogram and its 1D-radial distribution;
+name of 2D-diffractogram will be [output.png],
+name of 1D-radial distribution will be [output.txt].</dd>
+<dt><strong><code>icut</code></strong> :&ensp;<code>integer</code>, optional, default=<code>300</code></dt>
+<dd>Cut of intensity;
+if icut = 300, all image intensities &gt; 300 will be set equal to 300.</dd>
+<dt><strong><code>itype</code></strong> :&ensp;<code>string ('8bit'</code>
+or <code>'16bit')</code>, optional, default=<code>'8bit'</code></dt>
+<dd>Type of the image with 2D-PNBD diffractogram: 8 or 16 bit grayscale.</dd>
+<dt><strong><code>rdist</code></strong> :&ensp;<code>boolean</code>, optional, default <code>=True</code></dt>
+<dd>If rdist=True, calculate and save also 1D-radial distribution.
+The saved file = [output].txt, where output is the argument above.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.
+The outputs are saved 2D-diffractogram and its 1D-profile.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_results(arr, output, icut=300, itype=&#39;8bit&#39;, rdist=True):
+    &#39;&#39;&#39;
+    Save results of summation (final 2D-image + optional 1D-radial profile).
+
+    Parameters
+    ----------
+    arr : 2D numpy array
+        Array representing 2D-PNBD diffractogram.
+    output : string
+        Filename of output 2D-diffratogram and its 1D-radial distribution;
+        name of 2D-diffractogram will be [output.png],
+        name of 1D-radial distribution will be [output.txt].
+    icut : integer, optional, default=300
+        Cut of intensity;
+        if icut = 300, all image intensities &gt; 300 will be set equal to 300.
+    itype : string (&#39;8bit&#39;  or &#39;16bit&#39;), optional, default=&#39;8bit&#39;
+        Type of the image with 2D-PNBD diffractogram: 8 or 16 bit grayscale.   
+    rdist : boolean, optional, default =True
+        If rdist=True, calculate and save also 1D-radial distribution.
+        The saved file = [output].txt, where output is the argument above.
+        
+    Returns
+    -------
+    None.
+        The outputs are saved 2D-diffractogram and its 1D-profile.
+    &#39;&#39;&#39;
+    # Prepare filenames
+    output_2d_image   = output + &#39;.png&#39;
+    output_1d_profile = output + &#39;.txt&#39;
+    # a) Save summation = 2D-array as image
+    stemdiff.io.save_array(arr, output_2d_image, icut, itype)
+    # b) Calculate and save 1D-radial profile of the image
+    if rdist:
+        stemdiff.radial.save_radial_distribution(arr, output_1d_profile)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.sum.sum_4Dstem_datafiles"><code class="name flex">
+<span>def <span class="ident">sum_4Dstem_datafiles</span></span>(<span>df, R=4, PSF=None, itr=None, imgsize=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sum input datafiles from a 4D-STEM dataset.
+This function can be called directly, but typically it is called
+from functions <em>sum_all</em>, <em>sum_highS</em>, and <em>sum_highS_deconv</em>.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame row iterator</code></dt>
+<dd>DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Rescale coefficient;
+the size of the final array is rescaled/multiplied by factor R.
+If PSF is given, the rescaling is performed before deconvolution.
+Note: PSF should the same rescale coefficient as given here!</dd>
+<dt><strong><code>PSF</code></strong> :&ensp;<code>2D numpy array</code></dt>
+<dd>PSF = point spread function for deconvolution</dd>
+<dt><strong><code>itr</code></strong> :&ensp;<code>integer </code></dt>
+<dd>Number of iterations during R-L deconvolution</dd>
+<dt><strong><code>imgsize</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Size of array read from the detector is reduced to imgsize.
+If imgsize is given, we sum only the central square with edge=imgsize.
+Smaller central area gives higher speed during deconvolution,
+while the outer area usually contains just the weakest diffractions.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>final_arr</code></strong> :&ensp;<code>2D numpy array</code></dt>
+<dd>The array is a sum of datafiles;
+if the datafiles are pre-filtered, we get sum of filtered datafiles,
+if PSF is given, we get sum of datafiles with PSF deconvolution.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum_4Dstem_datafiles(df,R=RESCALE, PSF=None, itr=None, imgsize=None):
+    &#39;&#39;&#39;
+    Sum input datafiles from a 4D-STEM dataset.
+    This function can be called directly, but typically it is called
+    from functions *sum_all*, *sum_highS*, and *sum_highS_deconv*.
+    
+    Parameters
+    ----------
+    df: pandas DataFrame row iterator
+        DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.
+    R : integer
+        Rescale coefficient;
+        the size of the final array is rescaled/multiplied by factor R.
+        If PSF is given, the rescaling is performed before deconvolution.
+        Note: PSF should the same rescale coefficient as given here!
+    PSF : 2D numpy array
+        PSF = point spread function for deconvolution
+    itr : integer 
+        Number of iterations during R-L deconvolution
+    imgsize: integer
+        Size of array read from the detector is reduced to imgsize.
+        If imgsize is given, we sum only the central square with edge=imgsize.
+        Smaller central area gives higher speed during deconvolution,
+        while the outer area usually contains just the weakest diffractions.
+        
+    Returns
+    -------
+    final_arr : 2D numpy array
+        The array is a sum of datafiles;
+        if the datafiles are pre-filtered, we get sum of filtered datafiles,
+        if PSF is given, we get sum of datafiles with PSF deconvolution.
+    &#39;&#39;&#39;
+    # Prepare variables ......................................................
+    n = 0
+    if imgsize:
+        arr_size = imgsize
+        xc,yc = (None,None)
+    else:
+        arr_size = DET_SIZE
+    # Sum without deconvolution ..............................................
+    if type(PSF)==type(None):
+        # Prepare files
+        # (arr size = detector size =&gt; rescaling at the end - see below
+        sum_arr   = np.zeros((arr_size,arr_size), dtype=np.float)
+        final_arr = np.zeros((arr_size,arr_size), dtype=np.uint16)
+        # Sum datafiles
+        # (rescaling can be done AFTER summation if there is no deconvolution
+        for index,datafile in df:
+            arr = stemdiff.io.read_datafile(datafile.DatafileName)
+            # If rsize was given, reduce array size
+            if imgsize:
+                xc,yc = (round(datafile.Xcenter/R),round(datafile.Ycenter/R))
+                arr = stemdiff.io.reduce_array_size(arr,imgsize,xc,yc)
+            sum_arr += arr
+            n += 1
+        # Rescale final datafile
+        norm_const = np.max(sum_arr)
+        sum_arr = transform.rescale(sum_arr, R, order=3)
+        sum_arr = sum_arr/np.max(sum_arr) * norm_const
+    # Sum with deconvolution .................................................
+    else:
+        # Read PSF and normalize it
+        # (normalization of PSF is necessary for deconvolution algorithm
+        psf = stemdiff.psf.read_psf(PSF)
+        psf = psf/np.sum(psf)
+        # Prepare files
+        # (array size = detector size * R =&gt; rescaling during summation
+        # (if imsize was given, detector size is reduced to imsize
+        sum_arr   = np.zeros((arr_size*R,arr_size*R), dtype=np.float)
+        final_arr = np.zeros((arr_size*R,arr_size*R), dtype=np.uint16)
+        # Sum datafiles with rescaling and deconvolution
+        # (rescaling must be done during summagion BEFORE deconvolution
+        for index,datafile in df:
+            print(&#39;.&#39;,end=&#39;&#39;)
+            arr = stemdiff.io.read_datafile(datafile.DatafileName)
+            # Rescale array
+            # (rescaling is done before reducing detector/array size
+            # (this should result in more precise center determination
+            arr = stemdiff.io.rescale_array(arr, R)
+            # If rsize parameter was given, reduce detector area
+            if imgsize:
+                xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+                arr = stemdiff.io.reduce_array_size(arr,imgsize*R,xc,yc)
+            # Normalize array
+            # (normalization must be done before deconvolution
+            # (BUT we save norm.const to restore orig.intensity at the end            
+            norm_const = np.max(arr)
+            arr = arr/np.max(arr)
+            # Deconvolution
+            arr = restoration.richardson_lucy(arr, psf, iterations=itr)
+            # Multiply by the saved normalization constant
+            arr = arr * norm_const
+            # Add rescaled and deconvoluted file to summation
+            sum_arr += arr
+            n += 1
+        print()
+    # Calculate final array ..................................................
+    # (divide sum by number of summed files in order to get reasonable values
+    final_arr = np.round(sum_arr/n).astype(np.uint16)
+    # Return final array
+    return(final_arr)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.sum.sum_all"><code class="name flex">
+<span>def <span class="ident">sum_all</span></span>(<span>DBASE, SUMMATION, R=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sum all datafiles from 4D-STEM dataset.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>DBASE</code></strong> :&ensp;<code>str</code> or <code>pathlib object</code></dt>
+<dd>Name of the database file that contains
+[filename, entropy and XY-center] of each datafile of 4D-STEM dataset.</dd>
+<dt><strong><code>SUMMATION</code></strong> :&ensp;<code>summation object</code></dt>
+<dd>
+<p>The summation object contains parameters for the summation.
+The object is usually defined in advance as follows:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+&gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+</code></pre>
+<p>More information about the summation parameters:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; help(stemdiff.const.summation)
+</code></pre>
+</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>int</code>, optional, default=<code><a title="stemdiff.const.RESCALE" href="const.html#stemdiff.const.RESCALE">RESCALE</a></code></dt>
+<dd>
+<ul>
+<li>The final diffractogram size = size-of-original-array * RESCALE.</li>
+<li>The RESCALE parameter is defined/imported from stemdiff.const</li>
+<li>The optimal value of R is 4 ~ we use 4-times upscaling.</li>
+<li>It is not recommened to change this default.</li>
+</ul>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D-numpy array</code></dt>
+<dd>The array represents the calculated 2D-PNBD diffraction pattern.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum_all(DBASE,SUMMATION,R=RESCALE):
+    &#34;&#34;&#34;
+    Sum all datafiles from 4D-STEM dataset.
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+            
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+            
+        More information about the summation parameters:
+                
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+            
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value of R is 4 ~ we use 4-times upscaling.
+        * It is not recommened to change this default.
+        
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34;
+    all_datafiles = stemdiff.dbase.get_all_datafiles(DBASE)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        all_datafiles, R=R, imgsize=SUMMATION.imgsize)
+    return(arr)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.sum.sum_highS"><code class="name flex">
+<span>def <span class="ident">sum_highS</span></span>(<span>DBASE, SUMMATION, R=4, S=None, P=None, N=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sum high-entropy datafiles from 4D-STEM dataset;
+the number of high-entropy files is determined by parameter S, P or N.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>DBASE</code></strong> :&ensp;<code>str</code> or <code>pathlib object</code></dt>
+<dd>Name of the database file that contains
+[filename, entropy and XY-center] of each datafile of 4D-STEM dataset.</dd>
+<dt><strong><code>SUMMATION</code></strong> :&ensp;<code>summation object</code></dt>
+<dd>
+<p>The summation object contains parameters for the summation.
+The object is usually defined in advance as follows:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+&gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+</code></pre>
+<p>More information about the summation parameters:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; help(stemdiff.const.summation)
+</code></pre>
+</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>int</code>, optional, default=<code><a title="stemdiff.const.RESCALE" href="const.html#stemdiff.const.RESCALE">RESCALE</a></code></dt>
+<dd>
+<ul>
+<li>The final diffractogram size = size-of-original-array * RESCALE.</li>
+<li>The RESCALE parameter is defined/imported from stemdiff.const</li>
+<li>The optimal value is R = 4, i.e. we use 4-times upscaling.</li>
+<li>It is not recommened to change this default.</li>
+</ul>
+</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>Shannon entropy</code></dt>
+<dd>that separaters high- and low-S files;
+(trivial case: the function just returns the value of S).</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>Percent</code> of <code>files</code></dt>
+<dd>that determines how many percent of high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>Number</code> of <code>files</code></dt>
+<dd>that determines how many high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D-numpy array</code></dt>
+<dd>The array represents the calculated 2D-PNBD diffraction pattern.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum_highS(DBASE,SUMMATION,R=RESCALE, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Sum high-entropy datafiles from 4D-STEM dataset;
+    the number of high-entropy files is determined by parameter S, P or N.
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+            
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+        
+        More information about the summation parameters:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+         
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value is R = 4, i.e. we use 4-times upscaling.
+        * It is not recommened to change this default.
+    
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34;
+    highS_datafiles = stemdiff.dbase.get_high_S_files(DBASE, P=P, N=N, S=S)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        highS_datafiles, R=R, imgsize=SUMMATION.imgsize)
+    return(arr)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.sum.sum_highS_deconv"><code class="name flex">
+<span>def <span class="ident">sum_highS_deconv</span></span>(<span>DBASE, SUMMATION, PSF, R=4, S=None, P=None, N=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Sum high-entropy datafiles from 4D-STEM dataset with deconvolution.</p>
+<ul>
+<li>the number of high-S files is determined by parameter S, P or N</li>
+<li>the number of deconvolution iterations is in SUMMATION parameter</li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>DBASE</code></strong> :&ensp;<code>str</code> or <code>pathlib object</code></dt>
+<dd>Name of the database file that contains
+[filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+The database is usually created by functions in stemdiff.dbase module.</dd>
+<dt><strong><code>SUMMATION</code></strong> :&ensp;<code>summation object</code></dt>
+<dd>
+<p>The summation object contains parameters for the summation.
+The object is usually defined in advance as follows:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+&gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+</code></pre>
+<p>More information about the summation parameters:</p>
+<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; help(stemdiff.const.summation)
+</code></pre>
+</dd>
+<dt><strong><code>PSF</code></strong> :&ensp;<code>str</code> or <code>pathlib object</code></dt>
+<dd>Name of the file that contains 2D-PSF function.
+The PSF is saved in NPY-file (numpy array in numpy format).
+The PSF is usually created by: stemdiff.psf.psf_from_lowS_files</dd>
+<dt><strong><code>R</code></strong> :&ensp;<code>int</code>, optional, default=<code><a title="stemdiff.const.RESCALE" href="const.html#stemdiff.const.RESCALE">RESCALE</a></code></dt>
+<dd>
+<ul>
+<li>The final diffractogram size = size-of-original-array * RESCALE.</li>
+<li>The RESCALE parameter is defined/imported from stemdiff.const</li>
+<li>The optimal value is R = 4, i.e. we use 4-fold upscaling.</li>
+<li>It is not recommened to change this default.</li>
+</ul>
+</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>Shannon entropy</code></dt>
+<dd>that separaters high- and low-S files;
+(trivial case: the function just returns the value of S).</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>Percent</code> of <code>files</code></dt>
+<dd>that determines how many percent of high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>Number</code> of <code>files</code></dt>
+<dd>that determines how many high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>arr</code></strong> :&ensp;<code>2D-numpy array</code></dt>
+<dd>The array represents the calculated 2D-PNBD diffraction pattern.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def sum_highS_deconv(DBASE,SUMMATION,PSF,R=RESCALE, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Sum high-entropy datafiles from 4D-STEM dataset with deconvolution.
+    
+    * the number of high-S files is determined by parameter S, P or N
+    * the number of deconvolution iterations is in SUMMATION parameter
+
+    Parameters
+    ----------
+    DBASE : str or pathlib object
+        Name of the database file that contains
+        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
+        The database is usually created by functions in stemdiff.dbase module.
+    
+    SUMMATION : summation object
+        The summation object contains parameters for the summation.
+        The object is usually defined in advance as follows:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; SUMMATION = stemdiff.const.summation(
+            &gt;&gt;&gt;     psfsize=130,imgsize=125,iterate=30)
+        
+        More information about the summation parameters:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; help(stemdiff.const.summation)        
+    
+    PSF : str or pathlib object
+        Name of the file that contains 2D-PSF function.
+        The PSF is saved in NPY-file (numpy array in numpy format).
+        The PSF is usually created by: stemdiff.psf.psf_from_lowS_files
+        
+    R : int, optional, default=stemdiff.const.RESCALE
+        * The final diffractogram size = size-of-original-array * RESCALE.
+        * The RESCALE parameter is defined/imported from stemdiff.const
+        * The optimal value is R = 4, i.e. we use 4-fold upscaling.
+        * It is not recommened to change this default.
+    
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    
+    Returns
+    -------
+    arr : 2D-numpy array
+        The array represents the calculated 2D-PNBD diffraction pattern.
+    &#34;&#34;&#34; 
+    highS_datafiles = stemdiff.dbase.get_high_S_files(
+        DBASE, P=P, S=S, N=N)
+    arr = stemdiff.sum.sum_4Dstem_datafiles(
+        highS_datafiles, R, PSF,
+        itr=SUMMATION.iterate, imgsize=SUMMATION.imgsize)
+    return(arr)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#stemdiffsum">stemdiff.sum</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="stemdiff" href="index.html">stemdiff</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="stemdiff.sum.save_results" href="#stemdiff.sum.save_results">save_results</a></code></li>
+<li><code><a title="stemdiff.sum.sum_4Dstem_datafiles" href="#stemdiff.sum.sum_4Dstem_datafiles">sum_4Dstem_datafiles</a></code></li>
+<li><code><a title="stemdiff.sum.sum_all" href="#stemdiff.sum.sum_all">sum_all</a></code></li>
+<li><code><a title="stemdiff.sum.sum_highS" href="#stemdiff.sum.sum_highS">sum_highS</a></code></li>
+<li><code><a title="stemdiff.sum.sum_highS_deconv" href="#stemdiff.sum.sum_highS_deconv">sum_highS_deconv</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
