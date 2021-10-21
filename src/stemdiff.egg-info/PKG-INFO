@@ -1,3 +1,20 @@
+Metadata-Version: 2.1
+Name: stemdiff
+Version: 4.2.5
+Summary: Convert 4D-STEM data to a single powder diffraction pattern.
+Home-page: https://mirekslouf.webnode.cz/software
+Author: Mirek Slouf
+Author-email: mirek.slouf@gmail.com
+License: MIT
+Project-URL: documentation, https://mirekslouf.webnode.cz/software
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+License-File: LICENCE
+
 # STEMDIFF :: Simple processing of 4D-STEM data
 
 * The STEMDIFF package converts... <br>
@@ -46,3 +63,4 @@
 	- 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
 	- better definition of summation and centering parameters
 	- better documentation strings + demo data + improved **master script**
+
