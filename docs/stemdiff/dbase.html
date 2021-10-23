@@ -1,0 +1,1066 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>stemdiff.dbase API documentation</title>
+<meta name="description" content="stemdiff.dbase
+Read 4D-STEM datafiles and create database of all files …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>stemdiff.dbase</code></h1>
+</header>
+<section id="section-intro">
+<h2 id="stemdiffdbase">stemdiff.dbase</h2>
+<p>Read 4D-STEM datafiles and create database of all files.</p>
+<p>The database contains [filename, S-entropy and XY-center] of each datafile.</p>
+<ul>
+<li>The database enables fast filtering of datafiles
+and fast access to datafile features.</li>
+<li>S-entropy = Shannon entropy = a fast-to-calculate image feature;
+datafiles with high S contain strong diffractions and <em>vice versa</em>.</li>
+<li>XY-center = two values = X- and Y-coordinate of the central spot
+(primary beam) for given datafile.</li>
+</ul>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#39;&#39;&#39;
+stemdiff.dbase
+--------------
+Read 4D-STEM datafiles and create database of all files.
+
+The database contains [filename, S-entropy and XY-center] of each datafile.
+    
+* The database enables fast filtering of datafiles
+  and fast access to datafile features.
+* S-entropy = Shannon entropy = a fast-to-calculate image feature;
+  datafiles with high S contain strong diffractions and *vice versa*.
+* XY-center = two values = X- and Y-coordinate of the central spot
+  (primary beam) for given datafile. 
+&#39;&#39;&#39;
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from skimage import measure
+import stemdiff.io
+from stemdiff.const import DET_SIZE, RESCALE
+    
+def calc_database(DATAFILES,CENTERING):
+    &#34;&#34;&#34;
+    Read 4D-STEM datafiles and create database of all files,
+    which contains [filename, S-entropy and XY-center] for each datafile.
+    
+    Parameters
+    ----------
+    DATAFILES : glob object
+        Names of all datafiles from 4D-STEM dataset.
+        The [glob object] is usually defined in the master script as follows:
+        
+            &gt;&gt;&gt; from pathlib import Path
+            &gt;&gt;&gt; DATA_DIR  = Path(&#39;D:/DATA/AU&#39;)
+            &gt;&gt;&gt; DATAFILES = DATA_DIR.glob(&#39;*.dat&#39;)
+            
+    CENTERING : centering object
+        Object containing parameters for finding center of diffractograms.
+        The [centering object] is usually defined in the master script:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; CENTERING = stemdiff.const.centering(
+            &gt;&gt;&gt;     ctype=1, csquare=30, cintensity=0.8)
+
+    Returns
+    -------
+    df : pandas DataFrame object
+        Database containing [filename, ShannonEntropy, XY-center]
+        of each datafile of 4D-STEM dataset.
+    &#34;&#34;&#34;
+    # Prepare coordinates of the center
+    xc,yc = (None,None)
+    # Prepare empty list
+    # (appending to lists is more efficient than appending to np/pd-structures
+    list_of_datafiles = []
+    # Go through datafiles and calculated their entropy
+    for datafile in DATAFILES:
+        # a) Read datafile
+        arr = stemdiff.io.read_datafile(datafile)
+        # b) Calculated and print Shannon entropy of the datafile
+        entropy_value = measure.shannon_entropy(arr)
+        # c) Calculate center of the datafile
+        # Note: the center is calculated for enlarged/rescaled array
+        # (this gives better accuracy for rescaled arrays
+        # (for original arrays, divide center coordinates by RESCALE
+        if CENTERING.ctype == 2:
+            arr = stemdiff.io.rescale_array(arr, RESCALE)
+            xc,yc = stemdiff.io.find_array_center(
+                arr, CENTERING.csquare, CENTERING.cintensity)
+        elif (CENTERING.ctype == 1) and (xc == None):
+            arr = stemdiff.io.rescale_array(arr, RESCALE)
+            xc,yc = stemdiff.io.find_array_center(
+                arr, CENTERING.csquare, CENTERING.cintensity)
+        elif (CENTERING.ctype == 0) and (xc == None):
+            xc,yc = (round(DET_SIZE*RESCALE/2),round(DET_SIZE*RESCALE/2))
+        # d) Append all calculated values to list
+        list_of_datafiles.append([datafile, entropy_value, xc, yc])
+    # Convert list to pandas DataFrame
+    df = pd.DataFrame(list_of_datafiles,
+                      columns=[&#39;DatafileName&#39;,&#39;Entropy&#39;,&#39;Xcenter&#39;,&#39;Ycenter&#39;])
+    # Return the dataframe containing names of datafiles + their entropies
+    return(df)
+
+def save_database(df, output_file):
+    &#34;&#34;&#34;
+    Save database, which contains [filenames, entropies and XY-centers]
+    of all 4D-STEM datafiles; the dbase is saved az pickled object/zip-file.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of all datafiles,
+        which contains [filenames, entropies and centers] of diffractograms
+        (the database is created by function stemdiff.dbase.calc_database).
+        
+    output_file : str
+        Filename of the output file (without extension).
+
+    Returns
+    -------
+    None.
+    
+    * The output is the saved file with name [output_file].zip
+    * The output file = pickled data in zip format;
+      this file is read back as an input to other functions,
+      such as calculation of PSF function and summation of datafiles.
+    &#34;&#34;&#34;
+    df.to_pickle(output_file)
+    
+def read_database(input_file):
+    &#34;&#34;&#34;
+    Read database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles.
+    
+    * the database is saved as pickled object/zip-file
+    * it is created by functions *calc_database* and *save_database*
+
+    Parameters
+    ----------
+    input_file : str
+        Filename of the input file that contains the database.
+
+    Returns
+    -------
+    df : pandas DataFrame object
+        Database that has been read from disk.
+    &#34;&#34;&#34;
+    # Read database from [input_file]
+    # NOTE: input_file is either saved/pickled file or pd.DataFrame
+    # Reason: sometimes it is more efficient to use pd.DataFrame directly 
+    if type(input_file) == pd.DataFrame:
+        df = input_file
+    else:
+        df = pd.read_pickle(input_file)
+    return(df)
+
+def get_all_datafiles(dbase):
+    &#34;&#34;&#34;
+    Get filenames and parameters of all datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles from the database.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Return complete database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df.iterrows())
+
+def get_high_S_files(dbase, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Get filenames and parameters of high-entropy datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.    
+    S : float
+        Shannon entropy value;
+        if S is given, we get only the files with entropy &gt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, we get only P% of files with the highest entropy.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, we get only N files with the highest entropy.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles with high entropy.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Calculate entropy limit (then we can get files with higher entropy)
+    entropy_limit = get_entropy_limit(df,S,P,N,high_entropy_files=True)
+    # Calculate and return reduced database containing only high-entropy files
+    df2 = df[df.Entropy &gt;= entropy_limit]
+    # Return adjusted/filtered database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df2.iterrows())
+
+def get_low_S_files(dbase, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Get filenames and parameters of low-entropy datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.    
+    S : float
+        Shannon entropy value;
+        if S is given, we get only the files with entropy &lt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, we get only P% of files with the lowest entropy.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, we get only N files with the lowest entropy.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles with a low entropy.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Calculate entropy limit (then we can get files with lower entropy)
+    entropy_limit = get_entropy_limit(df,S,P,N,high_entropy_files=False)
+    # Calculate and return reduced database containing only low-entropy files
+    df2 = df[df.Entropy &lt;= entropy_limit]
+    # Return adjusted/filtered database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df2.iterrows())
+
+def get_entropy_limit(df,S,P,N,high_entropy_files=True):
+    &#34;&#34;&#34;
+    Determine Shannon entropy limit;
+    which separates high- and low-entropy files;
+    (the entropy limit can be determined from S or P or N parameter).
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of all 4D-STEM datafiles,
+        which contains [filenames, entropies and centers] of diffractograms.
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    high_entropy_files : boolean, optional, default=True.
+        * If the parameter is True, the S-value separates high-entropy files.
+        * If the parameter is False, the S-value separates low-entropy files.
+        * Example: if we have P=20, we can separate either
+          20% of the high-S files (if high_entropy_files = True)
+          or 20% of the low-S files (if the high_entropy_files = False).
+          
+    Returns
+    -------
+    entropy limit : float
+        The value of Shannon entropy,
+        that separates high- and low-entropy files.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Calculate histogram, pdf and cdf
+    # (we need high precision: bins=1000
+    # (in order to get correct/non-approximate number of files for switch N
+    counts,bins,pdf,cdf = calculate_entropy_histogram(df,bins=1000)
+    # A) Entropy limit is given by S
+    if S:
+        entropy_limit = S
+    # B) Entropy limit is given by P or N 
+    else:
+        # 1) determine percent of files - this is given by P or N
+        # P = percent of high- or low-entropy files
+        # N = number of  high- or low-entropy files
+        if P: percent = P
+        else: percent = N / np.sum(counts) * 100
+        # 2) if we want high-entropy files, percent = 100-percent
+        if high_entropy_files: percent = 100-percent 
+        # 3) Now that we have percent of files, we can calculate entropy limit
+        cdf_limit = percent/100
+        entropy_limit = bins[np.argmax(cdf&gt;=cdf_limit)]
+    return(entropy_limit)
+
+def calculate_entropy_histogram(df, bins):
+    &#34;&#34;&#34;
+    Calculate parameters,
+    which can be used for plotting the entropy histogram.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of (pre-selected) 4D-STEM datafiles,
+        which contains [filenames, entropies and centers] of diffractograms.
+    bins : int
+        Number of bins ~ intervals of the histogram.
+
+    Returns
+    -------
+    counts, bins, pdf, cdf
+        * counts = array; number of files in bins
+        * bins = array containing bins ~ intervals ~ limits between values
+        * pdf = probability distribution function = counts normalized to 1
+        * cdf = cummulative distribution function - calculated by np.cumsum
+    &#34;&#34;&#34;
+    counts, bins = np.histogram(df.Entropy, bins=bins)
+    pdf = counts / sum(counts)
+    cdf = np.cumsum(pdf)
+    return(counts,bins,pdf,cdf)
+
+def plot_entropy_histogram(df, bins):
+    &#34;&#34;&#34;
+    Create plot/histogram of entropy values of all datafiles
+    and show it on the screen.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        Database containing all datafiles;
+        df object is obtained as the output from the function calc_database.
+        
+    bins : integer
+        Number of bins = intervals in the histogram; typical value is 100.
+
+    Returns
+    -------
+    None.
+        The result is the entropy histogram on the screen.
+    &#34;&#34;&#34;
+    counts,bins,pdf,cdf = calculate_entropy_histogram(df, bins)
+    plt.plot(bins[1:],pdf, &#39;b-&#39;, label=&#39;PDF&#39;)
+    plt.plot(bins[1:],cdf, &#39;r-&#39;, label=&#39;CDF&#39;)
+    plt.title(&#39;Shannon entropy distribution&#39;)
+    plt.legend()
+    plt.grid()
+    plt.show()</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="stemdiff.dbase.calc_database"><code class="name flex">
+<span>def <span class="ident">calc_database</span></span>(<span>DATAFILES, CENTERING)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read 4D-STEM datafiles and create database of all files,
+which contains [filename, S-entropy and XY-center] for each datafile.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>DATAFILES</code></strong> :&ensp;<code>glob object</code></dt>
+<dd>Names of all datafiles from 4D-STEM dataset.
+The [glob object] is usually defined in the master script as follows:<pre><code>&gt;&gt;&gt; from pathlib import Path
+&gt;&gt;&gt; DATA_DIR  = Path('D:/DATA/AU')
+&gt;&gt;&gt; DATAFILES = DATA_DIR.glob('*.dat')
+</code></pre>
+</dd>
+<dt><strong><code>CENTERING</code></strong> :&ensp;<code>centering object</code></dt>
+<dd>Object containing parameters for finding center of diffractograms.
+The [centering object] is usually defined in the master script:<pre><code>&gt;&gt;&gt; import stemdiff.const
+&gt;&gt;&gt; CENTERING = stemdiff.const.centering(
+&gt;&gt;&gt;     ctype=1, csquare=30, cintensity=0.8)
+</code></pre>
+</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>Database containing [filename, ShannonEntropy, XY-center]
+of each datafile of 4D-STEM dataset.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calc_database(DATAFILES,CENTERING):
+    &#34;&#34;&#34;
+    Read 4D-STEM datafiles and create database of all files,
+    which contains [filename, S-entropy and XY-center] for each datafile.
+    
+    Parameters
+    ----------
+    DATAFILES : glob object
+        Names of all datafiles from 4D-STEM dataset.
+        The [glob object] is usually defined in the master script as follows:
+        
+            &gt;&gt;&gt; from pathlib import Path
+            &gt;&gt;&gt; DATA_DIR  = Path(&#39;D:/DATA/AU&#39;)
+            &gt;&gt;&gt; DATAFILES = DATA_DIR.glob(&#39;*.dat&#39;)
+            
+    CENTERING : centering object
+        Object containing parameters for finding center of diffractograms.
+        The [centering object] is usually defined in the master script:
+        
+            &gt;&gt;&gt; import stemdiff.const
+            &gt;&gt;&gt; CENTERING = stemdiff.const.centering(
+            &gt;&gt;&gt;     ctype=1, csquare=30, cintensity=0.8)
+
+    Returns
+    -------
+    df : pandas DataFrame object
+        Database containing [filename, ShannonEntropy, XY-center]
+        of each datafile of 4D-STEM dataset.
+    &#34;&#34;&#34;
+    # Prepare coordinates of the center
+    xc,yc = (None,None)
+    # Prepare empty list
+    # (appending to lists is more efficient than appending to np/pd-structures
+    list_of_datafiles = []
+    # Go through datafiles and calculated their entropy
+    for datafile in DATAFILES:
+        # a) Read datafile
+        arr = stemdiff.io.read_datafile(datafile)
+        # b) Calculated and print Shannon entropy of the datafile
+        entropy_value = measure.shannon_entropy(arr)
+        # c) Calculate center of the datafile
+        # Note: the center is calculated for enlarged/rescaled array
+        # (this gives better accuracy for rescaled arrays
+        # (for original arrays, divide center coordinates by RESCALE
+        if CENTERING.ctype == 2:
+            arr = stemdiff.io.rescale_array(arr, RESCALE)
+            xc,yc = stemdiff.io.find_array_center(
+                arr, CENTERING.csquare, CENTERING.cintensity)
+        elif (CENTERING.ctype == 1) and (xc == None):
+            arr = stemdiff.io.rescale_array(arr, RESCALE)
+            xc,yc = stemdiff.io.find_array_center(
+                arr, CENTERING.csquare, CENTERING.cintensity)
+        elif (CENTERING.ctype == 0) and (xc == None):
+            xc,yc = (round(DET_SIZE*RESCALE/2),round(DET_SIZE*RESCALE/2))
+        # d) Append all calculated values to list
+        list_of_datafiles.append([datafile, entropy_value, xc, yc])
+    # Convert list to pandas DataFrame
+    df = pd.DataFrame(list_of_datafiles,
+                      columns=[&#39;DatafileName&#39;,&#39;Entropy&#39;,&#39;Xcenter&#39;,&#39;Ycenter&#39;])
+    # Return the dataframe containing names of datafiles + their entropies
+    return(df)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.calculate_entropy_histogram"><code class="name flex">
+<span>def <span class="ident">calculate_entropy_histogram</span></span>(<span>df, bins)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate parameters,
+which can be used for plotting the entropy histogram.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>This object is a database of (pre-selected) 4D-STEM datafiles,
+which contains [filenames, entropies and centers] of diffractograms.</dd>
+<dt><strong><code>bins</code></strong> :&ensp;<code>int</code></dt>
+<dd>Number of bins ~ intervals of the histogram.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>counts, bins, pdf, cdf</code></dt>
+<dd>
+<ul>
+<li>counts = array; number of files in bins</li>
+<li>bins = array containing bins ~ intervals ~ limits between values</li>
+<li>pdf = probability distribution function = counts normalized to 1</li>
+<li>cdf = cummulative distribution function - calculated by np.cumsum</li>
+</ul>
+</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def calculate_entropy_histogram(df, bins):
+    &#34;&#34;&#34;
+    Calculate parameters,
+    which can be used for plotting the entropy histogram.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of (pre-selected) 4D-STEM datafiles,
+        which contains [filenames, entropies and centers] of diffractograms.
+    bins : int
+        Number of bins ~ intervals of the histogram.
+
+    Returns
+    -------
+    counts, bins, pdf, cdf
+        * counts = array; number of files in bins
+        * bins = array containing bins ~ intervals ~ limits between values
+        * pdf = probability distribution function = counts normalized to 1
+        * cdf = cummulative distribution function - calculated by np.cumsum
+    &#34;&#34;&#34;
+    counts, bins = np.histogram(df.Entropy, bins=bins)
+    pdf = counts / sum(counts)
+    cdf = np.cumsum(pdf)
+    return(counts,bins,pdf,cdf)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.get_all_datafiles"><code class="name flex">
+<span>def <span class="ident">get_all_datafiles</span></span>(<span>dbase)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get filenames and parameters of all datafiles
+from a database, which contains [filenames, entropies and centers]
+of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dbase</code></strong> :&ensp;<code>str</code></dt>
+<dd>Filename of the database file
+= zip-file containg pickled database object.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DataFrame iterator</code></dt>
+<dd>The complete database/DataFrame is huge =&gt; return DataFrame iterator;
+<br>
+the iterator gradually returns all items/datafiles from the database.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all_datafiles(dbase):
+    &#34;&#34;&#34;
+    Get filenames and parameters of all datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles from the database.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Return complete database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df.iterrows())</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.get_entropy_limit"><code class="name flex">
+<span>def <span class="ident">get_entropy_limit</span></span>(<span>df, S, P, N, high_entropy_files=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Determine Shannon entropy limit;
+which separates high- and low-entropy files;
+(the entropy limit can be determined from S or P or N parameter).</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>This object is a database of all 4D-STEM datafiles,
+which contains [filenames, entropies and centers] of diffractograms.</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>Shannon entropy</code></dt>
+<dd>that separaters high- and low-S files;
+(trivial case: the function just returns the value of S).</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>Percent</code> of <code>files</code></dt>
+<dd>that determines how many percent of high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>Number</code> of <code>files</code></dt>
+<dd>that determines how many high- or low-S files we want;
+(here we calculate the S-value separating the high/low-S files and
+the calculated value depends on parameter high_entropy_files below).</dd>
+</dl>
+<p>high_entropy_files : boolean, optional, default=True.
+* If the parameter is True, the S-value separates high-entropy files.
+* If the parameter is False, the S-value separates low-entropy files.
+* Example: if we have P=20, we can separate either
+20% of the high-S files (if high_entropy_files = True)
+or 20% of the low-S files (if the high_entropy_files = False).</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>entropy limit : float</code></dt>
+<dd>The value of Shannon entropy,
+that separates high- and low-entropy files.</dd>
+</dl>
+<h2 id="note">Note:</h2>
+<p>Priority of parameters : S &gt; P &gt; N
+i.e. if S is given, P and N are ignored etc.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_entropy_limit(df,S,P,N,high_entropy_files=True):
+    &#34;&#34;&#34;
+    Determine Shannon entropy limit;
+    which separates high- and low-entropy files;
+    (the entropy limit can be determined from S or P or N parameter).
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of all 4D-STEM datafiles,
+        which contains [filenames, entropies and centers] of diffractograms.
+    S : Shannon entropy
+        that separaters high- and low-S files;
+        (trivial case: the function just returns the value of S).
+    P : Percent of files
+        that determines how many percent of high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    N : Number of files
+        that determines how many high- or low-S files we want;
+        (here we calculate the S-value separating the high/low-S files and
+        the calculated value depends on parameter high_entropy_files below).
+    high_entropy_files : boolean, optional, default=True.
+        * If the parameter is True, the S-value separates high-entropy files.
+        * If the parameter is False, the S-value separates low-entropy files.
+        * Example: if we have P=20, we can separate either
+          20% of the high-S files (if high_entropy_files = True)
+          or 20% of the low-S files (if the high_entropy_files = False).
+          
+    Returns
+    -------
+    entropy limit : float
+        The value of Shannon entropy,
+        that separates high- and low-entropy files.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Calculate histogram, pdf and cdf
+    # (we need high precision: bins=1000
+    # (in order to get correct/non-approximate number of files for switch N
+    counts,bins,pdf,cdf = calculate_entropy_histogram(df,bins=1000)
+    # A) Entropy limit is given by S
+    if S:
+        entropy_limit = S
+    # B) Entropy limit is given by P or N 
+    else:
+        # 1) determine percent of files - this is given by P or N
+        # P = percent of high- or low-entropy files
+        # N = number of  high- or low-entropy files
+        if P: percent = P
+        else: percent = N / np.sum(counts) * 100
+        # 2) if we want high-entropy files, percent = 100-percent
+        if high_entropy_files: percent = 100-percent 
+        # 3) Now that we have percent of files, we can calculate entropy limit
+        cdf_limit = percent/100
+        entropy_limit = bins[np.argmax(cdf&gt;=cdf_limit)]
+    return(entropy_limit)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.get_high_S_files"><code class="name flex">
+<span>def <span class="ident">get_high_S_files</span></span>(<span>dbase, S=None, P=None, N=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get filenames and parameters of high-entropy datafiles
+from a database, which contains [filenames, entropies and centers]
+of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dbase</code></strong> :&ensp;<code>str</code></dt>
+<dd>Filename of the database file
+= zip-file containg pickled database object.</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>float</code></dt>
+<dd>Shannon entropy value;
+if S is given, we get only the files with entropy &gt; S.</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>float</code></dt>
+<dd>Percent of files with the lowest entropy;
+if P is given, we get only P% of files with the highest entropy.</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of files with the lowest entropy;
+if N is given, we get only N files with the highest entropy.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DataFrame iterator</code></dt>
+<dd>The complete database/DataFrame is huge =&gt; return DataFrame iterator;
+<br>
+the iterator gradually returns all items/datafiles with high entropy.</dd>
+</dl>
+<h2 id="note">Note:</h2>
+<p>Priority of parameters : S &gt; P &gt; N
+i.e. if S is given, P and N are ignored etc.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_high_S_files(dbase, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Get filenames and parameters of high-entropy datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.    
+    S : float
+        Shannon entropy value;
+        if S is given, we get only the files with entropy &gt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, we get only P% of files with the highest entropy.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, we get only N files with the highest entropy.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles with high entropy.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Calculate entropy limit (then we can get files with higher entropy)
+    entropy_limit = get_entropy_limit(df,S,P,N,high_entropy_files=True)
+    # Calculate and return reduced database containing only high-entropy files
+    df2 = df[df.Entropy &gt;= entropy_limit]
+    # Return adjusted/filtered database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df2.iterrows())</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.get_low_S_files"><code class="name flex">
+<span>def <span class="ident">get_low_S_files</span></span>(<span>dbase, S=None, P=None, N=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Get filenames and parameters of low-entropy datafiles
+from a database, which contains [filenames, entropies and centers]
+of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>dbase</code></strong> :&ensp;<code>str</code></dt>
+<dd>Filename of the database file
+= zip-file containg pickled database object.</dd>
+<dt><strong><code>S</code></strong> :&ensp;<code>float</code></dt>
+<dd>Shannon entropy value;
+if S is given, we get only the files with entropy &lt; S.</dd>
+<dt><strong><code>P</code></strong> :&ensp;<code>float</code></dt>
+<dd>Percent of files with the lowest entropy;
+if P is given, we get only P% of files with the lowest entropy.</dd>
+<dt><strong><code>N</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of files with the lowest entropy;
+if N is given, we get only N files with the lowest entropy.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>DataFrame iterator</code></dt>
+<dd>The complete database/DataFrame is huge =&gt; return DataFrame iterator;
+<br>
+the iterator gradually returns all items/datafiles with a low entropy.</dd>
+</dl>
+<h2 id="note">Note:</h2>
+<p>Priority of parameters : S &gt; P &gt; N
+i.e. if S is given, P and N are ignored etc.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_low_S_files(dbase, S=None, P=None, N=None):
+    &#34;&#34;&#34;
+    Get filenames and parameters of low-entropy datafiles
+    from a database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file. 
+
+    Parameters
+    ----------
+    dbase : str
+        Filename of the database file
+        = zip-file containg pickled database object.    
+    S : float
+        Shannon entropy value;
+        if S is given, we get only the files with entropy &lt; S.
+    P : float
+        Percent of files with the lowest entropy;
+        if P is given, we get only P% of files with the lowest entropy.
+    N : integer
+        Number of files with the lowest entropy;
+        if N is given, we get only N files with the lowest entropy.
+
+    Returns
+    -------
+    DataFrame iterator
+        The complete database/DataFrame is huge =&gt; return DataFrame iterator;     
+        the iterator gradually returns all items/datafiles with a low entropy.
+        
+    Note:
+    -----
+    Priority of parameters : S &gt; P &gt; N
+        i.e. if S is given, P and N are ignored etc.
+    &#34;&#34;&#34;
+    # Read database file into pandas.DataFrame
+    df = read_database(dbase)
+    # Calculate entropy limit (then we can get files with lower entropy)
+    entropy_limit = get_entropy_limit(df,S,P,N,high_entropy_files=False)
+    # Calculate and return reduced database containing only low-entropy files
+    df2 = df[df.Entropy &lt;= entropy_limit]
+    # Return adjusted/filtered database as DataFrame iterator
+    # (whole DataFrame is huge and not iterable directly
+    return(df2.iterrows())</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.plot_entropy_histogram"><code class="name flex">
+<span>def <span class="ident">plot_entropy_histogram</span></span>(<span>df, bins)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create plot/histogram of entropy values of all datafiles
+and show it on the screen.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>Database containing all datafiles;
+df object is obtained as the output from the function calc_database.</dd>
+<dt><strong><code>bins</code></strong> :&ensp;<code>integer</code></dt>
+<dd>Number of bins = intervals in the histogram; typical value is 100.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.
+The result is the entropy histogram on the screen.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_entropy_histogram(df, bins):
+    &#34;&#34;&#34;
+    Create plot/histogram of entropy values of all datafiles
+    and show it on the screen.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        Database containing all datafiles;
+        df object is obtained as the output from the function calc_database.
+        
+    bins : integer
+        Number of bins = intervals in the histogram; typical value is 100.
+
+    Returns
+    -------
+    None.
+        The result is the entropy histogram on the screen.
+    &#34;&#34;&#34;
+    counts,bins,pdf,cdf = calculate_entropy_histogram(df, bins)
+    plt.plot(bins[1:],pdf, &#39;b-&#39;, label=&#39;PDF&#39;)
+    plt.plot(bins[1:],cdf, &#39;r-&#39;, label=&#39;CDF&#39;)
+    plt.title(&#39;Shannon entropy distribution&#39;)
+    plt.legend()
+    plt.grid()
+    plt.show()</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.read_database"><code class="name flex">
+<span>def <span class="ident">read_database</span></span>(<span>input_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Read database, which contains [filenames, entropies and centers]
+of all 4D-STEM datafiles.</p>
+<ul>
+<li>the database is saved as pickled object/zip-file</li>
+<li>it is created by functions <em>calc_database</em> and <em>save_database</em></li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Filename of the input file that contains the database.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>Database that has been read from disk.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_database(input_file):
+    &#34;&#34;&#34;
+    Read database, which contains [filenames, entropies and centers]
+    of all 4D-STEM datafiles.
+    
+    * the database is saved as pickled object/zip-file
+    * it is created by functions *calc_database* and *save_database*
+
+    Parameters
+    ----------
+    input_file : str
+        Filename of the input file that contains the database.
+
+    Returns
+    -------
+    df : pandas DataFrame object
+        Database that has been read from disk.
+    &#34;&#34;&#34;
+    # Read database from [input_file]
+    # NOTE: input_file is either saved/pickled file or pd.DataFrame
+    # Reason: sometimes it is more efficient to use pd.DataFrame directly 
+    if type(input_file) == pd.DataFrame:
+        df = input_file
+    else:
+        df = pd.read_pickle(input_file)
+    return(df)</code></pre>
+</details>
+</dd>
+<dt id="stemdiff.dbase.save_database"><code class="name flex">
+<span>def <span class="ident">save_database</span></span>(<span>df, output_file)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Save database, which contains [filenames, entropies and XY-centers]
+of all 4D-STEM datafiles; the dbase is saved az pickled object/zip-file.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>df</code></strong> :&ensp;<code>pandas DataFrame object</code></dt>
+<dd>This object is a database of all datafiles,
+which contains [filenames, entropies and centers] of diffractograms
+(the database is created by function stemdiff.dbase.calc_database).</dd>
+<dt><strong><code>output_file</code></strong> :&ensp;<code>str</code></dt>
+<dd>Filename of the output file (without extension).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>None.</p>
+<ul>
+<li>The output is the saved file with name [output_file].zip</li>
+<li>The output file = pickled data in zip format;
+this file is read back as an input to other functions,
+such as calculation of PSF function and summation of datafiles.</li>
+</ul></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_database(df, output_file):
+    &#34;&#34;&#34;
+    Save database, which contains [filenames, entropies and XY-centers]
+    of all 4D-STEM datafiles; the dbase is saved az pickled object/zip-file.
+
+    Parameters
+    ----------
+    df : pandas DataFrame object
+        This object is a database of all datafiles,
+        which contains [filenames, entropies and centers] of diffractograms
+        (the database is created by function stemdiff.dbase.calc_database).
+        
+    output_file : str
+        Filename of the output file (without extension).
+
+    Returns
+    -------
+    None.
+    
+    * The output is the saved file with name [output_file].zip
+    * The output file = pickled data in zip format;
+      this file is read back as an input to other functions,
+      such as calculation of PSF function and summation of datafiles.
+    &#34;&#34;&#34;
+    df.to_pickle(output_file)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#stemdiffdbase">stemdiff.dbase</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="stemdiff" href="index.html">stemdiff</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="stemdiff.dbase.calc_database" href="#stemdiff.dbase.calc_database">calc_database</a></code></li>
+<li><code><a title="stemdiff.dbase.calculate_entropy_histogram" href="#stemdiff.dbase.calculate_entropy_histogram">calculate_entropy_histogram</a></code></li>
+<li><code><a title="stemdiff.dbase.get_all_datafiles" href="#stemdiff.dbase.get_all_datafiles">get_all_datafiles</a></code></li>
+<li><code><a title="stemdiff.dbase.get_entropy_limit" href="#stemdiff.dbase.get_entropy_limit">get_entropy_limit</a></code></li>
+<li><code><a title="stemdiff.dbase.get_high_S_files" href="#stemdiff.dbase.get_high_S_files">get_high_S_files</a></code></li>
+<li><code><a title="stemdiff.dbase.get_low_S_files" href="#stemdiff.dbase.get_low_S_files">get_low_S_files</a></code></li>
+<li><code><a title="stemdiff.dbase.plot_entropy_histogram" href="#stemdiff.dbase.plot_entropy_histogram">plot_entropy_histogram</a></code></li>
+<li><code><a title="stemdiff.dbase.read_database" href="#stemdiff.dbase.read_database">read_database</a></code></li>
+<li><code><a title="stemdiff.dbase.save_database" href="#stemdiff.dbase.save_database">save_database</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
