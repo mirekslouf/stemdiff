@@ -30,7 +30,7 @@ Brief history
 * Version 4.0 = Python package: summation + S-filtering + deconvolution
   - deconvolution = reduce the effect of primary beam spread &rArr; better resolution 
 * Version 4.2 = like v4.0 + a few important improvements, such as:
-  - sum just the central region with the strongest diffractions - higher speed
+  - sum just the central region with the strongest diffractions &rArr; higher speed
   - 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
   - better definition of summation and centering parameters
-  - better documentation strings + demo data + improved **master script**
+  - better documentation strings + demo data + improved *master script*
