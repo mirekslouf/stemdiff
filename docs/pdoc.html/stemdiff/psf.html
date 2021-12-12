@@ -238,8 +238,17 @@ def plot_psf(arr, plt_type=&#39;2D&#39;, plt_size=None, output=None):
         ax = fig.add_subplot(111, projection=&#39;3d&#39;)
         ax.plot_surface(
             Xm,Ym,arr2, cmap=&#39;coolwarm&#39;, linewidth=0, antialiased=False)
-        # The following command can be activated if you need defined Z-scale
+        # ADJUSTMENTS OF RANGE AND FORMAT OF Z-AXIS
+        # (the following commands can be activated if necessary
+        # (a) Define Z-scale
         # ax.set_zlim(0,12000)
+        # (b) Separate thousands by comma
+        # (according to https://stackoverflow.com/q/25973581
+        # (extra number 8 in the format sets the size of number = 8 places
+        # (this adds extra space in front of the number - offset from Z-axis
+        # ax.zaxis.set_major_formatter(
+        #     plt.matplotlib.ticker.StrMethodFormatter(&#39;{x:8,.0f}&#39;))
+        
         plt.tight_layout()
     # Final output: show the plot (and save it, if it was requested)
     if output == None:
@@ -338,8 +347,17 @@ The function just shows the plot of PSF in 2D or 3D.</p></div>
         ax = fig.add_subplot(111, projection=&#39;3d&#39;)
         ax.plot_surface(
             Xm,Ym,arr2, cmap=&#39;coolwarm&#39;, linewidth=0, antialiased=False)
-        # The following command can be activated if you need defined Z-scale
+        # ADJUSTMENTS OF RANGE AND FORMAT OF Z-AXIS
+        # (the following commands can be activated if necessary
+        # (a) Define Z-scale
         # ax.set_zlim(0,12000)
+        # (b) Separate thousands by comma
+        # (according to https://stackoverflow.com/q/25973581
+        # (extra number 8 in the format sets the size of number = 8 places
+        # (this adds extra space in front of the number - offset from Z-axis
+        # ax.zaxis.set_major_formatter(
+        #     plt.matplotlib.ticker.StrMethodFormatter(&#39;{x:8,.0f}&#39;))
+        
         plt.tight_layout()
     # Final output: show the plot (and save it, if it was requested)
     if output == None:
