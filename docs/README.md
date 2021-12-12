@@ -3,10 +3,11 @@ STEMDIFF package
 
 * STEMDIFF converts a 4D-STEM dataset to a single powder diffraction file.
 * This conversion is a key part of our 4D-STEM/PNBD method, which was described in two publications:
-	- Publication #1: *Nanomaterials* 11 (2021) 962.
-	  [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
-	- Publication #2: *Materials*, submitted.
-* If you use STEMDIFF in your research, **please cite** the latest publication. 
+	1. *Nanomaterials* 11 (2021) 962.
+	   [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
+	2. *Materials* 14 (2011) 7550.
+       [https://doi.org/10.3390/ma14247550](https://doi.org/10.3390/ma14247550)
+* If you use STEMDIFF in your research, **please cite** the 2nd publication. 
 
 Quick start
 -----------
