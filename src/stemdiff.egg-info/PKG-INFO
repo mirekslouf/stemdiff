@@ -1,13 +1,12 @@
 Metadata-Version: 2.1
 Name: stemdiff
-Version: 4.2.5
+Version: 5.0.0
 Summary: Convert 4D-STEM data to a single powder diffraction pattern.
-Home-page: https://mirekslouf.webnode.cz/software
+Home-page: https://github.com/mirekslouf/stemdiff/
 Author: Mirek Slouf
 Author-email: mirek.slouf@gmail.com
 License: MIT
-Project-URL: documentation, https://mirekslouf.webnode.cz/software
-Platform: UNKNOWN
+Project-URL: Documentation, https://mirekslouf.github.io/stemdiff/
 Classifier: Programming Language :: Python :: 3
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Operating System :: OS Independent
@@ -15,52 +14,58 @@ Requires-Python: >=3.6
 Description-Content-Type: text/markdown
 License-File: LICENCE
 
-# STEMDIFF :: Simple processing of 4D-STEM data
+STEMDIFF :: Simple processing of 4D-STEM data
+---------------------------------------------
 
-* The STEMDIFF package converts... <br>
+* The **STEMDIFF package** converts... <br>
   ... a 4D-STEM dataset from a SEM microscope (huge and complex) <br>
-  ... to a powder-like 1D diffraction pattern (simple and easy to work with).
-* The STEMDIFF package is a key part of our 4D-STEM/PNBD method, <br>
+  ... to a single powder diffraction pattern (simple and easy to work with).
+* The STEMDIFF package is a key part of our **4D-STEM/PNBD** method, <br>
   which was described (together with the package) in open-access publications:
-	* Publication #1: Nanomaterials 11 (2021) 962.
-	  [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
-	* Publication #2: Nanomaterials, submitted.
-    * If you use STEMDIFF in your research, **please cite** publication #2 <br>
-      (publication #1 describes older version of STEMDIFF package).	
-* Gentle introduction to 4D-STEM/PNBD and STEMDIFF
-	* Now:
-	  See the above-mentioned publications (namely the not-yet-existing #2 :-).
-	* Future:
-	  Better documentation = next version of the package (coming soon).
+	1. *Nanomaterials* 11 (2021) 962.
+	   [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
+	2. *Materials* 14 (2021) 7550.
+       [https://doi.org/10.3390/ma14247550](https://doi.org/10.3390/ma14247550)
+* If you use STEMDIFF package, **please cite** the 2nd publication (or both :-).
 
-# Typical usage of STEMDIFF
+Principle
+---------
 
-1. STEMDIFF employs Spyder IDE as UI (user interface).
-	* This may be slightly non-standard, but it is very efficient.
-	* Spyder is stable, user-friendly and easy-to-install (pip install spyder).
-	* Spyder can show program run, text and graphical outputs simultaneously.
-2. In a typical STEMDIFF session, you do just three things:
-	* In Spyder, open STEMDIFF **master script**.
-	* In the opened **master script**, modify a few parameters and run it.
-	* See program outputs in Spyder and final outputs in active directory
-3. Obtaining **master script** & simple testing of STEMDIFF package:
-	* open the directory where stemdiff is installed
-	* open subdirectory **demo** + unzip the files into testing directory
-	* follow the instructions in the unzipped file **00_readme.txt**
+<img src="https://mirekslouf.github.io/stemdiff/images/principle2.png" alt="STEMDIFF principle" width="500"/>
 
-# Brief history of STEMDIFF
+Quick start
+-----------
+
+* Install stemdiff: `pip install stemdiff`
+* TODO
+
+Documentation, help and examples
+--------------------------------
+
+More detailed help, demo and source code including documentation are in
+[GitHub](https://mirekslouf.github.io/stemdiff).
+
+## Versions of STEMDIFF
 
 * Version 1.0 = Matlab: just simple summation of 4D-dataset
 * Version 2.0 = like v1.0 + post-processing in Jupyter
 * Version 3.0 = Python scripts: summation + S-filtering
 * Version 4.0 = Python package: summation + S-filtering + deconvolution
-	- summation = summation of all 2D-diffractograms
-	- S-filtering = sum only diffractograms with strong diffractions = high S
-	- deconvolution = reduce the effect of primary beam spread
-	  &rarr; better resolution 
+	* summation = summation of all 2D-diffractograms
+	* S-filtering = sum only diffractograms with strong diffractions = high S
+	* deconvolution = reduce the effect of primary beam spread
+	  &rArr; better resolution 
 * Version 4.2 = like v4.0 + a few important improvements, such as:
-	- sum just the central region with the strongest diffractions - higher speed
-	- 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
-	- better definition of summation and centering parameters
-	- better documentation strings + demo data + improved **master script**
-
+	* sum just the central region with the strongest diffractions
+	  &rArr; higher speed
+	* 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
+	* better definition of summation and centering parameters
+	* better documentation strings + demo data + improved *master script*
+* Version 5.0 = complete rewrite of v4.2
+	* all features of v4.2 (summation, filtering, deconvolution)
+	* plus several generalizations and improvements, namely:
+		- possibility to define and use more detectors/datafile formats
+		- better filtering (which can employ number of diffractions)
+		- possibility to define more types of deconvolution
+	* no conversion of 2D-diffractograms to 1D-profiles
+		- this was improved and moved to sister package EDIFF

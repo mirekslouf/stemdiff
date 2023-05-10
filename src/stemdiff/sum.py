@@ -1,197 +1,49 @@
 '''
 stemdiff.sum
 ------------
-Sum 4D-STEM datafiles to create one 2D powder diffraction file.
+The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
+
+In stemdiff, we can sum datafiles in with or without 2D-PSF deconvolution.
+We just call function sum_datafiles with various arguments as explained below.
+The key argument determining type of deconvolution is deconv:
+    
+* deconv=0 = sum *without* deconvolution
+* deconv=1 = sum deconvolution, fixed PSF from selected datafiles
+* deconv=2 = sum with deconvolution, individual PSF from central region
+* deconv=3 = sum with deconvolution, individual PSF from whole datafile
 '''
 
 import numpy as np
 import stemdiff.io
 import stemdiff.dbase
-import stemdiff.radial
-from stemdiff.const import DET_SIZE, RESCALE
-from skimage import transform, restoration
+from skimage import restoration
 
-def sum_all(DBASE,SUMMATION,R=RESCALE):
-    """
-    Sum all datafiles from 4D-STEM dataset.
 
-    Parameters
-    ----------
-    DBASE : str or pathlib object
-        Name of the database file that contains
-        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
-    
-    SUMMATION : summation object
-        The summation object contains parameters for the summation.
-        The object is usually defined in advance as follows:
-            
-            >>> import stemdiff.const
-            >>> SUMMATION = stemdiff.const.summation(
-            >>>     psfsize=130,imgsize=125,iterate=30)
-            
-        More information about the summation parameters:
-                
-            >>> import stemdiff.const
-            >>> help(stemdiff.const.summation)        
-            
-    R : int, optional, default=stemdiff.const.RESCALE
-        * The final diffractogram size = size-of-original-array * RESCALE.
-        * The RESCALE parameter is defined/imported from stemdiff.const
-        * The optimal value of R is 4 ~ we use 4-times upscaling.
-        * It is not recommened to change this default.
-        
-    Returns
-    -------
-    arr : 2D-numpy array
-        The array represents the calculated 2D-PNBD diffraction pattern.
-    """
-    all_datafiles = stemdiff.dbase.get_all_datafiles(DBASE)
-    arr = stemdiff.sum.sum_4Dstem_datafiles(
-        all_datafiles, R=R, imgsize=SUMMATION.imgsize)
-    return(arr)
-
-def sum_highS(DBASE,SUMMATION,R=RESCALE, S=None, P=None, N=None):
-    """
-    Sum high-entropy datafiles from 4D-STEM dataset;
-    the number of high-entropy files is determined by parameter S, P or N.
-
-    Parameters
-    ----------
-    DBASE : str or pathlib object
-        Name of the database file that contains
-        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
-    
-    SUMMATION : summation object
-        The summation object contains parameters for the summation.
-        The object is usually defined in advance as follows:
-            
-            >>> import stemdiff.const
-            >>> SUMMATION = stemdiff.const.summation(
-            >>>     psfsize=130,imgsize=125,iterate=30)
-        
-        More information about the summation parameters:
-        
-            >>> import stemdiff.const
-            >>> help(stemdiff.const.summation)        
-         
-    R : int, optional, default=stemdiff.const.RESCALE
-        * The final diffractogram size = size-of-original-array * RESCALE.
-        * The RESCALE parameter is defined/imported from stemdiff.const
-        * The optimal value is R = 4, i.e. we use 4-times upscaling.
-        * It is not recommened to change this default.
-    
-    S : Shannon entropy
-        that separaters high- and low-S files;
-        (trivial case: the function just returns the value of S).
-
-    P : Percent of files
-        that determines how many percent of high- or low-S files we want;
-        (here we calculate the S-value separating the high/low-S files and
-        the calculated value depends on parameter high_entropy_files below).
-
-    N : Number of files
-        that determines how many high- or low-S files we want;
-        (here we calculate the S-value separating the high/low-S files and
-        the calculated value depends on parameter high_entropy_files below).
-    
-    Returns
-    -------
-    arr : 2D-numpy array
-        The array represents the calculated 2D-PNBD diffraction pattern.
-    """
-    highS_datafiles = stemdiff.dbase.get_high_S_files(DBASE, P=P, N=N, S=S)
-    arr = stemdiff.sum.sum_4Dstem_datafiles(
-        highS_datafiles, R=R, imgsize=SUMMATION.imgsize)
-    return(arr)
-
-def sum_highS_deconv(DBASE,SUMMATION,PSF,R=RESCALE, S=None, P=None, N=None):
-    """
-    Sum high-entropy datafiles from 4D-STEM dataset with deconvolution.
-    
-    * the number of high-S files is determined by parameter S, P or N
-    * the number of deconvolution iterations is in SUMMATION parameter
-
-    Parameters
-    ----------
-    DBASE : str or pathlib object
-        Name of the database file that contains
-        [filename, entropy and XY-center] of each datafile of 4D-STEM dataset.
-        The database is usually created by functions in stemdiff.dbase module.
-    
-    SUMMATION : summation object
-        The summation object contains parameters for the summation.
-        The object is usually defined in advance as follows:
-        
-            >>> import stemdiff.const
-            >>> SUMMATION = stemdiff.const.summation(
-            >>>     psfsize=130,imgsize=125,iterate=30)
-        
-        More information about the summation parameters:
-        
-            >>> import stemdiff.const
-            >>> help(stemdiff.const.summation)        
-    
-    PSF : str or pathlib object
-        Name of the file that contains 2D-PSF function.
-        The PSF is saved in NPY-file (numpy array in numpy format).
-        The PSF is usually created by: stemdiff.psf.psf_from_lowS_files
-        
-    R : int, optional, default=stemdiff.const.RESCALE
-        * The final diffractogram size = size-of-original-array * RESCALE.
-        * The RESCALE parameter is defined/imported from stemdiff.const
-        * The optimal value is R = 4, i.e. we use 4-fold upscaling.
-        * It is not recommened to change this default.
-    
-    S : Shannon entropy
-        that separaters high- and low-S files;
-        (trivial case: the function just returns the value of S).
-
-    P : Percent of files
-        that determines how many percent of high- or low-S files we want;
-        (here we calculate the S-value separating the high/low-S files and
-        the calculated value depends on parameter high_entropy_files below).
-
-    N : Number of files
-        that determines how many high- or low-S files we want;
-        (here we calculate the S-value separating the high/low-S files and
-        the calculated value depends on parameter high_entropy_files below).
-    
-    Returns
-    -------
-    arr : 2D-numpy array
-        The array represents the calculated 2D-PNBD diffraction pattern.
-    """ 
-    highS_datafiles = stemdiff.dbase.get_high_S_files(
-        DBASE, P=P, S=S, N=N)
-    arr = stemdiff.sum.sum_4Dstem_datafiles(
-        highS_datafiles, R, PSF,
-        itr=SUMMATION.iterate, imgsize=SUMMATION.imgsize)
-    return(arr)
-
-def sum_4Dstem_datafiles(df,R=RESCALE, PSF=None, itr=None, imgsize=None):
+def sum_datafiles(
+        SDATA, DIFFIMAGES,
+        df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
     '''
-    Sum input datafiles from a 4D-STEM dataset.
-    This function can be called directly, but typically it is called
-    from functions *sum_all*, *sum_highS*, and *sum_highS_deconv*.
+    Sum datafiles from a 4D-STEM dataset.
     
     Parameters
     ----------
-    df: pandas DataFrame row iterator
-        DataFrame columns: DatafileName,Entropy,Xcenter,Ycenter.
-    R : integer
-        Rescale coefficient;
-        the size of the final array is rescaled/multiplied by factor R.
-        If PSF is given, the rescaling is performed before deconvolution.
-        Note: PSF should the same rescale coefficient as given here!
-    PSF : 2D numpy array
-        PSF = point spread function for deconvolution
-    itr : integer 
-        Number of iterations during R-L deconvolution
-    imgsize: integer
-        Size of array read from the detector is reduced to imgsize.
-        If imgsize is given, we sum only the central square with edge=imgsize.
-        Smaller central area gives higher speed during deconvolution,
-        while the outer area usually contains just the weakest diffractions.
+    SDATA : stemdiff.gvars.SourceData object
+        The object describes source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    df : pandas.DataFrame object
+        Database with datafile names and characteristics.
+    deconv : int, optional, default is 0
+        Deconvolution type:
+        0 = no deconvolution,
+        1 = deconvolution based on external PSF,
+        2 = deconvolution based on PSF from central region,
+        3 = deconvolution based on PSF from whole datafile.    
+    iterate : integer, optional, default is 10  
+        Number of iterations during the deconvolution.
+    psf : 2D-numpy array or None, optional, default is None
+        Array representing 2D-PSF function.
+        Relevant only for deconv = 1.
         
     Returns
     -------
@@ -199,108 +51,300 @@ def sum_4Dstem_datafiles(df,R=RESCALE, PSF=None, itr=None, imgsize=None):
         The array is a sum of datafiles;
         if the datafiles are pre-filtered, we get sum of filtered datafiles,
         if PSF is given, we get sum of datafiles with PSF deconvolution.
+    
+    Technical notes
+    ---------------
+    This function works as signpost.
+    It reads the summation parameters and
+    calls more specific summation function.
     '''
-    # Prepare variables ......................................................
-    n = 0
-    if imgsize:
-        arr_size = imgsize
-        xc,yc = (None,None)
+    if deconv == 0:
+        arr = sum_without_deconvolution(
+            SDATA, DIFFIMAGES, df)
+    elif deconv == 1:
+        arr = sum_with_deconvolution_type1( 
+            SDATA, DIFFIMAGES, df, psf, iterate)
+    elif deconv == 2:
+        arr = sum_with_deconvolution_type2(
+            SDATA, DIFFIMAGES, df, iterate)
+    elif deconv == 3:
+        arr = sum_with_deconvolution_type3(
+            SDATA, DIFFIMAGES, df, iterate, cake, subtract)
     else:
-        arr_size = DET_SIZE
-    # Sum without deconvolution ..............................................
-    if type(PSF)==type(None):
-        # Prepare files
-        # (arr size = detector size => rescaling at the end - see below
-        sum_arr   = np.zeros((arr_size,arr_size), dtype=np.float)
-        final_arr = np.zeros((arr_size,arr_size), dtype=np.uint16)
-        # Sum datafiles
-        # (rescaling can be done AFTER summation if there is no deconvolution
-        for index,datafile in df:
-            arr = stemdiff.io.read_datafile(datafile.DatafileName)
-            # If rsize was given, reduce array size
-            if imgsize:
-                xc,yc = (round(datafile.Xcenter/R),round(datafile.Ycenter/R))
-                arr = stemdiff.io.reduce_array_size(arr,imgsize,xc,yc)
-            sum_arr += arr
-            n += 1
-        # Rescale final datafile
-        norm_const = np.max(sum_arr)
-        sum_arr = transform.rescale(sum_arr, R, order=3)
-        sum_arr = sum_arr/np.max(sum_arr) * norm_const
-    # Sum with deconvolution .................................................
-    else:
-        # Read PSF and normalize it
-        # (normalization of PSF is necessary for deconvolution algorithm
-        psf = stemdiff.psf.read_psf(PSF)
-        psf = psf/np.sum(psf)
-        # Prepare files
-        # (array size = detector size * R => rescaling during summation
-        # (if imsize was given, detector size is reduced to imsize
-        sum_arr   = np.zeros((arr_size*R,arr_size*R), dtype=np.float)
-        final_arr = np.zeros((arr_size*R,arr_size*R), dtype=np.uint16)
-        # Sum datafiles with rescaling and deconvolution
-        # (rescaling must be done during summagion BEFORE deconvolution
-        for index,datafile in df:
-            print('.',end='')
-            arr = stemdiff.io.read_datafile(datafile.DatafileName)
-            # Rescale array
-            # (rescaling is done before reducing detector/array size
-            # (this should result in more precise center determination
-            arr = stemdiff.io.rescale_array(arr, R)
-            # If rsize parameter was given, reduce detector area
-            if imgsize:
-                xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-                arr = stemdiff.io.reduce_array_size(arr,imgsize*R,xc,yc)
-            # Normalize array
-            # (normalization must be done before deconvolution
-            # (BUT we save norm.const to restore orig.intensity at the end            
-            norm_const = np.max(arr)
-            arr = arr/np.max(arr)
-            # Deconvolution
-            arr = restoration.richardson_lucy(arr, psf, iterations=itr)
-            # Multiply by the saved normalization constant
-            arr = arr * norm_const
-            # Add rescaled and deconvoluted file to summation
-            sum_arr += arr
-            n += 1
-        print()
-    # Calculate final array ..................................................
-    # (divide sum by number of summed files in order to get reasonable values
-    final_arr = np.round(sum_arr/n).astype(np.uint16)
-    # Return final array
+        print(f'Unknown deconvolution type: deconv={deconv}')
+        print('Nothing to do.')
+        return(None)
+    return(arr)
+
+def sum_without_deconvolution(SDATA, DIFFIMAGES, df):
+    '''
+    Sum datafiles wihtout deconvolution.
+
+    * Parameters of the function:
+        - This function is usually called from stemdiff.sum.sum_files.
+        - The parameters are transferred from the sum_files function
+'''
+    # Prepare variables
+    n = 0  # number of summed datafiles
+    R = SDATA.detector.upscale
+    img_size = DIFFIMAGES.imgsize
+    # Prepare array for summation
+    # (for summation without deconvolution array size = detector size
+    # (we will sum original datafiles, just without the borders/edges  
+    # (rescaling to higher resolution can be done AFTER the summation
+    sum_arr   = np.zeros((img_size,img_size), dtype=np.float32)
+    # Sum datafiles
+    for index,datafile in df.iterrows():
+        # Read datafile to array
+        datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
+        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
+        # Reduce array size = cut borders, keep just central region
+        # (some border region is ALWAYS cut, due to detector edge artifacts
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
+        # Add current datafile/array to summation
+        sum_arr += arr
+        # Update n = number of summed arrays
+        n += 1
+    # Prepare final array:
+    # (1) normalize summation, 2) rescale to higher res, 3) convert to final
+    sum_arr = sum_arr/n
+    sum_arr = stemdiff.io.Arrays.rescale(sum_arr, R, order=3)
+    final_arr = np.round(sum_arr).astype(np.uint16)
+    # Return the final array
     return(final_arr)
 
-def save_results(arr, output, icut=300, itype='8bit', rdist=True):
+def sum_with_deconvolution_type1(SDATA, DIFFIMAGES, df, psf, iterate):
     '''
-    Save results of summation (final 2D-image + optional 1D-radial profile).
+    Sum datafiles with 2D-PSF deconvolution of type1.
+    
+    This function is usually called from stemdiff.sum.sum_datafiles.
+    For argument description see the abovementioned function.
+    
+    * What is deconvolution type1:
+        - Richardson-Lucy deconvolution.
+        - 2D-PSF function estimated from files with negligible diffractions.
+        - Therefore, the 2D-PSF function is the same for all summed datafiles.
+    * Parameters of the function:
+        - This function is usually called from stemdiff.sum.sum_files.
+        - The parameters are transferred from the sum_files function
+    '''
+    # Prepare variables .......................................................
+    n = 0
+    R = SDATA.detector.upscale
+    img_size = DIFFIMAGES.imgsize
+    # Prepare array for summation
+    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
+    # Sum datafiles
+    # (we sum datafiles cut, rescaled, and deconvoluted
+    # (rescaling DURING the summation => smoother deconvolution function
+    # Sum with deconvolution, external PSF from low-diffracting files .........
+    for index,datafile in df.iterrows():
+        # (0) Simple progress indicator
+        print('.', end='')
+        # (1) Read datafile
+        datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
+        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
+        # (2) Remove edges
+        # (reason: edges usually contain weak or neglibible difractions
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
+        # (3) Upscale array
+        # (reason: deconvolution should be performed at higher resolution
+        # ( -logically, more pixels means smoother PSF => better deconvolution
+        # ( -surprisingly, upscaling increases real final resolution
+        arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
+        # (4) Deconvolute using the external PSF
+        # (a) save np.max, normalize
+        # (reason: deconvolution algorithm requires normalized arrays...
+        # (...and we save original max.intensity to re-normalize the result
+        norm_const = np.max(arr)
+        arr_norm = arr/np.max(arr)
+        psf_norm = psf/np.max(psf)
+        # (b) perform the deconvolution
+        arr_deconv = restoration.richardson_lucy(
+            arr_norm, psf_norm, num_iter=iterate)
+        # (c) restore original range of intensities = re-normalize
+        arr = arr_deconv * norm_const
+        # (6) Add rescaled and deconvoluted array to summation
+        sum_arr += arr
+        # (7) Updated n = number of summed arrays
+        n += 1
+    # Finalize and return result ..............................................
+    # (a) terminate simple progress indicator
+    print('End')
+    # (b) normalize the final array
+    sum_arr = sum_arr/n
+    # (c) convert to final array with integer values
+    # (why integer values? => arr with int's can be plotted as image and saved
+    final_arr = np.round(sum_arr).astype(np.uint16)
+    # (d) return the finalized array
+    return(final_arr)
 
-    Parameters
-    ----------
-    arr : 2D numpy array
-        Array representing 2D-PNBD diffractogram.
-    output : string
-        Filename of output 2D-diffratogram and its 1D-radial distribution;
-        name of 2D-diffractogram will be [output.png],
-        name of 1D-radial distribution will be [output.txt].
-    icut : integer, optional, default=300
-        Cut of intensity;
-        if icut = 300, all image intensities > 300 will be set equal to 300.
-    itype : string ('8bit'  or '16bit'), optional, default='8bit'
-        Type of the image with 2D-PNBD diffractogram: 8 or 16 bit grayscale.   
-    rdist : boolean, optional, default =True
-        If rdist=True, calculate and save also 1D-radial distribution.
-        The saved file = [output].txt, where output is the argument above.
-        
-    Returns
-    -------
-    None.
-        The outputs are saved 2D-diffractogram and its 1D-profile.
+
+def sum_with_deconvolution_type2(SDATA, DIFFIMAGES, df, iterate):
     '''
-    # Prepare filenames
-    output_2d_image   = output + '.png'
-    output_1d_profile = output + '.txt'
-    # a) Save summation = 2D-array as image
-    stemdiff.io.save_array(arr, output_2d_image, icut, itype)
-    # b) Calculate and save 1D-radial profile of the image
-    if rdist:
-        stemdiff.radial.save_radial_distribution(arr, output_1d_profile)
+    Sum datafiles with 2D-PSF deconvolution of type2.
+    
+    This function is usually called from stemdiff.sum.sum_datafiles.
+    For argument description see the abovementioned function.
+
+    * What is deconvolution type2:
+        - Richardson-Lucy deconvolution.
+        - The 2D-PSF function estimated from central region of each datafile.
+    * Parameters of the function:
+        - This function is usually called from stemdiff.sum.sum_files.
+        - The parameters are transferred from the sum_files function
+    '''
+    # Prepare variables .......................................................
+    n = 0
+    R = SDATA.detector.upscale
+    img_size = DIFFIMAGES.imgsize
+    psf_size = DIFFIMAGES.psfsize
+    # Prepare array for summation
+    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
+    # Sum datafiles
+    # (we sum datafiles cut, rescaled, and deconvoluted
+    # (rescaling DURING the summation => smoother deconvolution function
+    # Sum with deconvolution, PSF from center of image ........................
+    for index,datafile in df.iterrows():
+        # (0) Simple progress indicator
+        print('.', end='')
+        # (1) Read datafile
+        datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
+        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
+        # (2) Remove edges
+        # (reason: edges usually contain weak or neglibible difractions
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
+        # (3) Upscale array
+        # (reason: deconvolution should be performed at higher resolution
+        # ( -logically, more pixels means smoother PSF => better deconvolution
+        # ( -surprisingly, upscaling increases real final resolution
+        arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
+        # (4) Prepare PSF from the center of given array
+        psf = stemdiff.psf.PSFtype2.get_psf(arr, psf_size, circular=True)
+        # (5) Deconvolute
+        # (a) save np.max, normalize
+        # (reason: deconvolution algorithm requires normalized arrays...
+        # (...and we save original max.intensity to re-normalize the result
+        norm_const = np.max(arr)
+        arr_norm = arr/np.max(arr)
+        psf_norm = psf/np.max(psf)
+        # (b) perform the deconvolution
+        arr_deconv = restoration.richardson_lucy(
+            arr_norm, psf_norm, num_iter=iterate)
+        # (c) restore original range of intensities = re-normalize
+        arr = arr_deconv * norm_const
+        # (6) Add rescaled and deconvoluted array to summation
+        sum_arr += arr
+        # (7) Updated n = number of summed arrays
+        n += 1
+    # Finalize and return result ..............................................
+    # (a) terminate simple progress indicator
+    print('End')
+    # (b) normalize the final array
+    sum_arr = sum_arr/n
+    # (c) convert to final array with integer values
+    # (why integer values? => arr with int's can be plotted as image and saved
+    final_arr = np.round(sum_arr).astype(np.uint16)
+    # (d) return the finalized array
+    return(final_arr)
+
+def sum_with_deconvolution_type3(
+        SDATA, DIFFIMAGES, df, iterate, cake, subtract):
+    '''
+    Sum datafiles with 2D-PSF deconvolution of type3.
+    
+    * What deconvolution type3:
+        - Richardson-Lucy deconvolution.
+        - The 2D-PSF function is estimated from each (whole) datafile.
+        - The diffractions in 2D-PSF are removed by means of "cake method".
+    * Parameters of the function:
+        - This function is usually called from stemdiff.sum.sum_files.
+        - The parameters are transferred from the sum_files function
+    '''
+    
+    # Prepare variables .......................................................
+    n = 0
+    R = SDATA.detector.upscale
+    # !!! img_size and psf_size must by multiplied by R wherever relevant
+    img_size = DIFFIMAGES.imgsize 
+    psf_size = DIFFIMAGES.psfsize
+    # Prepare array for summation
+    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
+    # Sum datafiles
+    # (we sum datafiles cut, rescaled, and deconvoluted
+    # (rescaling DURING the summation => smoother deconvolution function
+    # Sum with deconvolution, PSF from center of image ........................
+    for index,datafile in df.iterrows():
+        # (0) Simple progress indicator
+        print('.', end='')
+        # (1) Read datafile
+        datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
+        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
+        # (2) Remove edges
+        # (reason: edges usually contain weak or neglibible difractions
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
+        # (3) Upscale array
+        # (reason: deconvolution should be performed at higher resolution
+        # ( -logically, more pixels means smoother PSF => better deconvolution
+        # ( -surprisingly, upscaling increases real final resolution
+        arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
+        # (4) Prepare PSF from the center of given array
+        # !!! psf_size must by multiplied by R
+        psf = stemdiff.psf.PSFtype3.get_psf(arr, psf_size*R, cake, subtract)   
+        if subtract:    
+            # Individual background (PSF) subtraction
+            arr = arr - psf
+            # All negative values shoud go to zero!
+            # (the negative values have result in many side effects and errors!
+            arr = np.where(arr < 0, 0, arr)
+        # (5) Deconvolute
+        # (a) save np.max, normalize
+        # (reason: deconvolution algorithm requires normalized arrays...
+        # (...and we save original max.intensity to re-normalize the result
+        norm_const = np.max(arr)
+        arr_norm = arr/np.max(arr)
+        psf_norm = psf/np.max(psf)
+        # (b) perform the deconvolution
+        arr_deconv = restoration.richardson_lucy(
+            arr_norm, psf_norm, num_iter=iterate)
+        # (c) restore original range of intensities = re-normalize
+        arr = arr_deconv * norm_const
+        # (6) Add rescaled and deconvoluted array to summation
+        sum_arr += arr
+        # (7) Updated n = number of summed arrays
+        n += 1
+    # Finalize and return result ..............................................
+    # (a) terminate simple progress indicator
+    print('End')
+    # (b) normalize the final array
+    sum_arr = sum_arr/n
+    # (c) convert to final array with integer values
+    # (why integer values? => arr with int's can be plotted as image and saved
+    final_arr = np.round(sum_arr).astype(np.uint16)
+    # (d) return the finalized array
+    return(final_arr)
+
+def sum_with_deconvolution_type4(
+        DETECTOR, DATAFILES, DIFFIMAGES, df, iterate):
+    '''
+    Sum datafiles with 2D-PSF deconvolution of type4.
+    
+    * What is deconvolution type4: 
+        - Richardson-Lucy deconvolution.
+        - The 2D-PSF function estimated from whole datafile (~type3).
+        - The 2D-PSF subtracted from the datafile (background removal).
+        - Final deconvolution with 2D-PSF from central region (~type2).
+    * Parameters of the function:
+        - This function is usually called from stemdiff.sum.sum_files.
+        - The parameters are transferred from the sum_files function
+    '''
+    pass
+    
+

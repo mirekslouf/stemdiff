@@ -1,327 +1,678 @@
 '''
 stemdiff.io
 -----------
-Input/output functions for package stemdiff.    
-'''
+Input/output functions for package stemdiff.
 
-# The functions:
-#  1) Manipulate with DAT-files: read, show-as-image,save-as-image...
-#  2) Manipulate with ARRAYS: rescale, find_center, reduce_size... 
-#  3) Manipulate with IMAGES: read/show an image...
-# Note:
-#  both dat-files and images are read and processed as numpy arrays.
+Three types of stemdiff.io objects
+
+* Datafiles = files on disk, saved directly from a 2D-STEM detector.
+* Arrays = the datafiles converted to numpy array objects.
+* Images = the datafiles converted to PNG files.
+
+General strategy of stemdiff.io package
+    
+* Datafiles and Images are usually
+  not used directly, but just converted to Array objects.
+* All data manipulation (showing, scaling, saving ...)
+  is done within Array objects.
+* Datafiles and Images have (intentionally) just a limited amount of methods,
+  the most important of which is read - this method simply reads
+  Datafile/Image to an array.
+
+Examples how to use Datafiles, Arrays and Images
+
+>>> # Show a datafile
+>>> # (basic operation => there is Datafiles.function for it
+>>> stemdiff.io.Datafiles.show(SDATA, filename)
+
+>>> # Read a datafile to array
+>>> # (basic operation => there is Datafiles.function for it
+>>> arr = stemdiff.io.Datafiles.read(SDATA, filename)
+
+>>> # Describe AND show the datafile
+>>> # (more complex operation:
+>>> # (1) read datafile to array - using Datafiles.read
+>>> # (2) do what you need (here: describe, show) - using Arrays.functions
+>>> arr = stemdiff.io.Datafiles.read(SDATA, datafile)
+>>> stemdiff.io.Arrays.describe(arr, central_square=20)
+>>> stemdiff.io.Arrays.show(arr, icut=1000, cmap='gray')
+'''
 
 
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
-from skimage import transform, measure
-from stemdiff.const import DET_SIZE
+from skimage import transform, measure, morphology
 
-# ============================================================================
-# 1st group of functions - manipulation with DATAFILES
-# (read, show-as-image, save-as-image, show-series-of-datafiles
 
-def read_datafile(filename):
-    '''
-    Read datafile from 2D-STEM detector into numpy array.
-    Assumptions: 2D-STEM detector with dimensions DET_SIZE x DET_SIZE
-    (where DET_FILE = stemdiff.const.DET_FILE = constant in stemdiff.const),
-    which yields binary files with 16-bit intensity values.
+class Datafiles:
     
-    Parameters
-    ----------
-    filename : string or pathlib object
-        Name of datafile from pixelated datector
-        that should be read into numpy 2D array.
+
+    def read(SDATA, filename):
+        '''
+        Read a datafile from STEM detector to an array.
         
-    Returns
-    -------
-    2D numpy array
-    '''
-    arr = np.fromfile(filename, dtype=np.uint16)
-    arr = arr.reshape(DET_SIZE,DET_SIZE)
-    return(arr)
-
-def show_datafile(filename, intensity_cut=300):
-    '''
-    Show datafile = diffractogram from 2D-STEM detector;
-    the datafile is shown as an image using matplotlib.pyplot.
+        Parameters
+        ----------
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        filename : string or pathlib object
+            Name of datafile to be read into numpy 2D array.
+            
+        Returns
+        -------
+        arr : 2D numpy array
+            The array converted from datafile with given *filename*.
+        '''
+        arr = SDATA.detector.read_datafile(filename)
+        return(arr)
     
-    Parameters
-    ----------
-    filename : str or Path
-        Name of datafile to be shown.
-    intensity_cut : integer
-        For all pixels: if intensity > intensity_cut: intensity=intensity_cut;
-        this reduces the strongest intensity of the central spot/primary beam.
+
+    def show(SDATA, filename,
+             icut=None, itype='8bit', R=None, cmap='gray',
+             center=False, central_square=20, cintensity=0.8):
+        '''
+        Show datafile/diffractogram with basic characteristics.
         
-    Returns
-    -------
-    Nothing; the output are the files and entropies shown on the screen.
+        Parameters
+        ----------
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        filename : str or Path
+            Name of datafile to be shown.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype : string, optional, '8bit' or '16bit', default is None
+            Type of the image - 8-bit or 16-bit.
+            If itype equals None or '16-bit' the image is treated as 16-bit.
+        R : integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled (usually upscaled) R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be processed with R=4
+            in order to get sufficiently large image for further processing.
+        cmap : str, name of colormap, optional, default is 'gray'
+            Colormap for plotting of the array.
+            Other options: 'viridis', 'plasma' etc.; more info in www.
+        center : bool, optional, default is False
+            If True, intensity center is drawn in the final image.
+        central_square : integer, optional, default is 20
+            Edge of a central_square, from which the center will be determined.
+            Ignored if center == False.
+        cintensity : float in interval 0--1, optional, default is 0.8
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+            Ignored if center == False.
+            
+        Returns
+        -------
+        Nothing
+            The output is the datafile shown as an image on the screen.
+            
+        Technical note
+        --------------
+        This function just combines Datafiles.read + Arrays.show functions.
+        '''
+        # Read datafile to array
+        arr = Datafiles.read(SDATA, filename)
+        # Describe datafile/array
+        Arrays.show(arr,
+            icut, itype, R, cmap,
+            center, central_square, cintensity)
 
-    '''
-    print(filename.name)
-    # a) Read datafile
-    arr = read_datafile(filename)
-    # b) Calculated and print Shannon entropy of the datafile
-    entropy_value = measure.shannon_entropy(arr)
-    print(f'Shannon entropy value = {entropy_value:.2f}')
-    # c) Cut intensity and show datafile as 2D-image using matplotlib
-    arr = np.where(arr>intensity_cut, intensity_cut, arr)
-    plt.imshow(arr, cmap='gray')
-    plt.show()
 
-def save_datafile(filename, output_image, intensity_cut=300, itype='8bit'):
-    '''
-    Save datafile = diffractogram from 2D-STEM detector;
-    the datafile is saved as a PNG-image using matplotlib.pyplot.
-    
-    Parameters
-    ----------
-    filename : str or Path
-        Name of datafile to be shown.
-    output_image : str
-        Name of image to be saved (the full name will be output_image.png).
-    intensity_cut : integer, optional, default=300
-        For all pixels: if intensity > intensity_cut: intensity=intensity_cut;
-        this reduces the strongest intensity of the central spot/primary beam.
-    itype : str ('8bit' or '16bit'), optional, default='8bit'
-         Type of the image: 8 or 16 bit grayscale. 
+    def show_from_disk(SDATA,
+                       interactive=True, max_files=None,
+                       icut=1000, itype=None, R=None, cmap='gray',
+                       center=True, central_square=20, cintensity=0.8,
+                       peak_height=100, peak_distance=9):
+        '''
+        Show datafiles (stored in a disk) from 2D-STEM detector. 
         
-    Returns
-    -------
-    Nothing; the output is the saved PNG-image in active directory.
-
-    '''
-    print(filename.name)
-    # a) Read datafile
-    arr = read_datafile(filename)
-    # b) Calculated and print Shannon entropy of the datafile
-    entropy_value = measure.shannon_entropy(arr)
-    print(f'Shannon entropy value = {entropy_value:.2f}')
-    # c) Cut intensity and save datafile as PNG-image using matplotlib
-    arr = np.where(arr>intensity_cut, intensity_cut, arr)
-    # d) Before saving, normalize array according to itype = image_type
-    if itype == '8bit':
-        arr = np.round(arr * (255/np.max(arr))).astype(dtype=np.uint8)
-        img = Image.fromarray(arr, 'L')
-    else:
-        arr = arr.astype('uint16')
-        img = Image.fromarray(arr)
-    # e) Save the final (intensity-cut, normalized) datafile/array as image
-    img.save(output_image) 
-    
-def show_datafiles(datafiles, intensity_cut=300):
-    '''
-    Show datafiles = diffractograms from 2D-STEM detector.
-    The images and their calculated Shannon entropies are shown one by one.
-    [Enter] = next file, [Ctrl+C] = end of show (a bit hardcore, but working).
-
-    Parameters
-    ----------
-    datafiles : pathlib.glob object or iterable (list, array, iterator)
-        Names of datafiles to be shown.
-    intensity_cut : integer
-        For all pixels: if intensity > intensity_cut: intensity=intensity_cut;
-        this reduces the strongest intensity of the central spot/primary beam.
+        Parameters
+        ----------
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        interactive: bool, optional, the defailt is True
+            If True, images are shown interactively,
+            i.e. any key = show next image, 'q' = quit.
+        max_files: integer, optional, the default is None
+            If not(interactive==True) and max_files > 0,
+            show files non-interactively = in one run, until
+            number of files is less than max_files limit.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype : string, optional, None or '8bit' or '16bit'
+            Type of the image - 8-bit or 16-bit.
+            If itype equals None or '16-bit' the image is treated as 16-bit.
+        R : integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled (usually upscaled) R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be processed with R=4
+            in order to get sufficiently large image for further processing.
+        cmap : str, name of colormap, optional, default is 'gray'
+            Colormap for plotting of the array.
+            Other options: 'viridis', 'plasma' etc.; more info in www.
+        center : bool, optional, default is False
+            If True, intensity center is drawn in the final image.
+        central_square : integer, optional, default is 20
+            Edge of a central_square, from which the center will be determined.
+            Ignored if center == False.
+        cintensity : float in interval 0--1, optional, default is 0.8
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+            Ignored if center == False.
+        peak_height : int, optional, default is 100
+            Minimal height of the peak to be detected.
+        peak_distance : int, optional, default is 5
+            Minimal distance between two peaks so that they were separated.
+            
+        Returns
+        -------
+        Nothing
+            The output are the files and their characteristics on the screen.
         
-    Returns
-    -------
-    Nothing; the output are the files and entropies shown on the screen.
+        Technical note
+        --------------
+        This function uses Datafiles.read and than Arrays.functions.
+        '''
+        # Initialization
+        file_counter = 0
+        # Iterate through the files
+        for datafile in SDATA.filenames:
+            # Read datafile from disk to array
+            arr = Datafiles.read(SDATA, datafile)
+            # Print datafile name
+            datafile_name = datafile.relative_to(SDATA.data_dir)
+            print('Datafile:', datafile_name)
+            # Describe the datafile/array
+            Arrays.describe(arr,
+                central_square, cintensity, peak_height, peak_distance)
+            # Show the datafile/array
+            Arrays.show(arr,
+                icut, itype, R, cmap,
+                center, central_square, cintensity)
+            # Decide if we should stop the show
+            if interactive:
+                # Wait for keyboard input...
+                choice = str(input('[Enter] to show next, [q] to quit...\n'))
+                # Break if 'q' was pressed and continue otherwise...
+                if choice == 'q': break
+            elif max_files:
+                file_counter += 1
+                if file_counter >= max_files: break
 
-    '''
-    for datafile in datafiles:
-        show_datafile(datafile, intensity_cut)
-        input('[Enter] to continue...')
-
-# ============================================================================
-# 2nd group of functions - manipulation with ARRAYS
-# (rescale, find_center, reduce_size, save-as-image
-
-def rescale_array(arr,R):
-    '''
-    Rescale 2D numpy array (which represents an image).
     
-    Parameters
-    ----------
-    arr : 2D numpy array
-        Numpy array representing DAT-file/image.
-    R : integer
-        Rescale parameter: new_size_of the array = original_size * R
+    def show_from_database(SDATA, df,
+                           interactive=True, max_files=None,
+                           icut=1000, itype='8bit', R=None, cmap='gray'):
+        '''
+        Show datafiles (pre-selected in a database) from 2D-STEM detector.
 
-    Returns
-    -------
-    2D numpy array with new_size = original_size * R
-    '''
-    arr_max = np.max(arr)
-    arr = transform.rescale(arr, R)
-    arr = arr/np.max(arr) * arr_max
-    return(arr)
+        Parameters
+        ----------
+        SDATA : TYPE
+            DESCRIPTION.
+        df : TYPE
+            DESCRIPTION.
+        interactive: bool, optional, the defailt is True
+            If True, images are shown interactively,
+            i.e. any key = show next image, 'q' = quit.
+        max_files: integer, optional, the default is None
+            If not(interactive==True) and max_files > 0,
+            show files non-interactively = in one run, until
+            number of files is less than max_files limit.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype : string, optional, '8bit' or '16bit', default is '8bit'
+            Type of the image - 8 or 16 bit grayscale.   
+        R : integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled (usually upscaled) R-times.
+        cmap : str, name of colormap, optional, default is 'gray'
+            Colormap for plotting of the array.
+            Other options: 'viridis', 'plasma' etc.; more info in www.
 
-def find_array_center(arr, central_square=None, central_intensity_coeff=None):
-    '''
-    Determine center of mass for 2D numpy array.
-    Array center = mass center = intensity center ~ position of central spot.
-    Note: for non-centrosymmetric images, central spot is NOT in array center.
+        Returns
+        -------
+        Nothing
+            The output are the files and their characteristics on the screen.
+        
+        Technical note
+        --------------
+        This function uses Datafiles.read function
+        and it reads data from database.
+        As it uses database data, it cannot use standard Arrays functions. 
+        '''
+        # Initialize file counter
+        file_counter = 0
+        # Show the files and their characteristics saved in the database
+        for index,datafile in df.iterrows():
+            # Read datafile
+            datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
+            arr = Datafiles.read(SDATA, datafile_name) 
+            # Print datafile characteristics from the database
+            print(f'Datafile: {datafile.DatafileName}')
+            print(f'Center (x,y): \
+                  ({datafile.Xcenter:.1f},{datafile.Ycenter:.1f})')
+            print(f'Maximum intensity: {datafile.MaxInt}')
+            print(f'Number of peaks: {datafile.Peaks}')
+            print(f'Shannon entropy: {datafile.S}')
+            # Show datafile (and draw XY-center from the database data)
+            arr = np.where(arr>icut, icut, arr)
+            plt.imshow(arr, cmap=cmap)
+            # Draw center
+            # (if the image is rescaled, the center should be rescaled as well
+            if R == None: R = 1
+            plt.plot(
+                datafile.Ycenter * R,
+                datafile.Xcenter * R,
+                'r+', markersize=20)
+            plt.show()
+            # Increase file counter & stop if max_files limit was reached
+            file_counter += 1
+            if file_counter >= max_files: break
 
-    Parameters
-    ----------
-    arr : numpy 2D array
-        Numpy 2D array, whose center (of mass ~ intensity) we want to get.
-    central_square: integer, optional
-        Edge of central square, from which the center will be determined.
-    central_intensity_coeff: float, optional, interval: 0--1
-        The intensity < maximum_intensity * central_intensity_coeff
-        is regarded as 0 (background removal in central square).
-    Returns
-    -------
-    xc,yc = integers
-        Coordinates of the array center.
-    '''
-    # Calculate center of array
-    if central_square:
-        # If central_square was given,
-        # calculate center only for the square in the center,
-        # in which we set background intensity = 0 to get correct results.
-        # a) Calculate array corresponding to central square
-        xsize,ysize = arr.shape
-        xborder = (xsize - central_square) // 2
-        yborder = (ysize - central_square) // 2
-        arr2 = arr[xborder:-xborder,yborder:-yborder].copy()
-        # b) Set intensity lower than maximum*coeff to 0 (background removal)
-        coeff = central_intensity_coeff or 0.8
-        arr2 = np.where(arr2>np.max(arr2)*coeff, arr2, 0)
-        # c) Calculate center of intensity (and add borders at the end)
-        M = measure.moments(arr2,1)
-        (xc,yc) = (M[1,0]/M[0,0], M[0,1]/M[0,0])
-        (xc,yc) = (xc+xborder,yc+yborder)
-        (xc,yc) = np.round([xc,yc],2)
-    else:
-        # If central_square was not given,
-        # calculate center for the whole array.
-        # => Wrong position of central spot for non-centrosymmetric images!
-        M = measure.moments(arr,1)
-        (xc,yc) = (M[1,0]/M[0,0], M[0,1]/M[0,0])
-        (xc,yc) = np.round([xc,yc],2)
-    # Return final values            
-    return(xc,yc)
 
-def reduce_array_size(arr,rsize,xc,yc):
-    '''
-    The original size is cut to rsize, center of new array is in xc,yc.
+class Arrays:
 
-    Reduce/cut size of 2D numpy array.
-    Parameters
-    ----------
-    arr : numpy 2D array
-        The original array, whose size should be reduced.
-    rsize : integer
-        The size of reduced array.
-    xc,yc : integers
-        The center of original array;
-        the reduced array is cut to rsize, center of new array is in xc,yc.
 
-    Returns
-    -------
-    2D numpy array
-        The array with reduced size.
-    '''
-    halfsize = int(rsize/2)
-    if (rsize % 2) == 0:
-        arr = arr[xc-halfsize:xc+halfsize, yc-halfsize:yc+halfsize]
-    else:
-        arr = arr[xc-halfsize:xc+halfsize+1, yc-halfsize:yc+halfsize+1]
-    return(arr)
-
-def save_array(arr, output_image, icut=None, itype='8bit', R=None):
-    '''
-    Save 2D numpy array as grayscale image.
+    def show(arr,
+             icut=None, itype=None, R=None, cmap='gray',
+             center=False, central_square=20, cintensity=0.8):
+        '''
+        Show 2D-array as an image.
+        
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Array to show.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype : string, optional, None or '8bit' or '16bit'
+            Type of the image - 8-bit or 16-bit.
+            If itype equals None or '16-bit' the image is treated as 16-bit.
+        R : integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled (usually upscaled) R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be processed with R=4
+            in order to get sufficiently large image for further processing.
+        cmap : str, name of colormap, optional, default is 'gray'
+            Colormap for plotting of the array.
+            Other options: 'viridis', 'plasma' etc.; more info in www.
+        center : bool, optional, default is False
+            If True, intensity center is drawn in the final image.
+        central_square : integer, optional, default is 20
+            Edge of a central_square, from which the center will be determined.
+            Ignored if center == False.
+        cintensity : float in interval 0--1, optional, default is 0.8
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+            Ignored if center == False.
     
-    Parameters
-    ----------
-    arr : 2D numpy array
-        array or image object to save
-    output_image : string or pathlib object
-        name of the output/saved file
-    icut : integer
-        Cut of intensity;
-        if icut = 300, all image intensities > 300 will be equal to 300.
-    itype: string ('8bit'  or '16bit')
-        type of the image: 8 or 16 bit grayscale   
-    R: integer
-        Rescale coefficient;
-        the input array is rescaled/enlarged R-times.
-        For typical 2D-STEM detector with size 256x256 pixels,
-        the array should be saved with R = 2 (or 4)
-        in order to get sufficiently large image for further processing.
+        Returns
+        -------
+        Nothing
+            The output is the array shown as an image on the screen.
+        '''        
+        # Prepare array for saving
+        arr = Arrays.prepare_for_show_or_save(arr, icut, itype, R)
+        # Plot array as image
+        plt.imshow(arr, cmap=cmap)
+        # If center argument was given, add intensity center to the plot
+        if center==True:
+            xc,yc = Arrays.find_center(arr,central_square, cintensity)
+            plt.plot(yc,xc, 'r+', markersize=20)
+        # Show the plot
+        plt.show()
 
-    Returns
-    -------
-    Nothing; the output is [output_image] saved on disk.
-    '''
-    # Cut intensity
-    if icut:
-        arr = np.where(arr>icut, icut, arr)
-    # Rescale
-    if R:
+
+    def describe(arr,
+                 central_square=20, cintensity=0.8,
+                 peak_height=100, peak_distance=5):
+        '''
+        Describe 2D-array = print XY-center, MaxIntensity, Peaks, Sh-entropy.
+
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Array to describe.
+        central_square : integer, optional, default is None
+            Edge of a central_square, from which the center will be determined.
+        cintensity : float in interval 0--1, optional, default is None
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+        peak_height : int, optional, default is 100
+            Minimal height of the peak to be detected.
+        peak_distance : int, optional, default is 5
+            Minimal distance between two peaks so that they were separated.
+            
+        Returns
+        -------
+        Nothing
+            The array characteristics are just printed.
+            
+        Technical note
+        --------------
+        This function is just a wrapper
+        around several np.functions and Arrays.functions.
+        To get the values, use the individual functions instead.
+        '''
+        # Determine center (of intensity)
+        x,y = Arrays.find_center(arr, central_square, cintensity)
+        print(f'Center (x,y): ({x:.1f},{y:.1f})')
+        # Determine maximum intensity
+        max_intensity = np.max(arr)
+        print(f'Maximum intensity = {max_intensity:d}')
+        # Estimate number of peaks (local maxima)
+        no_of_maxima = Arrays.number_of_peaks(arr, peak_height, peak_distance)
+        print(f'Number of peaks = {no_of_maxima}')
+        # Calculate Shannon entropy of the datafile
+        entropy_value = measure.shannon_entropy(arr)
+        print(f'Shannon entropy = {entropy_value:.2f}')
+            
+
+    def find_center(arr, central_square=None, cintensity=None):
+        '''
+        Determine center of mass for 2D numpy array.
+        Array center = mass/intensity center ~ position of central spot.
+        Warning: In most cases, geometric center is NOT mass/intensity center.
+    
+        Parameters
+        ----------
+        arr : numpy 2D array
+            Numpy 2D array, whose center (of mass ~ intensity) we want to get.
+        central_square : integer, optional, default is None
+            Edge of a central_square, from which the center will be determined.
+        cintensity : float in interval 0--1, optional, default is None
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+            
+        Returns
+        -------
+        xc,yc : integers
+            Coordinates of the intesity center = position of the primary beam.
+        '''
+        # Calculate center of array
+        if central_square:
+            # If central_square was given,
+            # calculate center only for the square in the center,
+            # in which we set background intensity = 0 to get correct results.
+            # a) Calculate array corresponding to central square
+            xsize,ysize = arr.shape
+            xborder = (xsize - central_square) // 2
+            yborder = (ysize - central_square) // 2
+            arr2 = arr[xborder:-xborder,yborder:-yborder].copy()
+            # b) Set intensity lower than maximum*coeff to 0 (background removal)
+            coeff = cintensity or 0.8
+            arr2 = np.where(arr2>np.max(arr2)*coeff, arr2, 0)
+            # c) Calculate center of intensity (and add borders at the end)
+            M = measure.moments(arr2,1)
+            (xc,yc) = (M[1,0]/M[0,0], M[0,1]/M[0,0])
+            (xc,yc) = (xc+xborder,yc+yborder)
+            (xc,yc) = np.round([xc,yc],2)
+        else:
+            # If central_square was not given,
+            # calculate center for the whole array.
+            # => Wrong position of central spot for non-centrosymmetric images!
+            M = measure.moments(arr,1)
+            (xc,yc) = (M[1,0]/M[0,0], M[0,1]/M[0,0])
+            (xc,yc) = np.round([xc,yc],2)
+        # Return final values            
+        return(xc,yc)
+    
+
+    def number_of_peaks(arr, peak_height,
+                        peak_distance=None, neighborhood_matrix=None):
+        '''
+        Estimate number of peaks in given array.
+
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Array, for which we want to determine the number of peaks.
+        peak_height : float
+            Height of peak with respect to background; obligatory argument.
+        peak_distance : int, optional, default is None
+            Distance between two neighboring peaks.
+            If given, distance matrix is calculated out of it.
+        neighborhood_matrix : numpy 2D-array, optional, default is None
+            The neighborhood expressed as a 2D-array of 1's and 0's.
+            The neighborhood matrix can be eigher given directly
+            (using argument neighborhood_matrix) or indirectly
+            (calculated from argument peak_distance).
+            
+        Returns
+        -------
+        no_of_peaks : int
+            Estimated number of peaks (local maxima) in given array.
+
+        '''
+        # If peak distance was given, calculate distance matrix from it.
+        if peak_distance:
+            neighborhood_matrix = np.ones(
+                (peak_distance,peak_distance), dtype=np.uint8)
+        # Determine number of peaks
+        no_of_peaks = np.sum(morphology.h_maxima(
+            arr, h=peak_height, footprint=neighborhood_matrix))
+        # Return number of peaks
+        return(no_of_peaks)
+
+    def rescale(arr, R, order=None):
+        '''
+        Rescale 2D numpy array (which represents an image).
+        
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Numpy array representing DAT-file/image.
+        R : integer
+            Rescale parameter: new_size_of the array = original_size * R
+    
+        Returns
+        -------
+        2D numpy array
+            The array has new_size = original_size * R
+        '''
+        # Keep original value of array maximum.
         arr_max = np.max(arr)
-        arr = transform.rescale(arr, R)
+        # Rescale the array.
+        arr = transform.rescale(arr, R, order)
+        # Restore the original value of array maximum.
         arr = arr/np.max(arr) * arr_max
-    # Prepare image object for saving
-    if itype == '8bit':
-        arr = np.round(arr * (255/np.max(arr))).astype(dtype=np.uint8)
-        img = Image.fromarray(arr, 'L')
-    else:
-        arr = arr.astype('uint16')
-        img = Image.fromarray(arr)
-    # Save image
-    img.save(output_image)
+        # Return the rescaled array.
+        return(arr)
 
-# ============================================================================
-# 3rd group of functions - manipulation with IMAGES
-# (read/show an image
 
-def read_image(image_name, itype='8bit'):
-    '''
-    Read grayscale image into 2D numpy array.
+    def remove_edges(arr,rsize,xc,yc):
+        '''
+        Cut array to rsize by removing edges; center of new array = (xc,yc).
+       
+        Parameters
+        ----------
+        arr : numpy 2D array
+            The original array, whose size should be reduced.
+        rsize : integer
+            The size of reduced array.
+        xc,yc : integers
+            The center of original array;
+            the reduced array is cut to rsize, center of new array is in xc,yc.
     
-    Parameters
-    ----------
-    image_name : string or pathlib object
-        Name of image that should read into numpy 2D array.
-    itype: string ('8bit'  or '16bit')
-        type of the image: 8 or 16 bit grayscale    
+        Returns
+        -------
+        arr : 2D numpy array
+            The array with reduced size.
+        '''
+        halfsize = int(rsize/2)
+        if (rsize % 2) == 0:
+            arr = arr[xc-halfsize:xc+halfsize, yc-halfsize:yc+halfsize]
+        else:
+            arr = arr[xc-halfsize:xc+halfsize+1, yc-halfsize:yc+halfsize+1]
+        return(arr)
+    
+
+    def save_as_image(arr, output_image, icut=None, itype='8bit', R=None):
+        '''
+        Save 2D numpy array as grayscale image.
         
-    Returns
-    -------
-    2D numpy array
-    '''
-    img = Image.open(image_name)
-    if itype=='8bit':
-        arr = np.asarray(img, dtype=np.uint8)
-    else:
-        arr = np.asarray(img, dtype=np.uint16)
-    return(arr)
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Array or image object to save.
+        output_image : string or pathlib object
+            Name of the output/saved file.
+        icut : integer
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype: string ('8bit'  or '16bit')
+            Type of the image: 8 or 16 bit grayscale.   
+        R: integer
+            Rescale coefficient;
+            the input array is rescaled/enlarged R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be saved with R = 2 (or 4)
+            in order to get sufficiently large image for further processing.
+    
+        Returns
+        -------
+        Nothing
+            The output is *arr* saved as *output_image* on a disk.
+        '''
+        # Prepare array for saving
+        arr = Arrays.prepare_for_show_or_save(arr, icut, itype, R)
+        # Prepare image object (8bit or 16bit)
+        if itype == '8bit':
+            img = Image.fromarray(arr, 'L')
+        else:
+            img = Image.fromarray(arr)
+        # Save image
+        img.save(output_image)
+        
 
-def show_image(image_name, itype='8bit', cmap='gray'):
-    '''
-    Read and display image from disk.
+    def save_as_datafile(SDATA, arr, filename):
+        SDATA.detector.save_datafile(arr, filename) 
+        pass
 
-    Parameters
-    ----------
-    image_name : string or pathlib object
-        name of the image to display
-    itype : string ('8bit'  or '16bit')
-        type of the image: 8 or 16 bit grayscale
-    cmap : string
-        colormap (any colormap know to matplotlib)
 
-    Returns
-    -------
-    Nothing; the output is image shown on screen.
-    '''
-    arr = read_image(image_name, itype=itype)
-    plt.imshow(arr, cmap=cmap)
-    plt.show()
+    def prepare_for_show_or_save(arr, icut=None, itype=None, R=None):
+        '''
+        Prepare 2D numpy array (which contains a 2D-STEM datafile)
+        for showing/saving as grayscale image.
+        
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Array or image object to save.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype: string, optional, '8bit' or '16bit', default is None.
+            Type of the image - 8-bit or 16-bit grayscale.
+            If none, then the image is saved as 16-bit.
+        R: integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled/enlarged R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be saved with R = 2 (or 4)
+            in order to get sufficiently large image for further processing.
+    
+        Returns
+        -------
+        arr : 2D numpy array
+            The modified array ready for showing or saving on a disk.
+        '''
+        # Cut intensity
+        if icut:
+            arr = np.where(arr>icut, icut, arr)
+        # Rescale
+        if R:
+            arr_max = np.max(arr)
+            arr = transform.rescale(arr, R)
+            arr = arr/np.max(arr) * arr_max
+        # Prepare for showing/saving as 8bit or 16 bit
+        if itype == '8bit':
+            arr = np.round(arr * (255/np.max(arr))).astype(dtype=np.uint8)
+        else:
+            arr = arr.astype('uint16')
+        # Return the modified array
+        return(arr)
 
+
+class Images:
+
+
+    def read(image_name, itype='8bit'):
+        '''
+        Read grayscale image into 2D numpy array.
+        
+        Parameters
+        ----------
+        image_name : string or pathlib object
+            Name of image that should read into numpy 2D array.
+        itype: string ('8bit'  or '16bit')
+            type of the image: 8 or 16 bit grayscale    
+            
+        Returns
+        -------
+        arr : 2D numpy array
+            The array converted from *image_name*.
+        '''
+        img = Image.open(image_name)
+        if itype=='8bit':
+            arr = np.asarray(img, dtype=np.uint8)
+        else:
+            arr = np.asarray(img, dtype=np.uint16)
+        return(arr)
+    
+
+    def show(image_name,
+             icut=None, itype='8bit', R=None, cmap='gray',
+             center=False, central_square=20, cintensity=0.8):
+        '''
+        Read and display image from disk.
+        
+        Parameters
+        ----------
+        image_name : str or path-like object
+            Name of image to read.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300.
+        itype : string, optional, '8bit' or '16bit', default is '8bit'
+            Type of the image - 8 or 16 bit grayscale.   
+        R : integer, optional, default is None
+            Rescale coefficient;
+            the input array is rescaled (usually upscaled) R-times.
+            For typical 2D-STEM detector with size 256x256 pixels,
+            the array should be processed with R=4
+            in order to get sufficiently large image for further processing.
+        cmap : str, name of colormap, optional, default is 'gray'
+            Colormap for plotting of the array.
+            Other options: 'viridis', 'plasma' etc.; more info in www.
+        center : bool, optional, default is False
+            If True, intensity center is drawn in the final image.
+        central_square : integer, optional, default is 20
+            Edge of a central_square, from which the center will be determined.
+            Ignored if center == False.
+        cintensity : float in interval 0--1, optional, default is 0.8
+            The intensity < maximum_intensity * cintensity is regarded as 0
+            (a simple temporary background removal in the central square).
+            Ignored if center == False.
+        
+        Returns
+        -------
+        Nothing
+            The output is *image_name* shown on the screen.
+        '''
+        # Read Image to array.
+        arr = Images.read_image(image_name, itype=itype)
+        # Show the array using pre-defined stemdiff.io.Array.show function.
+        Arrays.show(arr,
+                    icut, itype, R, cmap,
+                    center, central_square, cintensity)
