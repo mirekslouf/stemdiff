@@ -32,7 +32,7 @@ Documentation, help and examples
 
 * [PyPI](https://pypi.org/project/stemdiff) repository.
 * [GitHub](https://github.com/mirekslouf/stemdiff) repository.
-* [GitHub Pages](https://mirekslouf.github.io/ediff/)
+* [GitHub Pages](https://mirekslouf.github.io/stemdiff)
   with [documentation](https://mirekslouf.github.io/stemdiff/docs).
 
 ## Versions of STEMDIFF
