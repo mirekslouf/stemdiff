@@ -1,7 +1,7 @@
 Metadata-Version: 2.1
 Name: stemdiff
-Version: 5.0.0
-Summary: Convert 4D-STEM data to a single powder diffraction pattern.
+Version: 5.0.2
+Summary: Convert 4D-STEM data to 2D-powder diffraction pattern.
 Home-page: https://github.com/mirekslouf/stemdiff/
 Author: Mirek Slouf
 Author-email: mirek.slouf@gmail.com
@@ -19,7 +19,7 @@ STEMDIFF :: Simple processing of 4D-STEM data
 
 * The **STEMDIFF package** converts... <br>
   ... a 4D-STEM dataset from a SEM microscope (huge and complex) <br>
-  ... to a single powder diffraction pattern (simple and easy to work with).
+  ... to a 2D-powder diffraction pattern (simple and easy to work with).
 * The STEMDIFF package is a key part of our **4D-STEM/PNBD** method, <br>
   which was described (together with the package) in open-access publications:
 	1. *Nanomaterials* 11 (2021) 962.
@@ -31,19 +31,25 @@ STEMDIFF :: Simple processing of 4D-STEM data
 Principle
 ---------
 
-<img src="https://mirekslouf.github.io/stemdiff/images/principle2.png" alt="STEMDIFF principle" width="500"/>
+<img src="https://mirekslouf.github.io/stemdiff/docs/assets/principle.pptx.png" alt="STEMDIFF principle" width="500"/>
 
 Quick start
 -----------
 
-* Install stemdiff: `pip install stemdiff`
-* TODO
+* See how it works:
+	- Look at [worked example](https://mirekslouf.github.io/stemdiff/docs/examples/ex1_stemdiff.nb.html)
+      in Jupyter.
+* Try it yourself:
+	- Download and unzip the [complete example with data](https://www.dropbox.com/scl/fo/321rnw7ywyiym0gsv68r1/h?dl=0&rlkey=ucr4kmaxqmgewsx20soo4rjsm).
+	- Look at `00readme.txt` and run the example in Jupyter.
 
 Documentation, help and examples
 --------------------------------
 
-More detailed help, demo and source code including documentation are in
-[GitHub](https://mirekslouf.github.io/stemdiff).
+* [PyPI](https://pypi.org/project/stemdiff) repository.
+* [GitHub](https://github.com/mirekslouf/stemdiff) repository.
+* [GitHub Pages](https://mirekslouf.github.io/stemdiff)
+  with [documentation](https://mirekslouf.github.io/stemdiff/docs).
 
 ## Versions of STEMDIFF
 
@@ -53,7 +59,7 @@ More detailed help, demo and source code including documentation are in
 * Version 4.0 = Python package: summation + S-filtering + deconvolution
 	* summation = summation of all 2D-diffractograms
 	* S-filtering = sum only diffractograms with strong diffractions = high S
-	* deconvolution = reduce the effect of primary beam spread
+	* deconvolution = reduce the primary beam spread effect
 	  &rArr; better resolution 
 * Version 4.2 = like v4.0 + a few important improvements, such as:
 	* sum just the central region with the strongest diffractions
@@ -62,10 +68,10 @@ More detailed help, demo and source code including documentation are in
 	* better definition of summation and centering parameters
 	* better documentation strings + demo data + improved *master script*
 * Version 5.0 = complete rewrite of v4.2
-	* all features of v4.2 (summation, filtering, deconvolution)
+	* all key features of v4.2 (summation, filtering, deconvolution)
 	* plus several generalizations and improvements, namely:
 		- possibility to define and use more detectors/datafile formats
-		- better filtering (which can employ number of diffractions)
-		- possibility to define more types of deconvolution
+		- better filtering (including estimated number of diffractions)
+		- more types of deconvolution algorithms
 	* no conversion of 2D-diffractograms to 1D-profiles
-		- this was improved and moved to sister package EDIFF
+		- this was improved and moved to a sister package EDIFF
