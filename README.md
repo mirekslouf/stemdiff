@@ -15,7 +15,7 @@ STEMDIFF :: Simple processing of 4D-STEM data
 Principle
 ---------
 
-<img src="https://mirekslouf.github.io/docs/assets/principle.pptx.png" alt="STEMDIFF principle" width="500"/>
+<img src="https://mirekslouf.github.io/stemdiff/docs/assets/principle.pptx.png" alt="STEMDIFF principle" width="500"/>
 
 Quick start
 -----------
