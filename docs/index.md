@@ -1,5 +1,5 @@
-EDIFF :: Documentation and examples
------------------------------------
+STEMDIFF :: Documentation and examples
+--------------------------------------
 
 Quick start = [Jupyter notebook](./examples/ex1_stemdiff.nb.html)
 which shows complete data processing.
