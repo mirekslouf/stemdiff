@@ -3,7 +3,7 @@ STEMDIFF :: Simple processing of 4D-STEM data
 
 * The **STEMDIFF package** converts... <br>
   ... a 4D-STEM dataset from a SEM microscope (huge and complex) <br>
-  ... to a single powder diffraction pattern (simple and easy to work with).
+  ... to a 2D-powder diffraction pattern (simple and easy to work with).
 * The STEMDIFF package is a key part of our **4D-STEM/PNBD** method, <br>
   which was described (together with the package) in open-access publications:
 	1. *Nanomaterials* 11 (2021) 962.
