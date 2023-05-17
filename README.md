@@ -38,21 +38,21 @@ Documentation, help and examples
 ## Versions of STEMDIFF
 
 * Version 1.0 = Matlab: just simple summation of 4D-dataset
-* Version 2.0 = like v1.0 + post-processing in Jupyter
+* Version 2.0 = like v.1.0 + post-processing in Jupyter
 * Version 3.0 = Python scripts: summation + S-filtering
 * Version 4.0 = Python package: summation + S-filtering + deconvolution
 	* summation = summation of all 2D-diffractograms
 	* S-filtering = sum only diffractograms with strong diffractions = high S
 	* deconvolution = reduce the primary beam spread effect
 	  &rArr; better resolution 
-* Version 4.2 = like v4.0 + a few important improvements, such as:
+* Version 4.2 = like v.4.0 + a few important improvements, such as:
 	* sum just the central region with the strongest diffractions
 	  &rArr; higher speed
 	* 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
 	* better definition of summation and centering parameters
 	* better documentation strings + demo data + improved *master script*
-* Version 5.0 = complete rewrite of v4.2
-	* all key features of v4.2 (summation, filtering, deconvolution)
+* Version 5.0 = complete rewrite of v.4.2
+	* all key features of v.4.2 (summation, filtering, deconvolution)
 	* plus several generalizations and improvements, namely:
 		- possibility to define and use more detectors/datafile formats
 		- better filtering (including estimated number of diffractions)
