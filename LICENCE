@@ -3,9 +3,8 @@ Copyright (c) 2018 The Python Packaging Authority
 If you use stemdiff package in your research, please cite:
 
 Slouf M, Skoupy R, Pavlova E, Krzyzanek V:
-Powder Nano-Beam Diffraction in Scanning Electron Microscope:
-Fast and Simple Method for Analysis of Nanoparticle Crystal Structure
-Nanomaterials 11 (2021) 962. https://doi.org/10.3390/nano11040962
+High Resolution Powder Electron Diffraction in Scanning Electron Microscopy
+Materials 14 (2011) 7550. https://doi.org/10.3390/ma14247550
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

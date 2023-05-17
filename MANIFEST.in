@@ -1,2 +1,4 @@
 include CITATION
-graft src/stemdiff/demo
+# Possible inclusion of whole directory
+# (removed in current version, demo only in github.io
+# graft src/stemdiff/demo
