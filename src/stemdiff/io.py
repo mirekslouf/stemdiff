@@ -51,6 +51,25 @@ from skimage import transform, measure, morphology
 
 
 def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
+    '''
+    Set global plot parameters (mostly for plotting in Jupyter).
+
+    Parameters
+    ----------
+    size : tuple of two floats, optional, the default is (12,9)
+        Size of the figure (width, height) in [cm].
+    dpi : int, optional, the defalut is 75
+        DPI of the figure.
+    fontsize : int, optional, the default is 10
+        Size of the font used in figure labels etc.
+    my_rcParams : dict, optional, default is None
+        Dictionary in plt.rcParams format
+        containing any other allowed global plot parameters.
+
+    Returns
+    -------
+    None; the result is a modification of the global plt.rcParams variable.
+    '''
     if size:  # Figure size
         # Convert size in [cm] to required size in [inch]
         size = (size[0]/2.54, size[1]/2.54)
