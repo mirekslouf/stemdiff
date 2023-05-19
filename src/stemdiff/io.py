@@ -9,7 +9,7 @@ Three types of stemdiff.io objects
 * Arrays = the datafiles converted to numpy array objects.
 * Images = the datafiles converted to PNG files.
 
-General strategy of stemdiff.io package
+General strategy for working with stemdiff.io objects
     
 * Datafiles and Images are usually
   not used directly, but just converted to Array objects.
@@ -18,6 +18,11 @@ General strategy of stemdiff.io package
 * Datafiles and Images have (intentionally) just a limited amount of methods,
   the most important of which is read - this method simply reads
   Datafile/Image to an array.
+
+Additional stemdiff.io utilities
+
+* These are stored directly in the package, without any subclassing.
+* Example: `stemdiff.io.set_plot_parameters`
 
 Examples how to use Datafiles, Arrays and Images
 
@@ -43,6 +48,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
 from skimage import transform, measure, morphology
+
+
+def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
+    if size:  # Figure size
+        # Convert size in [cm] to required size in [inch]
+        size = (size[0]/2.54, size[1]/2.54)
+        plt.rcParams.update({'figure.figsize' : size})
+    if dpi:  # Figure dpi
+        plt.rcParams.update({'figure.dpi' : dpi})
+    if fontsize:  # Global font size
+        plt.rcParams.update({'font.size' : fontsize})
+    if my_rcParams:  # Other possible rcParams in the form of dictionary
+        plt.rcParams.update(my_rcParams)
 
 
 class Datafiles:
