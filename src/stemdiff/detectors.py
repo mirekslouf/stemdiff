@@ -154,7 +154,7 @@ class Secom:
     
     Parameters
     ----------
-    detector_name : str, default is 'TimePix'
+    detector_name : str, default is 'TimePix' MALÁ ZMĚNA
         Name of the detector.
         Keep the default unless you have specific reasons.
     detector_size : integer, default is 256
