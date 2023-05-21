@@ -120,20 +120,6 @@ class TimePix:
         # Reshape the array and return
         arr = arr.reshape(edge, edge)
         return(arr)
-        
-        # # Reshape the 1D-array to 2D-square array
-        # if arr_size:
-        #     # If arr_size was given,
-        #     # the datafile must have been saved with cut edges
-        #     # and, as a result, we read a smaller array with array_size.
-        #     arr = arr.reshape(self.arr_size, self.arr_size)
-        # else:
-        #     # If arr_size was not given,
-        #     # the datafile must be in its original format
-        #     # and, as a result, we read it with default detector.size.
-        #     arr = arr.reshape(self.detector_size, self.detector_size)
-        # # Return the final square array
-        # return(arr)
     
     def save_datafile(self, arr, filename):
         '''
@@ -213,20 +199,6 @@ class Secom:
         # Reshape the array and return
         arr = arr.reshape(edge, edge)
         return(arr)
-        
-        # # Reshape the 1D-array to 2D-square array
-        # if arr_size:
-        #     # If arr_size was given,
-        #     # the datafile must have been saved with cut edges
-        #     # and, as a result, we read a smaller array with array_size.
-        #     arr = arr.reshape(self.arr_size, self.arr_size)
-        # else:
-        #     # If arr_size was not given,
-        #     # the datafile must be in its original format
-        #     # and, as a result, we read it with default detector.size.
-        #     arr = arr.reshape(self.detector_size, self.detector_size)
-        # # Return the final square array
-        # return(arr)
     
     def save_datafile(self, arr, filename):
         '''
