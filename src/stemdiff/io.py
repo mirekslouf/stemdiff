@@ -93,7 +93,9 @@ def plot_2d_diffractograms(data_to_plot, output_file=None, dpi=300):
         data = diffs[i][0]
         if type(data) == str:  # Datafile
             if data.lower().endswith('.png'):  # ....PNG file, 2D-diffractogram
-                arr = Images.read(data, itype=data.dtype)
+                # we read image as '16bit'
+                # in this case, it works for 8bit images as well    
+                arr = Images.read(data, itype='16bit')
             else:  # .......some other string not ending on PNG => unknown data
                 print('Unknown type of data to plot!')
         elif type(data) == np.ndarray:  # Numpy array
@@ -107,11 +109,11 @@ def plot_2d_diffractograms(data_to_plot, output_file=None, dpi=300):
         my_cmap  = diffs[i][3]
         # Plot i-th datafile/array
         ax[i].imshow(arr, vmax=my_icut, cmap=my_cmap)
-        ax[i].title(my_title)
+        ax[i].set_title(my_title)
     # Finalize plot
     for i in range(n): ax[i].axis('off')
     fig.tight_layout()
-    if output_file: fig.save_fig(output_file, dpi=dpi)
+    if output_file: fig.savefig(output_file, dpi=dpi)
     
 class Datafiles:
     
