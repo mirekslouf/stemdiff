@@ -216,7 +216,7 @@ class PSFtype1:
             # (c) Remove edges if psf_size is given
             if psf_size:
                 xc,yc = stemdiff.io.Arrays.find_center(arr,
-                    central_square = DIFFIMAGES.csquare*R,
+                    csquare = DIFFIMAGES.csquare*R,
                     cintensity = DIFFIMAGES.cintensity)
                 arr = stemdiff.io.Arrays.remove_edges(arr,
                     rsize = psf_size*R, xc=round(xc), yc=round(yc))
@@ -287,7 +287,7 @@ class PSFtype2:
 
 class PSFtype3:
         
-    def get_psf(arr, psf_size, cake, subtract = False):
+    def get_psf(arr, psf_size=100, cake=30, subtract=False):
         '''
         Get PSF of type3 = individual PSF based on cake-method.
 
@@ -297,12 +297,16 @@ class PSFtype3:
             The array/datafile, from which the PSF is to be determined.
             The array is a square with geometrical center = intensity center.
             See *Technical notes* below for more details and consequences.
-        psf_size : int
+        psf_size : int, optional, default
             The size/diameter of PSF function to be determined.
         cake : int
             Size of cake-piece in degrees.
         subtract : bool, optional, default is False
             If True, prepare PSF with the same size as scattering pattern.
+            In fact, this function *does not* subtract anything.
+            It can *prepare PSF suitable for subtracting* if required.
+            The trick is that a PSF suitable for subtracting
+            must have the the same size as the original image = arr.
             
         Returns
         -------
@@ -346,7 +350,7 @@ class PSFtype3:
                 # Prepared for np.mean and interval [0:x]
                 psf[i,ii] = np.median(sig_sorted[:]) 
         
-        # XXX: Important safety insertion
+        # Important safety insertion
         # (due to various recalcs and roundings, psf may go below 0
         # (negative psf values result in many unwanted side effects and errors!
         psf = np.where(psf < 0, 0, psf)

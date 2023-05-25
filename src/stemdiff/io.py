@@ -22,7 +22,7 @@ General strategy for working with stemdiff.io objects
 Additional stemdiff.io utilities
 
 * These are stored directly in the package, without any subclassing.
-* Example: `stemdiff.io.set_plot_parameters`
+* Mostly general routines for more convenient I/O within stemdiff package.
 
 Examples how to use Datafiles, Arrays and Images
 
@@ -39,7 +39,7 @@ Examples how to use Datafiles, Arrays and Images
 >>> # (1) read datafile to array - using Datafiles.read
 >>> # (2) do what you need (here: describe, show) - using Arrays.functions
 >>> arr = stemdiff.io.Datafiles.read(SDATA, datafile)
->>> stemdiff.io.Arrays.describe(arr, central_square=20)
+>>> stemdiff.io.Arrays.describe(arr, csquare=20)
 >>> stemdiff.io.Arrays.show(arr, icut=1000, cmap='gray')
 '''
 
@@ -82,6 +82,37 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
         plt.rcParams.update(my_rcParams)
 
 
+def plot_2d_diffractograms(data_to_plot, output_file=None, dpi=300):
+    # Initialize
+    n = len(data_to_plot)
+    diffs = data_to_plot
+    fig,ax = plt.subplots(nrows=1, ncols=n)
+    # Plot 2D-diffractograms
+    for i in range(n):
+        # Read data to plot
+        data = diffs[i][0]
+        if type(data) == str:  # Datafile
+            if data.lower().endswith('.png'):  # ....PNG file, 2D-diffractogram
+                arr = Images.read(data, itype=data.dtype)
+            else:  # .......some other string not ending on PNG => unknown data
+                print('Unknown type of data to plot!')
+        elif type(data) == np.ndarray:  # Numpy array
+            if data.shape[0] == data.shape[1]:  # sqare array, 2D-diffractogram
+                arr = data
+            else: # .....some other, non-square array => nonstandard array size
+                print('Non-standard array for plotting!')
+        # Read plot parameters
+        my_title = diffs[i][1]
+        my_icut  = diffs[i][2]
+        my_cmap  = diffs[i][3]
+        # Plot i-th datafile/array
+        ax[i].imshow(arr, vmax=my_icut, cmap=my_cmap)
+        ax[i].title(my_title)
+    # Finalize plot
+    for i in range(n): ax[i].axis('off')
+    fig.tight_layout()
+    if output_file: fig.save_fig(output_file, dpi=dpi)
+    
 class Datafiles:
     
 
@@ -107,7 +138,7 @@ class Datafiles:
 
     def show(SDATA, filename,
              icut=None, itype='8bit', R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             center=False, csquare=20, cintensity=0.8):
         '''
         Show datafile/diffractogram with basic characteristics.
         
@@ -134,8 +165,8 @@ class Datafiles:
             Other options: 'viridis', 'plasma' etc.; more info in www.
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -156,13 +187,13 @@ class Datafiles:
         # Describe datafile/array
         Arrays.show(arr,
             icut, itype, R, cmap,
-            center, central_square, cintensity)
+            center, csquare, cintensity)
 
 
     def show_from_disk(SDATA,
                        interactive=True, max_files=None,
                        icut=1000, itype=None, R=None, cmap='gray',
-                       center=True, central_square=20, cintensity=0.8,
+                       center=True, csquare=20, cintensity=0.8,
                        peak_height=100, peak_distance=9):
         '''
         Show datafiles (stored in a disk) from 2D-STEM detector. 
@@ -195,8 +226,8 @@ class Datafiles:
             Other options: 'viridis', 'plasma' etc.; more info in www.
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -227,11 +258,11 @@ class Datafiles:
             print('Datafile:', datafile_name)
             # Describe the datafile/array
             Arrays.describe(arr,
-                central_square, cintensity, peak_height, peak_distance)
+                csquare, cintensity, peak_height, peak_distance)
             # Show the datafile/array
             Arrays.show(arr,
                 icut, itype, R, cmap,
-                center, central_square, cintensity)
+                center, csquare, cintensity)
             # Decide if we should stop the show
             if interactive:
                 # Wait for keyboard input...
@@ -320,7 +351,7 @@ class Arrays:
 
     def show(arr,
              icut=None, itype=None, R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             center=False, csquare=20, cintensity=0.8):
         '''
         Show 2D-array as an image.
         
@@ -345,8 +376,8 @@ class Arrays:
             Other options: 'viridis', 'plasma' etc.; more info in www.
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -364,14 +395,14 @@ class Arrays:
         plt.imshow(arr, cmap=cmap)
         # If center argument was given, add intensity center to the plot
         if center==True:
-            xc,yc = Arrays.find_center(arr,central_square, cintensity)
+            xc,yc = Arrays.find_center(arr,csquare, cintensity)
             plt.plot(yc,xc, 'r+', markersize=20)
         # Show the plot
         plt.show()
 
 
     def describe(arr,
-                 central_square=20, cintensity=0.8,
+                 csquare=20, cintensity=0.8,
                  peak_height=100, peak_distance=5):
         '''
         Describe 2D-array = print XY-center, MaxIntensity, Peaks, Sh-entropy.
@@ -380,8 +411,8 @@ class Arrays:
         ----------
         arr : 2D numpy array
             Array to describe.
-        central_square : integer, optional, default is None
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is None
+            Edge of a central square, from which the center will be determined.
         cintensity : float in interval 0--1, optional, default is None
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
@@ -402,7 +433,7 @@ class Arrays:
         To get the values, use the individual functions instead.
         '''
         # Determine center (of intensity)
-        x,y = Arrays.find_center(arr, central_square, cintensity)
+        x,y = Arrays.find_center(arr, csquare, cintensity)
         print(f'Center (x,y): ({x:.1f},{y:.1f})')
         # Determine maximum intensity
         max_intensity = np.max(arr)
@@ -415,7 +446,7 @@ class Arrays:
         print(f'Shannon entropy = {entropy_value:.2f}')
             
 
-    def find_center(arr, central_square=None, cintensity=None):
+    def find_center(arr, csquare=None, cintensity=None):
         '''
         Determine center of mass for 2D numpy array.
         Array center = mass/intensity center ~ position of central spot.
@@ -425,8 +456,8 @@ class Arrays:
         ----------
         arr : numpy 2D array
             Numpy 2D array, whose center (of mass ~ intensity) we want to get.
-        central_square : integer, optional, default is None
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is None
+            Edge of a central square, from which the center will be determined.
         cintensity : float in interval 0--1, optional, default is None
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
@@ -437,14 +468,14 @@ class Arrays:
             Coordinates of the intesity center = position of the primary beam.
         '''
         # Calculate center of array
-        if central_square:
-            # If central_square was given,
+        if csquare:
+            # If csquare was given,
             # calculate center only for the square in the center,
             # in which we set background intensity = 0 to get correct results.
             # a) Calculate array corresponding to central square
             xsize,ysize = arr.shape
-            xborder = (xsize - central_square) // 2
-            yborder = (ysize - central_square) // 2
+            xborder = (xsize - csquare) // 2
+            yborder = (ysize - csquare) // 2
             arr2 = arr[xborder:-xborder,yborder:-yborder].copy()
             # b) Set intensity lower than maximum*coeff to 0 (background removal)
             coeff = cintensity or 0.8
@@ -455,7 +486,7 @@ class Arrays:
             (xc,yc) = (xc+xborder,yc+yborder)
             (xc,yc) = np.round([xc,yc],2)
         else:
-            # If central_square was not given,
+            # If csquare was not given,
             # calculate center for the whole array.
             # => Wrong position of central spot for non-centrosymmetric images!
             M = measure.moments(arr,1)
@@ -670,7 +701,7 @@ class Images:
 
     def show(image_name,
              icut=None, itype='8bit', R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             center=False, csquare=20, cintensity=0.8):
         '''
         Read and display image from disk.
         
@@ -694,8 +725,8 @@ class Images:
             Other options: 'viridis', 'plasma' etc.; more info in www.
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -708,8 +739,8 @@ class Images:
             The output is *image_name* shown on the screen.
         '''
         # Read Image to array.
-        arr = Images.read_image(image_name, itype=itype)
+        arr = Images.read(image_name, itype=itype)
         # Show the array using pre-defined stemdiff.io.Array.show function.
         Arrays.show(arr,
                     icut, itype, R, cmap,
-                    center, central_square, cintensity)
+                    center, csquare, cintensity)
