@@ -82,7 +82,43 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
         plt.rcParams.update(my_rcParams)
 
 
-def plot_2d_diffractograms(data_to_plot, output_file=None, dpi=300):
+def plot_2d_diffractograms(data_to_plot,
+                           icut=None, cmap='viridis',
+                           output_file=None, dpi=300):
+    '''
+    Plot a few selected 2D diffraction patterns in a row one-by-one.
+
+    Parameters
+    ----------
+    data_to_plot : list of lists
+        This object is a list of lists.
+        The number of rows = the number of plotted diffractograms.
+        Each row contains two elements:
+        (i) data for diffractogram to plot and (ii) title of the plot.
+        The data (first element of each row) can be:
+        (i) PNG-file or (ii) 2D-array containing the 2D diffractogram. 
+    integer, optional, default is None
+        Cut of intensity;
+        if icut = 300, all image intensities > 300 will be equal to 300.
+    cmap : str - matplotlib.colormap name, optional, the default is 'viridis'
+        Matplotlib colormap for plotting of the diffractogram.
+        Other interesting or high-contrast options:
+        'gray', 'plasma', 'magma', ...
+        The full list of matplotlib colormaps:
+        `matplotlib.pyplot.colormaps()` 
+    output_file : str, optional, default is None
+        If this argument is given,
+        the plot is also saved in *output_file* image
+        with *dpi* resolution (dpi is specified by the following argument).
+    dpi : int, optional, default is 300
+        The (optional) argument gives resolution of (optional) output image. 
+
+    Returns
+    -------
+    None.
+    The output is the plot of the diffraction patterns on the screen.
+    If argument *ouput_file* is given, the plot is also saved as an image. 
+    '''
     # Initialize
     n = len(data_to_plot)
     diffs = data_to_plot
@@ -105,10 +141,8 @@ def plot_2d_diffractograms(data_to_plot, output_file=None, dpi=300):
                 print('Non-standard array for plotting!')
         # Read plot parameters
         my_title = diffs[i][1]
-        my_icut  = diffs[i][2]
-        my_cmap  = diffs[i][3]
         # Plot i-th datafile/array
-        ax[i].imshow(arr, vmax=my_icut, cmap=my_cmap)
+        ax[i].imshow(arr, vmax=icut, cmap=cmap)
         ax[i].set_title(my_title)
     # Finalize plot
     for i in range(n): ax[i].axis('off')
@@ -162,9 +196,12 @@ class Datafiles:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma' ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
         csquare : integer, optional, default is 20
@@ -223,9 +260,12 @@ class Datafiles:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
         csquare : integer, optional, default is 20
@@ -278,7 +318,7 @@ class Datafiles:
     
     def show_from_database(SDATA, df,
                            interactive=True, max_files=None,
-                           icut=1000, itype='8bit', R=None, cmap='gray'):
+                           icut=1000, itype='8bit', cmap='gray'):
         '''
         Show datafiles (pre-selected in a database) from 2D-STEM detector.
 
@@ -300,12 +340,12 @@ class Datafiles:
             if icut = 300, all image intensities > 300 will be equal to 300.
         itype : string, optional, '8bit' or '16bit', default is '8bit'
             Type of the image - 8 or 16 bit grayscale.   
-        R : integer, optional, default is None
-            Rescale coefficient;
-            the input array is rescaled (usually upscaled) R-times.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
 
         Returns
         -------
@@ -314,8 +354,7 @@ class Datafiles:
         
         Technical note
         --------------
-        This function uses Datafiles.read function
-        and it reads data from database.
+        This function uses Datafiles.read function to read data from database.
         As it uses database data, it cannot use standard Arrays functions. 
         '''
         # Initialize file counter
@@ -336,11 +375,14 @@ class Datafiles:
             arr = np.where(arr>icut, icut, arr)
             plt.imshow(arr, cmap=cmap)
             # Draw center
-            # (if the image is rescaled, the center should be rescaled as well
-            if R == None: R = 1
+            # (we read data from database
+            # (files are shown without any rescaling
+            # (but database contains Xcenter,Ycenter from upscaled images
+            # (=> we have to divide Xcenter,Ycenter by rescale coefficient!
+            R = SDATA.detector.upscale
             plt.plot(
-                datafile.Ycenter * R,
-                datafile.Xcenter * R,
+                datafile.Ycenter/R,
+                datafile.Xcenter/R,
                 'r+', markersize=20)
             plt.show()
             # Increase file counter & stop if max_files limit was reached
@@ -373,9 +415,12 @@ class Arrays:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
         csquare : integer, optional, default is 20
@@ -722,9 +767,12 @@ class Images:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
         csquare : integer, optional, default is 20
