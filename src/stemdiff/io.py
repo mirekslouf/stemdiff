@@ -22,7 +22,7 @@ General strategy for working with stemdiff.io objects
 Additional stemdiff.io utilities
 
 * These are stored directly in the package, without any subclassing.
-* Example: `stemdiff.io.set_plot_parameters`
+* Mostly general routines for more convenient I/O within stemdiff package.
 
 Examples how to use Datafiles, Arrays and Images
 
@@ -39,7 +39,7 @@ Examples how to use Datafiles, Arrays and Images
 >>> # (1) read datafile to array - using Datafiles.read
 >>> # (2) do what you need (here: describe, show) - using Arrays.functions
 >>> arr = stemdiff.io.Datafiles.read(SDATA, datafile)
->>> stemdiff.io.Arrays.describe(arr, central_square=20)
+>>> stemdiff.io.Arrays.describe(arr, csquare=20)
 >>> stemdiff.io.Arrays.show(arr, icut=1000, cmap='gray')
 '''
 
@@ -82,6 +82,74 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
         plt.rcParams.update(my_rcParams)
 
 
+def plot_2d_diffractograms(data_to_plot,
+                           icut=None, cmap='viridis',
+                           output_file=None, dpi=300):
+    '''
+    Plot a few selected 2D diffraction patterns in a row one-by-one.
+
+    Parameters
+    ----------
+    data_to_plot : list of lists
+        This object is a list of lists.
+        The number of rows = the number of plotted diffractograms.
+        Each row contains two elements:
+        (i) data for diffractogram to plot and (ii) title of the plot.
+        The data (first element of each row) can be:
+        (i) PNG-file or (ii) 2D-array containing the 2D diffractogram. 
+    integer, optional, default is None
+        Cut of intensity;
+        if icut = 300, all image intensities > 300 will be equal to 300.
+    cmap : str - matplotlib.colormap name, optional, the default is 'viridis'
+        Matplotlib colormap for plotting of the diffractogram.
+        Other interesting or high-contrast options:
+        'gray', 'plasma', 'magma', ...
+        The full list of matplotlib colormaps:
+        `matplotlib.pyplot.colormaps()` 
+    output_file : str, optional, default is None
+        If this argument is given,
+        the plot is also saved in *output_file* image
+        with *dpi* resolution (dpi is specified by the following argument).
+    dpi : int, optional, default is 300
+        The (optional) argument gives resolution of (optional) output image. 
+
+    Returns
+    -------
+    None.
+    The output is the plot of the diffraction patterns on the screen.
+    If argument *ouput_file* is given, the plot is also saved as an image. 
+    '''
+    # Initialize
+    n = len(data_to_plot)
+    diffs = data_to_plot
+    fig,ax = plt.subplots(nrows=1, ncols=n)
+    # Plot 2D-diffractograms
+    for i in range(n):
+        # Read data to plot
+        data = diffs[i][0]
+        if type(data) == str:  # Datafile
+            if data.lower().endswith('.png'):  # ....PNG file, 2D-diffractogram
+                # we read image as '16bit'
+                # in this case, it works for 8bit images as well    
+                arr = Images.read(data, itype='16bit')
+            else:  # .......some other string not ending on PNG => unknown data
+                print('Unknown type of data to plot!')
+        elif type(data) == np.ndarray:  # Numpy array
+            if data.shape[0] == data.shape[1]:  # sqare array, 2D-diffractogram
+                arr = data
+            else: # .....some other, non-square array => nonstandard array size
+                print('Non-standard array for plotting!')
+        # Read plot parameters
+        my_title = diffs[i][1]
+        # Plot i-th datafile/array
+        ax[i].imshow(arr, vmax=icut, cmap=cmap)
+        ax[i].set_title(my_title)
+    # Finalize plot
+    for i in range(n): ax[i].axis('off')
+    fig.tight_layout()
+    if output_file: fig.savefig(output_file, dpi=dpi)
+
+    
 class Datafiles:
     
 
@@ -107,7 +175,7 @@ class Datafiles:
 
     def show(SDATA, filename,
              icut=None, itype='8bit', R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             center=False, csquare=20, cintensity=0.8):
         '''
         Show datafile/diffractogram with basic characteristics.
         
@@ -129,13 +197,16 @@ class Datafiles:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma' ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -156,13 +227,13 @@ class Datafiles:
         # Describe datafile/array
         Arrays.show(arr,
             icut, itype, R, cmap,
-            center, central_square, cintensity)
+            center, csquare, cintensity)
 
 
     def show_from_disk(SDATA,
                        interactive=True, max_files=None,
                        icut=1000, itype=None, R=None, cmap='gray',
-                       center=True, central_square=20, cintensity=0.8,
+                       center=True, csquare=20, cintensity=0.8,
                        peak_height=100, peak_distance=9):
         '''
         Show datafiles (stored in a disk) from 2D-STEM detector. 
@@ -190,13 +261,16 @@ class Datafiles:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -227,11 +301,11 @@ class Datafiles:
             print('Datafile:', datafile_name)
             # Describe the datafile/array
             Arrays.describe(arr,
-                central_square, cintensity, peak_height, peak_distance)
+                csquare, cintensity, peak_height, peak_distance)
             # Show the datafile/array
             Arrays.show(arr,
                 icut, itype, R, cmap,
-                center, central_square, cintensity)
+                center, csquare, cintensity)
             # Decide if we should stop the show
             if interactive:
                 # Wait for keyboard input...
@@ -245,7 +319,7 @@ class Datafiles:
     
     def show_from_database(SDATA, df,
                            interactive=True, max_files=None,
-                           icut=1000, itype='8bit', R=None, cmap='gray'):
+                           icut=1000, itype='8bit', cmap='gray'):
         '''
         Show datafiles (pre-selected in a database) from 2D-STEM detector.
 
@@ -267,12 +341,12 @@ class Datafiles:
             if icut = 300, all image intensities > 300 will be equal to 300.
         itype : string, optional, '8bit' or '16bit', default is '8bit'
             Type of the image - 8 or 16 bit grayscale.   
-        R : integer, optional, default is None
-            Rescale coefficient;
-            the input array is rescaled (usually upscaled) R-times.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
 
         Returns
         -------
@@ -281,8 +355,7 @@ class Datafiles:
         
         Technical note
         --------------
-        This function uses Datafiles.read function
-        and it reads data from database.
+        This function uses Datafiles.read function to read data from database.
         As it uses database data, it cannot use standard Arrays functions. 
         '''
         # Initialize file counter
@@ -303,11 +376,14 @@ class Datafiles:
             arr = np.where(arr>icut, icut, arr)
             plt.imshow(arr, cmap=cmap)
             # Draw center
-            # (if the image is rescaled, the center should be rescaled as well
-            if R == None: R = 1
+            # (we read data from database
+            # (files are shown without any rescaling
+            # (but database contains Xcenter,Ycenter from upscaled images
+            # (=> we have to divide Xcenter,Ycenter by rescale coefficient!
+            R = SDATA.detector.upscale
             plt.plot(
-                datafile.Ycenter * R,
-                datafile.Xcenter * R,
+                datafile.Ycenter/R,
+                datafile.Xcenter/R,
                 'r+', markersize=20)
             plt.show()
             # Increase file counter & stop if max_files limit was reached
@@ -319,8 +395,9 @@ class Arrays:
 
 
     def show(arr,
-             icut=None, itype=None, R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             icut=None, itype=None, R=None, cmap=None,
+             center=False, csquare=20, cintensity=0.8,
+             plt_type='2D', plt_size=None, colorbar=False):
         '''
         Show 2D-array as an image.
         
@@ -340,38 +417,87 @@ class Arrays:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is None
+            Matplotlib colormap for plotting of the array.
+            Interesting or high-contrast options:
+            'gray', 'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
             Ignored if center == False.
+        plt_type : str, '2D' or '3D', optional, default is '2D'
+            Type of the plot: 2D-dimensional or 3D-dimensional/surface plot.
+        plt_size : int, optional, default is not
+            If given, we plot only the central region with size = *plt_size*.
+            For central region we use a geometric center - see Technical notes.
+        colorbar : bool, optional, the default is False
+            If True, a colorbar is added to the plot.
     
         Returns
         -------
         Nothing
             The output is the array shown as an image on the screen.
+        
+        Technical notes
+        ---------------
+        * In this function, we *do not* center the image/array.
+          Center can be drawn to 2D-image, but array *is not centered*.
+        * Edges can be removed (using plt_size argument),
+          but only only with respect to the geometrical center,
+          which means that the function shows a *non-cenered central region*.
+        * If you need to show *centered central region* of an array,
+          combine Arrays.find_center + Arrays.remove_edges + Arrays.show
         '''        
         # Prepare array for saving
         arr = Arrays.prepare_for_show_or_save(arr, icut, itype, R)
+        # Remove edges of the plot, if requested
+        # (just simple removal of edges based on geometrical center!
+        # (reason: simplicity; for centering/edge removal we have other funcs
+        if plt_size:
+            Xsize,Ysize = arr.shape
+            xc,yc = (int(Xsize/2),int(Ysize/2))
+            if plt_size:
+                arr = Arrays.remove_edges(arr,plt_size,xc,yc)    
         # Plot array as image
-        plt.imshow(arr, cmap=cmap)
-        # If center argument was given, add intensity center to the plot
-        if center==True:
-            xc,yc = Arrays.find_center(arr,central_square, cintensity)
-            plt.plot(yc,xc, 'r+', markersize=20)
-        # Show the plot
+        # (a) Prepare 2D plot (default)
+        if plt_type=='2D':  
+            if cmap==None:  # if cmap not selected, set default for 2D maps
+                cmap='viridis'
+            plt.imshow(arr, cmap=cmap)
+            if colorbar:  # Add colorbar
+                plt.colorbar()
+            if center==True:  # Mark intensity center in the plot
+                xc,yc = Arrays.find_center(arr,csquare, cintensity)
+                plt.plot(yc,xc, 'r+', markersize=20)
+        # (b) Prepare 3D plot (option; if plt_type is not the default '2D')
+        else:  
+            if cmap==None:  # if cmap not selected, set default for 3D maps
+                cmap='coolwarm'
+            # Prepare meshgrid for 3D-plotting
+            Xsize,Ysize = arr.shape
+            X = np.arange(Xsize)
+            Y = np.arange(Ysize)
+            Xm,Ym = np.meshgrid(X,Y)
+            # Create 3D-plot
+            from mpl_toolkits.mplot3d import Axes3D
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot_surface(
+                Xm,Ym,arr, cmap=cmap, linewidth=0, antialiased=False)
+            plt.tight_layout()
+        # (c) Show the plot
         plt.show()
 
 
     def describe(arr,
-                 central_square=20, cintensity=0.8,
+                 csquare=20, cintensity=0.8,
                  peak_height=100, peak_distance=5):
         '''
         Describe 2D-array = print XY-center, MaxIntensity, Peaks, Sh-entropy.
@@ -380,8 +506,8 @@ class Arrays:
         ----------
         arr : 2D numpy array
             Array to describe.
-        central_square : integer, optional, default is None
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is None
+            Edge of a central square, from which the center will be determined.
         cintensity : float in interval 0--1, optional, default is None
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
@@ -402,7 +528,7 @@ class Arrays:
         To get the values, use the individual functions instead.
         '''
         # Determine center (of intensity)
-        x,y = Arrays.find_center(arr, central_square, cintensity)
+        x,y = Arrays.find_center(arr, csquare, cintensity)
         print(f'Center (x,y): ({x:.1f},{y:.1f})')
         # Determine maximum intensity
         max_intensity = np.max(arr)
@@ -415,7 +541,7 @@ class Arrays:
         print(f'Shannon entropy = {entropy_value:.2f}')
             
 
-    def find_center(arr, central_square=None, cintensity=None):
+    def find_center(arr, csquare=None, cintensity=None):
         '''
         Determine center of mass for 2D numpy array.
         Array center = mass/intensity center ~ position of central spot.
@@ -425,8 +551,8 @@ class Arrays:
         ----------
         arr : numpy 2D array
             Numpy 2D array, whose center (of mass ~ intensity) we want to get.
-        central_square : integer, optional, default is None
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is None
+            Edge of a central square, from which the center will be determined.
         cintensity : float in interval 0--1, optional, default is None
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
@@ -437,14 +563,14 @@ class Arrays:
             Coordinates of the intesity center = position of the primary beam.
         '''
         # Calculate center of array
-        if central_square:
-            # If central_square was given,
+        if csquare:
+            # If csquare was given,
             # calculate center only for the square in the center,
             # in which we set background intensity = 0 to get correct results.
             # a) Calculate array corresponding to central square
             xsize,ysize = arr.shape
-            xborder = (xsize - central_square) // 2
-            yborder = (ysize - central_square) // 2
+            xborder = (xsize - csquare) // 2
+            yborder = (ysize - csquare) // 2
             arr2 = arr[xborder:-xborder,yborder:-yborder].copy()
             # b) Set intensity lower than maximum*coeff to 0 (background removal)
             coeff = cintensity or 0.8
@@ -455,7 +581,7 @@ class Arrays:
             (xc,yc) = (xc+xborder,yc+yborder)
             (xc,yc) = np.round([xc,yc],2)
         else:
-            # If central_square was not given,
+            # If csquare was not given,
             # calculate center for the whole array.
             # => Wrong position of central spot for non-centrosymmetric images!
             M = measure.moments(arr,1)
@@ -670,7 +796,7 @@ class Images:
 
     def show(image_name,
              icut=None, itype='8bit', R=None, cmap='gray',
-             center=False, central_square=20, cintensity=0.8):
+             center=False, csquare=20, cintensity=0.8):
         '''
         Read and display image from disk.
         
@@ -689,13 +815,16 @@ class Images:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str, name of colormap, optional, default is 'gray'
-            Colormap for plotting of the array.
-            Other options: 'viridis', 'plasma' etc.; more info in www.
+        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+            Matplotlib colormap for plotting of the array.
+            Other interesting or high-contrast options:
+            'viridis', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
             If True, intensity center is drawn in the final image.
-        central_square : integer, optional, default is 20
-            Edge of a central_square, from which the center will be determined.
+        csquare : integer, optional, default is 20
+            Edge of a central square, from which the center will be determined.
             Ignored if center == False.
         cintensity : float in interval 0--1, optional, default is 0.8
             The intensity < maximum_intensity * cintensity is regarded as 0
@@ -708,8 +837,8 @@ class Images:
             The output is *image_name* shown on the screen.
         '''
         # Read Image to array.
-        arr = Images.read_image(image_name, itype=itype)
+        arr = Images.read(image_name, itype=itype)
         # Show the array using pre-defined stemdiff.io.Array.show function.
         Arrays.show(arr,
                     icut, itype, R, cmap,
-                    center, central_square, cintensity)
+                    center, csquare, cintensity)

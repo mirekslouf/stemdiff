@@ -36,8 +36,9 @@ def calc_database(SDATA, DIFFIMAGES):
         for each datafile in the dataset.
     """
     # Prepare variables before we run for-cycle to go through datafiles
-    # Initialize coordinates of the center = intensity center = primary beam
+    # (initialize coordinates of the center + rescale/upscale coefficient
     xc,yc = (None,None)
+    R = SDATA.detector.upscale
     # Initialize list of datafiles
     # (appending to lists is more efficient than appending to np/pd-structures
     list_of_datafiles = []
@@ -51,15 +52,19 @@ def calc_database(SDATA, DIFFIMAGES):
         arr = stemdiff.io.Datafiles.read(SDATA,datafile)
         # b) Get datafile name
         datafile_name = datafile.relative_to(SDATA.data_dir)
-        # c) Calculate center (of intensity)
+        # c) Calculate intensity center
+        # (to get high precision
+        # (the center must be determined for rescaled/upscaled array
         if DIFFIMAGES.ctype == 2:
             xc,yc = stemdiff.io.Arrays.find_center(
-                arr, DIFFIMAGES.csquare, DIFFIMAGES.cintensity)
+                stemdiff.io.Arrays.rescale(arr, R, order=3),  # rescaled array
+                DIFFIMAGES.csquare*R, DIFFIMAGES.cintensity)  # central region
         elif (DIFFIMAGES.ctype == 1) and (xc == None):
             xc,yc = stemdiff.io.Array.find_center(
-                arr, DIFFIMAGES.csquare, DIFFIMAGES.cintensity)
+                stemdiff.io.Arrays.rescale(arr, R, order=3),  # rescaled array
+                DIFFIMAGES.csquare*R, DIFFIMAGES.cintensity)  # central region
         elif (DIFFIMAGES.ctype == 0) and (xc == None):
-            geometric_center = round(SDATA.detector.detector_size/2)
+            geometric_center = round(SDATA.detector.detector_size*R/2)
             xc,yc = (geometric_center,geometric_center)
         # d) Determine maximum intensity
         max_intensity = np.max(arr)

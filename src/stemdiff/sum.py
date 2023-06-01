@@ -89,27 +89,29 @@ def sum_without_deconvolution(SDATA, DIFFIMAGES, df):
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
     # Prepare array for summation
-    # (for summation without deconvolution array size = detector size
-    # (we will sum original datafiles, just without the borders/edges  
-    # (rescaling to higher resolution can be done AFTER the summation
-    sum_arr   = np.zeros((img_size,img_size), dtype=np.float32)
+    # (for the precise center determination, we must sum upscaled arrays
+    sum_arr   = np.zeros((img_size*R,img_size*R), dtype=np.float32)
     # Sum datafiles
     for index,datafile in df.iterrows():
         # Read datafile to array
         datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
         arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
-        # Reduce array size = cut borders, keep just central region
-        # (some border region is ALWAYS cut, due to detector edge artifacts
+        # Rescale/upscale datafile and THEN remove border region
+        # (i) the accurate image center must be taken from the upscaled image
+        # (ii) then the borders can be removed with respect to the center
+        # (This procedure is necessary to center the images precisely.
+        # (The accurate centers from upscaled images are saved in database.
+        # (Some border region should ALWAYS be cut, for two reasons:
+        # (i) weak/zero diffractions at edges and (ii) detector edge artifacts
+        arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
         xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)
         # Add current datafile/array to summation
         sum_arr += arr
         # Update n = number of summed arrays
         n += 1
-    # Prepare final array:
-    # (1) normalize summation, 2) rescale to higher res, 3) convert to final
+    # Prepare final array = (1) normalize summation and (2) convert to final
     sum_arr = sum_arr/n
-    sum_arr = stemdiff.io.Arrays.rescale(sum_arr, R, order=3)
     final_arr = np.round(sum_arr).astype(np.uint16)
     # Return the final array
     return(final_arr)
@@ -134,7 +136,7 @@ def sum_with_deconvolution_type1(SDATA, DIFFIMAGES, df, psf, iterate):
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
     # Prepare array for summation
-    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    # (for better precision, we use deconvolution on rescaled/upscaled array
     sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
     # Sum datafiles
     # (we sum datafiles cut, rescaled, and deconvoluted
@@ -145,17 +147,18 @@ def sum_with_deconvolution_type1(SDATA, DIFFIMAGES, df, psf, iterate):
         print('.', end='')
         # (1) Read datafile
         datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
-        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
-        # (2) Remove edges
-        # (reason: edges usually contain weak or neglibible difractions
-        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
-        # (3) Upscale array
-        # (reason: deconvolution should be performed at higher resolution
-        # ( -logically, more pixels means smoother PSF => better deconvolution
-        # ( -surprisingly, upscaling increases real final resolution
+        arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
+        # (2) Rescale/upscale datafile and THEN remove border region
+        # (i) the accurate image center must be taken from the upscaled image
+        # (ii) then the borders can be removed with respect to the center
+        # (This procedure is necessary to center the images precisely.
+        # (The accurate centers from upscaled images are saved in database.
+        # (Some border region should ALWAYS be cut, for two reasons:
+        # (i) weak/zero diffractions at edges and (ii) detector edge artifacts
         arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-        # (4) Deconvolute using the external PSF
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)        
+        # (3) Deconvolute using the external PSF
         # (a) save np.max, normalize
         # (reason: deconvolution algorithm requires normalized arrays...
         # (...and we save original max.intensity to re-normalize the result
@@ -167,9 +170,9 @@ def sum_with_deconvolution_type1(SDATA, DIFFIMAGES, df, psf, iterate):
             arr_norm, psf_norm, num_iter=iterate)
         # (c) restore original range of intensities = re-normalize
         arr = arr_deconv * norm_const
-        # (6) Add rescaled and deconvoluted array to summation
+        # (4) Add rescaled and deconvoluted array to summation
         sum_arr += arr
-        # (7) Updated n = number of summed arrays
+        # (5) Updated n = number of summed arrays
         n += 1
     # Finalize and return result ..............................................
     # (a) terminate simple progress indicator
@@ -203,7 +206,7 @@ def sum_with_deconvolution_type2(SDATA, DIFFIMAGES, df, iterate):
     img_size = DIFFIMAGES.imgsize
     psf_size = DIFFIMAGES.psfsize
     # Prepare array for summation
-    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    # (for better precision, we use deconvolution on rescaled/upscaled array
     sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
     # Sum datafiles
     # (we sum datafiles cut, rescaled, and deconvoluted
@@ -215,18 +218,19 @@ def sum_with_deconvolution_type2(SDATA, DIFFIMAGES, df, iterate):
         # (1) Read datafile
         datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
         arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
-        # (2) Remove edges
-        # (reason: edges usually contain weak or neglibible difractions
-        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
-        # (3) Upscale array
-        # (reason: deconvolution should be performed at higher resolution
-        # ( -logically, more pixels means smoother PSF => better deconvolution
-        # ( -surprisingly, upscaling increases real final resolution
+        # (2) Rescale/upscale datafile and THEN remove border region
+        # (i) the accurate image center must be taken from the upscaled image
+        # (ii) then the borders can be removed with respect to the center
+        # (This procedure is necessary to center the images precisely.
+        # (The accurate centers from upscaled images are saved in database.
+        # (Some border region should ALWAYS be cut, for two reasons:
+        # (i) weak/zero diffractions at edges and (ii) detector edge artifacts
         arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-        # (4) Prepare PSF from the center of given array
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)        
+        # (3) Prepare PSF from the center of given array
         psf = stemdiff.psf.PSFtype2.get_psf(arr, psf_size, circular=True)
-        # (5) Deconvolute
+        # (4) Deconvolute
         # (a) save np.max, normalize
         # (reason: deconvolution algorithm requires normalized arrays...
         # (...and we save original max.intensity to re-normalize the result
@@ -238,9 +242,9 @@ def sum_with_deconvolution_type2(SDATA, DIFFIMAGES, df, iterate):
             arr_norm, psf_norm, num_iter=iterate)
         # (c) restore original range of intensities = re-normalize
         arr = arr_deconv * norm_const
-        # (6) Add rescaled and deconvoluted array to summation
+        # (5) Add rescaled and deconvoluted array to summation
         sum_arr += arr
-        # (7) Updated n = number of summed arrays
+        # (6) Updated n = number of summed arrays
         n += 1
     # Finalize and return result ..............................................
     # (a) terminate simple progress indicator
@@ -267,14 +271,14 @@ def sum_with_deconvolution_type3(
         - The parameters are transferred from the sum_files function
     '''
     
-    # Prepare variables .......................................................   
+    # Prepare variables .......................................................
     n = 0
     R = SDATA.detector.upscale
-    # !!! img_size and psf_size must by multiplied by R wherever relevant
+    # ! img_size and psf_size must by multiplied by R wherever relevant
     img_size = DIFFIMAGES.imgsize 
     psf_size = DIFFIMAGES.psfsize
     # Prepare array for summation
-    # (arr size = detector size * R => deconvolution on rescaled/upscaled array
+    # (for better precision, we use deconvolution on rescaled/upscaled array
     sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
     # Sum datafiles
     # (we sum datafiles cut, rescaled, and deconvoluted
@@ -286,17 +290,18 @@ def sum_with_deconvolution_type3(
         # (1) Read datafile
         datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
         arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
-        # (2) Remove edges
-        # (reason: edges usually contain weak or neglibible difractions
-        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-        arr = stemdiff.io.Arrays.remove_edges(arr,img_size,xc,yc)
-        # (3) Upscale array
-        # (reason: deconvolution should be performed at higher resolution
-        # ( -logically, more pixels means smoother PSF => better deconvolution
-        # ( -surprisingly, upscaling increases real final resolution
+        # (2) Rescale/upscale datafile and THEN remove border region
+        # (i) the accurate image center must be taken from the upscaled image
+        # (ii) then the borders can be removed with respect to the center
+        # (This procedure is necessary to center the images precisely.
+        # (The accurate centers from upscaled images are saved in database.
+        # (Some border region should ALWAYS be cut, for two reasons:
+        # (i) weak/zero diffractions at edges and (ii) detector edge artifacts
         arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-        # (4) Prepare PSF from the center of given array
-        # !!! psf_size must by multiplied by R
+        xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+        arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)        
+        # (3) Prepare PSF from the center of given array
+        # ! psf_size must by multiplied by R
         psf = stemdiff.psf.PSFtype3.get_psf(arr, psf_size*R, cake, subtract)   
         if subtract:    
             # Individual background (PSF) subtraction
@@ -304,22 +309,21 @@ def sum_with_deconvolution_type3(
             # All negative values shoud go to zero!
             # (the negative values have result in many side effects and errors!
             arr = np.where(arr < 0, 0, arr)
-        # (5) Deconvolute
-        if iterate > 0:
-            # (a) save np.max, normalize
-            # (reason: deconvolution algorithm requires normalized arrays...
-            # (...and we save original max.intensity to re-normalize the result
-            norm_const = np.max(arr)
-            arr_norm = arr/np.max(arr)
-            psf_norm = psf/np.max(psf)
-            # (b) perform the deconvolution
-            arr_deconv = restoration.richardson_lucy(
-                arr_norm, psf_norm, num_iter=iterate)
-            # (c) restore original range of intensities = re-normalize
-            arr = arr_deconv * norm_const
-        # (6) Add rescaled and deconvoluted array to summation
+        # (4) Deconvolute
+        # (a) save np.max, normalize
+        # (reason: deconvolution algorithm requires normalized arrays...
+        # (...and we save original max.intensity to re-normalize the result
+        norm_const = np.max(arr)
+        arr_norm = arr/np.max(arr)
+        psf_norm = psf/np.max(psf)
+        # (b) perform the deconvolution
+        arr_deconv = restoration.richardson_lucy(
+            arr_norm, psf_norm, num_iter=iterate)
+        # (c) restore original range of intensities = re-normalize
+        arr = arr_deconv * norm_const
+        # (5) Add rescaled and deconvoluted array to summation
         sum_arr += arr
-        # (7) Updated n = number of summed arrays
+        # (6) Updated n = number of summed arrays
         n += 1
     # Finalize and return result ..............................................
     # (a) terminate simple progress indicator
