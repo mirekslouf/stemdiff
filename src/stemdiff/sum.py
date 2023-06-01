@@ -267,10 +267,7 @@ def sum_with_deconvolution_type3(
         - The parameters are transferred from the sum_files function
     '''
     
-    # Prepare variables .......................................................
-    # TADY JE VELMI VÝZNAMNÁ ZMĚNA
-    a = 1
-    
+    # Prepare variables .......................................................   
     n = 0
     R = SDATA.detector.upscale
     # !!! img_size and psf_size must by multiplied by R wherever relevant
