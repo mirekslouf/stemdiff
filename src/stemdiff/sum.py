@@ -268,6 +268,9 @@ def sum_with_deconvolution_type3(
     '''
     
     # Prepare variables .......................................................
+    # TADY JE VELMI VÝZNAMNÁ ZMĚNA
+    a = 1
+    
     n = 0
     R = SDATA.detector.upscale
     # !!! img_size and psf_size must by multiplied by R wherever relevant
@@ -305,17 +308,18 @@ def sum_with_deconvolution_type3(
             # (the negative values have result in many side effects and errors!
             arr = np.where(arr < 0, 0, arr)
         # (5) Deconvolute
-        # (a) save np.max, normalize
-        # (reason: deconvolution algorithm requires normalized arrays...
-        # (...and we save original max.intensity to re-normalize the result
-        norm_const = np.max(arr)
-        arr_norm = arr/np.max(arr)
-        psf_norm = psf/np.max(psf)
-        # (b) perform the deconvolution
-        arr_deconv = restoration.richardson_lucy(
-            arr_norm, psf_norm, num_iter=iterate)
-        # (c) restore original range of intensities = re-normalize
-        arr = arr_deconv * norm_const
+        if iterate > 0:
+            # (a) save np.max, normalize
+            # (reason: deconvolution algorithm requires normalized arrays...
+            # (...and we save original max.intensity to re-normalize the result
+            norm_const = np.max(arr)
+            arr_norm = arr/np.max(arr)
+            psf_norm = psf/np.max(psf)
+            # (b) perform the deconvolution
+            arr_deconv = restoration.richardson_lucy(
+                arr_norm, psf_norm, num_iter=iterate)
+            # (c) restore original range of intensities = re-normalize
+            arr = arr_deconv * norm_const
         # (6) Add rescaled and deconvoluted array to summation
         sum_arr += arr
         # (7) Updated n = number of summed arrays
