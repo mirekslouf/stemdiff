@@ -148,6 +148,7 @@ def plot_2d_diffractograms(data_to_plot,
     for i in range(n): ax[i].axis('off')
     fig.tight_layout()
     if output_file: fig.savefig(output_file, dpi=dpi)
+
     
 class Datafiles:
     
@@ -394,8 +395,9 @@ class Arrays:
 
 
     def show(arr,
-             icut=None, itype=None, R=None, cmap='gray',
-             center=False, csquare=20, cintensity=0.8):
+             icut=None, itype=None, R=None, cmap=None,
+             center=False, csquare=20, cintensity=0.8,
+             plt_type='2D', plt_size=None, colorbar=False):
         '''
         Show 2D-array as an image.
         
@@ -415,10 +417,10 @@ class Arrays:
             For typical 2D-STEM detector with size 256x256 pixels,
             the array should be processed with R=4
             in order to get sufficiently large image for further processing.
-        cmap : str - matplotlib.colormap name, optional, the default is 'gray'
+        cmap : str - matplotlib.colormap name, optional, the default is None
             Matplotlib colormap for plotting of the array.
-            Other interesting or high-contrast options:
-            'viridis', 'plasma', 'magma', ...
+            Interesting or high-contrast options:
+            'gray', 'viridis', 'plasma', 'magma', ...
             The full list of matplotlib colormaps:
             `matplotlib.pyplot.colormaps()`
         center : bool, optional, default is False
@@ -430,21 +432,67 @@ class Arrays:
             The intensity < maximum_intensity * cintensity is regarded as 0
             (a simple temporary background removal in the central square).
             Ignored if center == False.
+        plt_type : str, '2D' or '3D', optional, default is '2D'
+            Type of the plot: 2D-dimensional or 3D-dimensional/surface plot.
+        plt_size : int, optional, default is not
+            If given, we plot only the central region with size = *plt_size*.
+            For central region we use a geometric center - see Technical notes.
+        colorbar : bool, optional, the default is False
+            If True, a colorbar is added to the plot.
     
         Returns
         -------
         Nothing
             The output is the array shown as an image on the screen.
+        
+        Technical notes
+        ---------------
+        * In this function, we *do not* center the image/array.
+          Center can be drawn to 2D-image, but array *is not centered*.
+        * Edges can be removed (using plt_size argument),
+          but only only with respect to the geometrical center,
+          which means that the function shows a *non-cenered central region*.
+        * If you need to show *centered central region* of an array,
+          combine Arrays.find_center + Arrays.remove_edges + Arrays.show
         '''        
         # Prepare array for saving
         arr = Arrays.prepare_for_show_or_save(arr, icut, itype, R)
+        # Remove edges of the plot, if requested
+        # (just simple removal of edges based on geometrical center!
+        # (reason: simplicity; for centering/edge removal we have other funcs
+        if plt_size:
+            Xsize,Ysize = arr.shape
+            xc,yc = (int(Xsize/2),int(Ysize/2))
+            if plt_size:
+                arr = Arrays.remove_edges(arr,plt_size,xc,yc)    
         # Plot array as image
-        plt.imshow(arr, cmap=cmap)
-        # If center argument was given, add intensity center to the plot
-        if center==True:
-            xc,yc = Arrays.find_center(arr,csquare, cintensity)
-            plt.plot(yc,xc, 'r+', markersize=20)
-        # Show the plot
+        # (a) Prepare 2D plot (default)
+        if plt_type=='2D':  
+            if cmap==None:  # if cmap not selected, set default for 2D maps
+                cmap='viridis'
+            plt.imshow(arr, cmap=cmap)
+            if colorbar:  # Add colorbar
+                plt.colorbar()
+            if center==True:  # Mark intensity center in the plot
+                xc,yc = Arrays.find_center(arr,csquare, cintensity)
+                plt.plot(yc,xc, 'r+', markersize=20)
+        # (b) Prepare 3D plot (option; if plt_type is not the default '2D')
+        else:  
+            if cmap==None:  # if cmap not selected, set default for 3D maps
+                cmap='coolwarm'
+            # Prepare meshgrid for 3D-plotting
+            Xsize,Ysize = arr.shape
+            X = np.arange(Xsize)
+            Y = np.arange(Ysize)
+            Xm,Ym = np.meshgrid(X,Y)
+            # Create 3D-plot
+            from mpl_toolkits.mplot3d import Axes3D
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.plot_surface(
+                Xm,Ym,arr, cmap=cmap, linewidth=0, antialiased=False)
+            plt.tight_layout()
+        # (c) Show the plot
         plt.show()
 
 

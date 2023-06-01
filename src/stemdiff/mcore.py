@@ -1,0 +1,5 @@
+'''
+stemdiff.mcore
+--------------
+Multicore processing ...
+'''

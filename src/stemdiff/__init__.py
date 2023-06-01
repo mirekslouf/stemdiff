@@ -15,4 +15,4 @@ Conversion of 4D-STEM dataset to single 2D-powder diffration pattern.
     - In other words, a 4D-STEM dataset is reduced to a 2D-diffraction pattern.
     - The whole method (and final pattern) is called 4D-STEM/PNBD (powder NBD).
 '''
-__version__ = "5.0.3"
+__version__ = "5.0.4"
