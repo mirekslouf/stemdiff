@@ -67,6 +67,9 @@ class TimePix:
     detector_size : integer, default is 256
         Size of the detector in pixels.
         Keep the default unless you have specific reasons.
+    max_intensity : int, default is 11810
+        Maximum intensity of TimePix detector.
+        Keep the default unless you have specific reasons.
     data_type : numpy data type, optional, default is np.uint16
         Type of data, which are saved in the binary file.
         TimePix detector saves the data as 16-bit integers.
@@ -82,15 +85,16 @@ class TimePix:
     TimePix detector object.
     '''
     
-    def __init__(self,
-                 detector_name='TimePix', 
-                 detector_size=256, data_type=np.uint16, upscale=4):
+    def __init__(self, detector_name='TimePix', 
+                 detector_size=256, max_intensity=11810, 
+                 data_type=np.uint16, upscale=4):
         '''
         Initialize parameters of TimePix detector.
         The parameters are described above in class definition.
         '''
         self.detector_name = detector_name
         self.detector_size = detector_size
+        self.max_intensity = max_intensity
         self.data_type = data_type
         self.upscale = upscale
     
