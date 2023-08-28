@@ -53,9 +53,9 @@ Documentation, help and examples
 	* better documentation strings + demo data + improved *master script*
 * Version 5.0 = complete rewrite of v.4.2
 	* all key features of v.4.2 (summation, filtering, deconvolution)
-	* plus several generalizations and improvements, namely:
+	* conversion *2D-diffractogram &rarr; 1D-profile* moved to package EDIFF
+	* several generalizations and improvements, namely:
 		- possibility to define and use more detectors/datafile formats
 		- better filtering (including estimated number of diffractions)
 		- more types of deconvolution algorithms
-	* no conversion of 2D-diffractograms to 1D-profiles
-		- this was improved and moved to a sister package EDIFF
+	
