@@ -139,6 +139,14 @@ class TimePix:
     
 
 class Secom:
+    
+    # TODO: Radim
+    # Zkontroluj, jestli je trida aktualni.
+    # Mozna se neco pokazilo pri aktualizacich?
+    # V tuto chvili to mozna neni uplne dokonceno:
+    #  - detector_name='TimePix' => asi by melo byt 'Secom'
+    #  - a jinak to vypada, ze to je stejne jako TimePix, je aktualizovano?
+    
     '''
     Definition of Secom detector.
     
