@@ -215,4 +215,11 @@ class Secom:
         BlockArray = np.array(arr).astype(np.uint16)
         BlockArray.tofile(fh)
         fh.close()
+
+
+class Arina:
     
+    # TODO: Radim
+    # Stejne jako u detektoru Secom metodou copy+paste+modify :-)
+    
+    pass
