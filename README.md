@@ -57,5 +57,6 @@ Documentation, help and examples
 	* several generalizations and improvements, namely:
 		- possibility to define and use more detectors/datafile formats
 		- better filtering (including estimated number of diffractions)
-		- more types of deconvolution algorithms
+		- more types of deconvolution (experimental; to be finished in v.6.0)
+
 	
