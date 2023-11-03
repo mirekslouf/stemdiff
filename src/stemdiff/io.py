@@ -86,7 +86,7 @@ def plot_2d_diffractograms(data_to_plot,
                            icut=None, cmap='viridis',
                            output_file=None, dpi=300):
     '''
-    Plot a few selected 2D diffraction patterns in a row one-by-one.
+    Plot a few selected 2D diffraction patterns, one-by-one.
 
     Parameters
     ----------
@@ -475,7 +475,7 @@ class Arrays:
                 plt.colorbar()
             if center==True:  # Mark intensity center in the plot
                 xc,yc = Arrays.find_center(arr,csquare, cintensity)
-                plt.plot(yc,xc, 'r+', markersize=20)
+                plt.plot(yc,xc, 'r+', markersize=20) # switch xc,yc for img! 
         # (b) Prepare 3D plot (option; if plt_type is not the default '2D')
         else:  
             if cmap==None:  # if cmap not selected, set default for 3D maps
@@ -587,7 +587,8 @@ class Arrays:
             M = measure.moments(arr,1)
             (xc,yc) = (M[1,0]/M[0,0], M[0,1]/M[0,0])
             (xc,yc) = np.round([xc,yc],2)
-        # Return final values            
+        # Return final values
+        # IMPORTANT: the values works for arrays => switch xc,yc for images!            
         return(xc,yc)
     
 
