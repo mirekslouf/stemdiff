@@ -54,7 +54,7 @@ def sum_datafiles(
     
     Technical notes
     ---------------
-    This function works as signpost.
+    This function works as a signpost.
     It reads the summation parameters and
     calls more specific summation function.
     '''
@@ -119,17 +119,19 @@ def sum_without_deconvolution(SDATA, DIFFIMAGES, df):
 def sum_with_deconvolution_type1(SDATA, DIFFIMAGES, df, psf, iterate):
     '''
     Sum datafiles with 2D-PSF deconvolution of type1.
-    
-    This function is usually called from stemdiff.sum.sum_datafiles.
-    For argument description see the abovementioned function.
-    
+        
     * What is deconvolution type1:
         - Richardson-Lucy deconvolution.
         - 2D-PSF function estimated from files with negligible diffractions.
         - Therefore, the 2D-PSF function is the same for all summed datafiles.
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
+    * Calling and arguments of this function:
+        - This function is usually called from stemdiff.sum.sum_datafiles
+        - General arguments described in sum_datafiles function.
+        - Additional arguments are described below.
+    
+    Additional parameters
+    ---------------------
+    TODO
     '''
     # Prepare variables .......................................................
     n = 0
