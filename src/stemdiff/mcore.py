@@ -57,7 +57,7 @@ from skimage import restoration
 import time
 import os
 import concurrent.futures as future
-import threading
+
 
 
 def sum_datafiles(
@@ -149,7 +149,7 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, func):
     num_workers = os.cpu_count()  # Number of concurrent workers
     datafiles = [datafile[1] for datafile in df.iterrows()] 
     
-    start_time = time.time()
+    # start_time = time.time()
     with future.ThreadPoolExecutor(max_workers=num_workers) as executor:
         # Submit tasks to the executor
         if func != sum_without_deconvolution:
@@ -168,17 +168,16 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, func):
     # Collect results
     deconvolved_data = [f.result() for f in futures]
 
-    end_time = time.time()  # Record end time
-    duration = end_time - start_time
-    print("Total time taken:", duration, "seconds")
     
     # POST-PROCESSING
     # (a) sum deconvoluted data
     sum_arr = sum(deconvolved_data)
+    
     # (b) normalize the final array
     sum_arr = sum_arr/len(deconvolved_data)
+    
     # (c) convert to final array with integer values
-    # (why integer values? => arr with int's can be plotted as image and saved
+    # (why integer values? => arr with int's can be plotted as image and saved)
     final_arr = np.round(sum_arr).astype(np.uint16)
     
     return final_arr
@@ -191,6 +190,7 @@ def sum_without_deconvolution(datafile, SDATA, DIFFIMAGES):
         - This function is usually called from stemdiff.sum.sum_files.
         - The parameters are transferred from the sum_files function
     '''
+    
     # # Check threading
     # thread_name = threading.current_thread().name
     # print(f"{thread_name} started deconvolution on {datafile.DatafileName}")
@@ -293,6 +293,7 @@ def sum_with_deconvolution_type2(datafile, SDATA, DIFFIMAGES, df, iterate):
         - This function is usually called from stemdiff.sum.sum_files.
         - The parameters are transferred from the sum_files function
     '''
+    
     # Prepare variables .......................................................
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
