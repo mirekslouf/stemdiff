@@ -6,8 +6,6 @@ import ssum
 import tqdm
 
 
-
-
 def sum_datafiles(
         SDATA, DIFFIMAGES,
         df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
