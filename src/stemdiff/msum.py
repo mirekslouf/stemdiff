@@ -1,8 +1,12 @@
+
 import numpy as np
 import os
 import concurrent.futures as future
-import stemdiff.ssum 
+import ssum 
 import tqdm
+import sys
+
+
 
 
 def sum_datafiles(
@@ -48,19 +52,15 @@ def sum_datafiles(
     if deconv == 0:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = stemdiff.ssum.no_deconvolution)
+            func = ssum.no_deconvolution)
     elif deconv == 1:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = stemdiff.ssum.deconvolution_type1)
+            func = ssum.deconvolution_type1)
     elif deconv == 2:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = stemdiff.ssum.deconvolution_type2)
-    elif deconv == 3:
-        arr = run_sums(
-            SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = stemdiff.ssum.deconvolution_type3)
+            func = ssum.deconvolution_type2)
     else:
         print(f'Unknown deconvolution type: deconv={deconv}')
         print('Nothing to do.')
@@ -100,21 +100,11 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
         total_tasks = len(datafiles)
         
         for i, file in enumerate(datafiles): 
-            if func == stemdiff.ssum.no_deconvolution:
+            if func == ssum.no_deconvolution:
                 future_obj = executor.submit(func, 
                                              file, 
                                              SDATA, 
                                              DIFFIMAGES)
-            
-            elif func == stemdiff.ssum.deconvolution_type3:
-                future_obj = executor.submit(func, 
-                                             file, 
-                                             SDATA, 
-                                             DIFFIMAGES, 
-                                             psf, 
-                                             iterate, 
-                                             cake,
-                                             subtract)
                 
             else:
                 future_obj = executor.submit(func, 
@@ -127,11 +117,15 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
             futures.append(future_obj)
         
         # Use tqdm to create a progress bar
+        stderr_original = sys.stderr
+        sys.stderr = sys.stdout
         with tqdm.tqdm(total=total_tasks, desc=f"Deconvolving using {func.__name__}") as pbar:
             # Wait for all tasks to complete
             for future_obj in future.as_completed(futures):
                 future_obj.result()
                 pbar.update(1)
+            sys.stderr = stderr_original
+
     
     # Print a new line to complete the progress bar
     print()
@@ -151,4 +145,6 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     final_arr = np.round(sum_arr).astype(np.uint16)
     
     return final_arr
+
+
 
