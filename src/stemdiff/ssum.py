@@ -18,6 +18,7 @@ import stemdiff.io
 import stemdiff.dbase
 from skimage import restoration
 import tqdm
+import sys
 
 
 def sum_postprocess(dat, n):
@@ -27,8 +28,8 @@ def sum_postprocess(dat, n):
     return np.round(dat / n).astype(np.uint16)
 
     
-def sum_datafiles(SDATA, DIFFIMAGES, 
-                  df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
+def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10,
+                  psf=None, cake=None, subtract=None):
     """
      Sum datafiles from a 4D-STEM dataset.
  
@@ -65,47 +66,36 @@ def sum_datafiles(SDATA, DIFFIMAGES,
      function.
      Handles exceptions during processing, closes the progress bar, 
      and returns the post-processed result.
-     """
+    """
 
     # Prepare variables ....................................................... 
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
+    datafiles = [datafile[1] for datafile in df.iterrows()] 
 
     sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
 
-    progress_bar = tqdm.tqdm(total=len(df), 
-                             desc="Processing Database", 
-                             unit="image")
+    # Use tqdm to create a single progress bar for the entire process
+    total_tasks = len(datafiles)
+    stderr_original = sys.stderr
+    sys.stderr = sys.stdout
 
-    try:
-        # Process each image in the database
-        for index, datafile in df.iterrows():
-            if deconv == 0:
-                sum_arr += no_deconvolution(datafile, 
-                                            SDATA, 
-                                            DIFFIMAGES)
-            elif deconv == 1:
-                sum_arr += deconvolution_type1(datafile, 
-                                               SDATA, 
-                                               DIFFIMAGES, 
-                                               psf, 
-                                               iterate)
-            elif deconv == 2:
-                sum_arr += deconvolution_type2(datafile, 
-                                               SDATA, 
-                                               DIFFIMAGES, 
-                                               psf, 
-                                               iterate)
+    with tqdm.tqdm(total=total_tasks, desc="Processing ") as pbar:
+        try:
+            # Process each image in the database
+            for index, datafile in df.iterrows():
+                if deconv == 0:
+                    sum_arr += no_deconvolution(datafile, SDATA, DIFFIMAGES)
+                elif deconv == 1:
+                    sum_arr += deconvolution_type1(datafile, SDATA, DIFFIMAGES, psf, iterate)
+                elif deconv == 2:
+                    sum_arr += deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate)
 
-            # Update progress bar for each image
-            progress_bar.update(1)
+                # Update the progress bar for each image
+                pbar.update(1)
 
-    except Exception as e:
-        print("Error during processing:", e)
-
-    finally:
-        # Close the progress bar after processing the entire database
-        progress_bar.close()
+        except Exception as e:
+            print(f"Error processing a task: {str(e)}")
 
     # Move to the next line after the progress bar is complete
     print('')
@@ -317,5 +307,4 @@ def deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate):
     arr = arr_deconv * norm_const
 
     return(arr)
-
 

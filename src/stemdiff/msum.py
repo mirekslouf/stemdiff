@@ -153,4 +153,3 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     return final_arr
 
 
-
