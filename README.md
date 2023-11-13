@@ -58,5 +58,3 @@ Documentation, help and examples
 		- possibility to define and use more detectors/datafile formats
 		- better filtering (including estimated number of diffractions)
 		- more types of deconvolution (experimental; to be finished in v.6.0)
-
-	

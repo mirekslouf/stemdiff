@@ -8,7 +8,7 @@ PSF = Point Spread Function = XY-spread of the primary beam
 
 import numpy as np
 import matplotlib.pyplot as plt
-import stemdiff.io, stemdiff.dbase
+import stemdiff.io
 import scipy
 
 def save_psf_to_disk(arr, output_file):
@@ -233,7 +233,7 @@ class PSFtype2:
     
     def get_psf(arr, psf_size, circular=False):
         '''
-        Get PSF of type2 = estimated small central region of datafile.
+        Get PSF of type2 = estimated from a small central region.
 
         Parameters
         ----------
