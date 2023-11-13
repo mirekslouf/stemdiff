@@ -1,11 +1,8 @@
-
 import numpy as np
 import os
 import concurrent.futures as future
 import stemdiff.ssum 
 import tqdm
-
-
 
 
 def sum_datafiles(
@@ -154,6 +151,4 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     final_arr = np.round(sum_arr).astype(np.uint16)
     
     return final_arr
-
-
 
