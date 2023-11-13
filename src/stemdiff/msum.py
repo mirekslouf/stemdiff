@@ -2,10 +2,9 @@
 import numpy as np
 import os
 import concurrent.futures as future
-import ssum 
+import stemdiff.ssum as ssum
 import tqdm
 import sys
-
 
 
 
@@ -28,7 +27,6 @@ def sum_datafiles(
         0 = no deconvolution,
         1 = deconvolution based on external PSF,
         2 = deconvolution based on PSF from central region,
-       [ 3 = deconvolution based on PSF from whole datafile.]
     iterate : integer, optional, default is 10  
         Number of iterations during the deconvolution.
     psf : 2D-numpy array or None, optional, default is None
@@ -39,14 +37,13 @@ def sum_datafiles(
     -------
     final_arr : 2D numpy array
         The array is a sum of datafiles;
-        if the datafiles are pre-filtered, we get sum of filtered datafiles,
-        if PSF is given, we get sum of datafiles with PSF deconvolution.
+        if the datafiles are pre-filtered, we get the sum of filtered datafiles,
+        if PSF is given, we get the sum of datafiles with PSF deconvolution.
     
     Technical notes
     ---------------
-    This function works as signpost.
-    It reads the summation parameters and
-    calls more specific summation function.
+    This function works as a signpost.
+    It reads the summation parameters and calls a more specific summation function.
     '''
     
     if deconv == 0:
@@ -61,11 +58,13 @@ def sum_datafiles(
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
             func = ssum.deconvolution_type2)
+
     else:
         print(f'Unknown deconvolution type: deconv={deconv}')
         print('Nothing to do.')
-        return(None)
-    return(arr)
+        return None
+    return arr
+
 
 
 def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
@@ -100,29 +99,36 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
         total_tasks = len(datafiles)
         
         for i, file in enumerate(datafiles): 
-            if func == ssum.no_deconvolution:
-                future_obj = executor.submit(func, 
-                                             file, 
-                                             SDATA, 
-                                             DIFFIMAGES)
-                
-            else:
-                future_obj = executor.submit(func, 
-                                             file, 
-                                             SDATA, 
-                                             DIFFIMAGES, 
-                                             psf, 
-                                             iterate)
-                
-            futures.append(future_obj)
+            try:
+                if func == ssum.no_deconvolution:
+                    future_obj = executor.submit(func, 
+                                                 file, 
+                                                 SDATA, 
+                                                 DIFFIMAGES)
+                    
+                else:
+                    future_obj = executor.submit(func, 
+                                                 file, 
+                                                 SDATA, 
+                                                 DIFFIMAGES, 
+                                                 psf, 
+                                                 iterate)
+                    
+                futures.append(future_obj)
+            except Exception as e:
+                print(f"Error processing file {file}: {str(e)}")
         
         # Use tqdm to create a progress bar
         stderr_original = sys.stderr
         sys.stderr = sys.stdout
-        with tqdm.tqdm(total=total_tasks, desc=f"Deconvolving using {func.__name__}") as pbar:
+        with tqdm.tqdm(total=total_tasks, 
+                       desc=f"Deconvolving using {func.__name__}") as pbar:
             # Wait for all tasks to complete
             for future_obj in future.as_completed(futures):
-                future_obj.result()
+                try:
+                    future_obj.result()
+                except Exception as e:
+                    print(f"Error processing a task: {str(e)}")
                 pbar.update(1)
             sys.stderr = stderr_original
 

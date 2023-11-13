@@ -20,72 +20,82 @@ from skimage import restoration
 import tqdm
 
 
-def sum_postprocess(dat, n):  
-    # (normalize the final array)
-    sum_arr = dat/n
+def sum_postprocess(dat, n):
+    """
+    Normalize and convert the sum array to 16-bit unsigned integers.
+    """
+    return np.round(dat / n).astype(np.uint16)
+
     
-    # print(n)
-    # (c) convert to final array with integer values
-    # (why integer values? => arr with int's can be plotted as image and saved)
-    final_arr = np.round(sum_arr).astype(np.uint16)
-    
-    return final_arr
-    
-def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
-    '''
-    Sum datafiles from a 4D-STEM dataset.
+def sum_datafiles(SDATA, DIFFIMAGES, 
+                  df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
+    """
+     Sum datafiles from a 4D-STEM dataset.
+ 
+     Parameters
+     ----------
+     SDATA : stemdiff.gvars.SourceData object
+         The object describes source data (detector, data_dir, filenames).
+     DIFFIMAGES : stemdiff.gvars.DiffImages object
+         Object describing the diffraction images/patterns.
+     df : pandas.DataFrame object
+         Database with datafile names and characteristics.
+     deconv : int, optional, default is 0
+         Deconvolution type:
+         0 = no deconvolution,
+         1 = deconvolution based on external PSF,
+         2 = deconvolution based on PSF from central region,
+     iterate : integer, optional, default is 10
+         Number of iterations during the deconvolution.
+     psf : 2D-numpy array or None, optional, default is None
+         Array representing 2D-PSF function.
+         Relevant only for deconv = 1.
+ 
+     Returns
+     -------
+     final_arr : 2D numpy array
+         The array is a sum of datafiles;
+         if the datafiles are pre-filtered, we get the sum of filtered datafiles,
+         if PSF is given, we get the sum of datafiles with PSF deconvolution.
+ 
+     Technical notes
+     ---------------
+     This function works as a signpost.
+     It reads the summation parameters and calls a more specific summation 
+     function.
+     Handles exceptions during processing, closes the progress bar, 
+     and returns the post-processed result.
+     """
 
-    Parameters
-    ----------
-    SDATA : stemdiff.gvars.SourceData object
-        The object describes source data (detector, data_dir, filenames).
-    DIFFIMAGES : stemdiff.gvars.DiffImages object
-        Object describing the diffraction images/patterns.
-    df : pandas.DataFrame object
-        Database with datafile names and characteristics.
-    deconv : int, optional, default is 0
-        Deconvolution type:
-        0 = no deconvolution,
-        1 = deconvolution based on external PSF,
-        2 = deconvolution based on PSF from central region,
-        3 = deconvolution based on PSF from whole datafile.
-    iterate : integer, optional, default is 10
-        Number of iterations during the deconvolution.
-    psf : 2D-numpy array or None, optional, default is None
-        Array representing 2D-PSF function.
-        Relevant only for deconv = 1.
-
-    Returns
-    -------
-    final_arr : 2D numpy array
-        The array is a sum of datafiles;
-        if the datafiles are pre-filtered, we get sum of filtered datafiles,
-        if PSF is given, we get sum of datafiles with PSF deconvolution.
-
-    Technical notes
-    ---------------
-    This function works as a signpost.
-    It reads the summation parameters and
-    calls more specific summation function.
-    '''
-
-    # Prepare variables .......................................................
+    # Prepare variables ....................................................... 
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
 
     sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
 
-    progress_bar = tqdm.tqdm(total=len(df), desc="Processing Database", unit="image")
+    progress_bar = tqdm.tqdm(total=len(df), 
+                             desc="Processing Database", 
+                             unit="image")
 
     try:
         # Process each image in the database
         for index, datafile in df.iterrows():
             if deconv == 0:
-                sum_arr += no_deconvolution(datafile, SDATA, DIFFIMAGES)
+                sum_arr += no_deconvolution(datafile, 
+                                            SDATA, 
+                                            DIFFIMAGES)
             elif deconv == 1:
-                sum_arr += deconvolution_type1(datafile, SDATA, DIFFIMAGES, psf, iterate)
+                sum_arr += deconvolution_type1(datafile, 
+                                               SDATA, 
+                                               DIFFIMAGES, 
+                                               psf, 
+                                               iterate)
             elif deconv == 2:
-                sum_arr += deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate)
+                sum_arr += deconvolution_type2(datafile, 
+                                               SDATA, 
+                                               DIFFIMAGES, 
+                                               psf, 
+                                               iterate)
 
             # Update progress bar for each image
             progress_bar.update(1)
@@ -106,13 +116,27 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10, psf=None, cake=No
 
     
 def no_deconvolution(datafile, SDATA, DIFFIMAGES):
-    '''
-    Sum datafiles wihtout deconvolution.
+    """
+    Sum datafiles without deconvolution.
 
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
-    '''
+    Parameters
+    ----------
+    datafile : Datafile
+        Datafile information.
+    SDATA : stemdiff.gvars.SourceData object
+        The object describing source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    
+    Returns
+    -------
+    arr : 2D numpy array
+        The sum of datafiles without deconvolution.
+    
+    Technical notes
+    ---------------
+    The parameters are transferred from the `sum_files` function.
+    """
     
     # # Check threading
     # thread_name = threading.current_thread().name
@@ -145,20 +169,34 @@ def no_deconvolution(datafile, SDATA, DIFFIMAGES):
 
 
 def deconvolution_type1(datafile,SDATA,DIFFIMAGES,psf,iterate):
-    '''
-    Sum datafiles with 2D-PSF deconvolution of type1.
+    """
+    Sum datafiles with Richardson-Lucy deconvolution using a 2D-PSF of type 1.
+
+    Parameters
+    ----------
+    datafile : Datafile
+        Datafile information.
+    SDATA : stemdiff.gvars.SourceData object
+        The object describing source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    psf : 2D-numpy array
+        Array representing the 2D-PSF function.
+    iterate : int
+        Number of iterations during the deconvolution.
+
+    Returns
+    -------
+    arr : 2D numpy array
+        The sum of datafiles with Richardson-Lucy deconvolution.
     
-    This function is usually called from stemdiff.sum.sum_datafiles.
-    For argument description see the abovementioned function.
+    Technical notes
+    ---------------
+    The parameters are transferred from the `sum_datafiles` function.
+    Deconvolution type 1 refers to Richardson-Lucy deconvolution
+    using a 2D-PSF estimated from files with negligible diffractions.
+    """
     
-    * What is deconvolution type1:
-        - Richardson-Lucy deconvolution.
-        - 2D-PSF function estimated from files with negligible diffractions.
-        - Therefore, the 2D-PSF function is the same for all summed datafiles.
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
-    '''
     # # Check threading
     # thread_name = threading.current_thread().name
     # print(f"{thread_name} started deconvolution on {datafile.DatafileName}")
@@ -204,19 +242,33 @@ def deconvolution_type1(datafile,SDATA,DIFFIMAGES,psf,iterate):
 
 
 def deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate):
-    '''
-    Sum datafiles with 2D-PSF deconvolution of type2.
-    
-    This function is usually called from stemdiff.sum.sum_datafiles.
-    For argument description see the abovementioned function.
+    """
+    Sum datafiles with Richardson-Lucy deconvolution using a 2D-PSF of type 2.
 
-    * What is deconvolution type2:
-        - Richardson-Lucy deconvolution.
-        - The 2D-PSF function estimated from central region of each datafile.
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
-    '''
+    Parameters
+    ----------
+    datafile : Datafile
+        Datafile information.
+    SDATA : stemdiff.gvars.SourceData object
+        The object describing source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    psf : 2D-numpy array
+        Array representing the 2D-PSF function.
+    iterate : int
+        Number of iterations during the deconvolution.
+
+    Returns
+    -------
+    arr : 2D numpy array
+        The sum of datafiles with Richardson-Lucy deconvolution.
+    
+    Technical notes
+    ---------------
+    The parameters are transferred from the `sum_datafiles` function.
+    Deconvolution type 2 refers to Richardson-Lucy deconvolution
+    using a 2D-PSF estimated from the central region of each datafile.
+    """
     
     # Prepare variables .......................................................
     R = SDATA.detector.upscale
