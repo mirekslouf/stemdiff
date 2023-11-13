@@ -17,19 +17,11 @@ import numpy as np
 import stemdiff.io
 import stemdiff.dbase
 from skimage import restoration
-
-def print_progress_bar(iteration, total, bar_length=50):
-    """
-    Loading bar to monitor progress of the image deconvolution
-    """
-    progress = (iteration / total)
-    arrow = "=" * int(round(bar_length * progress))
-    spaces = " " * (bar_length - len(arrow))
-    print(f"\r[{arrow}{spaces}] {int(progress * 100)}%", end="")
+import tqdm
 
 
 def sum_postprocess(dat, n):  
-    # (normalize the final array
+    # (normalize the final array)
     sum_arr = dat/n
     
     # print(n)
@@ -39,12 +31,10 @@ def sum_postprocess(dat, n):
     
     return final_arr
     
-def sum_datafiles(
-        SDATA, DIFFIMAGES,
-        df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
+def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
     '''
     Sum datafiles from a 4D-STEM dataset.
-    
+
     Parameters
     ----------
     SDATA : stemdiff.gvars.SourceData object
@@ -58,96 +48,61 @@ def sum_datafiles(
         0 = no deconvolution,
         1 = deconvolution based on external PSF,
         2 = deconvolution based on PSF from central region,
-        3 = deconvolution based on PSF from whole datafile.    
-    iterate : integer, optional, default is 10  
+        3 = deconvolution based on PSF from whole datafile.
+    iterate : integer, optional, default is 10
         Number of iterations during the deconvolution.
     psf : 2D-numpy array or None, optional, default is None
         Array representing 2D-PSF function.
         Relevant only for deconv = 1.
-        
+
     Returns
     -------
     final_arr : 2D numpy array
         The array is a sum of datafiles;
         if the datafiles are pre-filtered, we get sum of filtered datafiles,
         if PSF is given, we get sum of datafiles with PSF deconvolution.
-    
+
     Technical notes
     ---------------
-    This function works as signpost.
+    This function works as a signpost.
     It reads the summation parameters and
     calls more specific summation function.
     '''
-    
 
     # Prepare variables .......................................................
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
-        
-    sum_arr = np.zeros((img_size*R,img_size*R), dtype=np.float32)
-    n = df.shape[0]
 
-    
-    if deconv == 0:
-        for index,datafile in df.iterrows():
+    sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
 
-            sum_arr += no_deconvolution(datafile,
-                                                 SDATA,
-                                                 DIFFIMAGES)
-            # Update and print the progress bar
-            print_progress_bar(index + 1, len(df))
-        print('')
-        arr = sum_postprocess(sum_arr, n)
-            
-    elif deconv == 1:
-        for index,datafile in df.iterrows():
-           # print('.', end='')
-            sum_arr += deconvolution_type1(datafile, 
-                                                SDATA, 
-                                                DIFFIMAGES,
-                                                psf,
-                                                iterate)
-            # Update and print the progress bar
-            print_progress_bar(index + 1, len(df))
-        print('')
-        arr = sum_postprocess(sum_arr, n)
+    progress_bar = tqdm.tqdm(total=len(df), desc="Processing Database", unit="image")
 
-    elif deconv == 2:
-        for index,datafile in df.iterrows():
-            sum_arr += deconvolution_type2(datafile, 
-                                                SDATA, 
-                                                DIFFIMAGES,
-                                                psf,
-                                                iterate)
-            # Update and print the progress bar
-            print_progress_bar(index + 1, len(df))
+    try:
+        # Process each image in the database
+        for index, datafile in df.iterrows():
+            if deconv == 0:
+                sum_arr += no_deconvolution(datafile, SDATA, DIFFIMAGES)
+            elif deconv == 1:
+                sum_arr += deconvolution_type1(datafile, SDATA, DIFFIMAGES, psf, iterate)
+            elif deconv == 2:
+                sum_arr += deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate)
 
-        print('')
-        arr = sum_postprocess(sum_arr, n)
-        
+            # Update progress bar for each image
+            progress_bar.update(1)
 
-    elif deconv == 3:
-        for index,datafile in df.iterrows():
-           # print('.', end='')
-            sum_arr += deconvolution_type3(datafile, 
-                                                SDATA, 
-                                                DIFFIMAGES,
-                                                iterate,
-                                                cake,
-                                                subtract)
-            # Update and print the progress bar
-            print_progress_bar(index + 1, len(df))
-            
-        print('')
-        arr = sum_postprocess(sum_arr, n)
-        
+    except Exception as e:
+        print("Error during processing:", e)
 
-    else:
-        print(f'Unknown deconvolution type: deconv={deconv}')
-        print('Nothing to do.')
-        return(None)
-    
-    return(arr)
+    finally:
+        # Close the progress bar after processing the entire database
+        progress_bar.close()
+
+    # Move to the next line after the progress bar is complete
+    print('')
+
+    # Post-process and return the result
+    return sum_postprocess(sum_arr, len(df))
+
 
     
 def no_deconvolution(datafile, SDATA, DIFFIMAGES):
@@ -311,92 +266,4 @@ def deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate):
 
     return(arr)
 
-
-def deconvolution_type3(datafile, SDATA, DIFFIMAGES, df, iterate, cake, subtract):
-    '''
-    Sum datafiles with 2D-PSF deconvolution of type3.
-    
-    * What deconvolution type3:
-        - Richardson-Lucy deconvolution.
-        - The 2D-PSF function is estimated from each (whole) datafile.
-        - The diffractions in 2D-PSF are removed by means of "cake method".
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
-    '''
-    
-    # Prepare variables .......................................................
-    R = SDATA.detector.upscale
-    # ! img_size and psf_size must by multiplied by R wherever relevant
-    img_size = DIFFIMAGES.imgsize 
-    psf_size = DIFFIMAGES.psfsize
-    # Prepare array for summation
-    # (for better precision, we use deconvolution on rescaled/upscaled array
-    # Sum datafiles
-    # (we sum datafiles cut, rescaled, and deconvoluted
-    # (rescaling DURING the summation => smoother deconvolution function
-    # Sum with deconvolution, PSF from center of image ........................
-    # (1) Read datafile
-    datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
-    arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
-    
-    # (2) Rescale/upscale datafile and THEN remove border region
-    arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-
-    # (i) the accurate image center must be taken from the upscaled image
-    xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-
-    # (ii) then the borders can be removed with respect to the center
-    arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc) 
-
-    # (This procedure is necessary to center the images precisely.
-    # (The accurate centers from upscaled images are saved in database.
-    # (Some border region should ALWAYS be cut, for two reasons:
-    # (i) weak/zero diffractions at edges and (ii) detector edge artifacts
-    
-    # (3) Prepare PSF from the center of given array
-    # ! psf_size must by multiplied by R
-    psf = stemdiff.psf.PSFtype3.get_psf(arr, psf_size*R, cake, subtract)     
-    
-    if subtract:    
-        # Individual background (PSF) subtraction
-        arr = arr - psf
-        # All negative values shoud go to zero!
-        # (the negative values have result in many side effects and errors!
-        arr = np.where(arr < 0, 0, arr)
-            
-    # (4) Deconvolute    
-    # (a) save np.max, normalize
-    # (reason: deconvolution algorithm requires normalized arrays...
-    # (...and we save original max.intensity to re-normalize the result
-    norm_const = np.max(arr)
-    arr_norm = arr/np.max(arr)
-    psf_norm = psf/np.max(psf)
-    
-    # (b) perform the deconvolution
-    arr_deconv = restoration.richardson_lucy(
-        arr_norm, psf_norm, num_iter=iterate)
-
-    # (c) restore original range of intensities = re-normalize
-    arr = arr_deconv * norm_const
-    
-    return(arr)
-
-
-def deconvolution_type4(
-        DETECTOR, DATAFILES, DIFFIMAGES, df, iterate):
-    '''
-    Sum datafiles with 2D-PSF deconvolution of type4.
-    
-    * What is deconvolution type4: 
-        - Richardson-Lucy deconvolution.
-        - The 2D-PSF function estimated from whole datafile (~type3).
-        - The 2D-PSF subtracted from the datafile (background removal).
-        - Final deconvolution with 2D-PSF from central region (~type2).
-    * Parameters of the function:
-        - This function is usually called from stemdiff.sum.sum_files.
-        - The parameters are transferred from the sum_files function
-    '''
-    pass
-    
 
