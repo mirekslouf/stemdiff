@@ -1,7 +1,8 @@
 '''
-stemdiff.sum
+stemdiff.ssum
 ------------
 The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
+Runs on one core only, serial processing.
 
 In stemdiff, we can sum datafiles in with or without 2D-PSF deconvolution.
 We just call function sum_datafiles with various arguments as explained below.
@@ -10,7 +11,6 @@ The key argument determining type of deconvolution is deconv:
 * deconv=0 = sum *without* deconvolution
 * deconv=1 = sum deconvolution, fixed PSF from selected datafiles
 * deconv=2 = sum with deconvolution, individual PSF from central region
-* deconv=3 = sum with deconvolution, individual PSF from whole datafile
 '''
 
 import numpy as np
@@ -77,7 +77,6 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10,
 
     # Use tqdm to create a single progress bar for the entire process
     total_tasks = len(datafiles)
-    stderr_original = sys.stderr
     sys.stderr = sys.stdout
 
     with tqdm.tqdm(total=total_tasks, desc="Processing ") as pbar:
@@ -85,11 +84,21 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, iterate=10,
             # Process each image in the database
             for index, datafile in df.iterrows():
                 if deconv == 0:
-                    sum_arr += no_deconvolution(datafile, SDATA, DIFFIMAGES)
+                    sum_arr += no_deconvolution(datafile, 
+                                                SDATA, 
+                                                DIFFIMAGES)
                 elif deconv == 1:
-                    sum_arr += deconvolution_type1(datafile, SDATA, DIFFIMAGES, psf, iterate)
+                    sum_arr += deconvolution_type1(datafile, 
+                                                   SDATA, 
+                                                   DIFFIMAGES, 
+                                                   psf, 
+                                                   iterate)
                 elif deconv == 2:
-                    sum_arr += deconvolution_type2(datafile, SDATA, DIFFIMAGES, psf, iterate)
+                    sum_arr += deconvolution_type2(datafile, 
+                                                   SDATA, 
+                                                   DIFFIMAGES, 
+                                                   psf, 
+                                                   iterate)
 
                 # Update the progress bar for each image
                 pbar.update(1)
@@ -127,11 +136,7 @@ def no_deconvolution(datafile, SDATA, DIFFIMAGES):
     ---------------
     The parameters are transferred from the `sum_files` function.
     """
-    
-    # # Check threading
-    # thread_name = threading.current_thread().name
-    # print(f"{thread_name} started deconvolution on {datafile.DatafileName}")
-    
+        
     # Prepare variables .......................................................
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
@@ -186,11 +191,7 @@ def deconvolution_type1(datafile,SDATA,DIFFIMAGES,psf,iterate):
     Deconvolution type 1 refers to Richardson-Lucy deconvolution
     using a 2D-PSF estimated from files with negligible diffractions.
     """
-    
-    # # Check threading
-    # thread_name = threading.current_thread().name
-    # print(f"{thread_name} started deconvolution on {datafile.DatafileName}")
-    
+       
     # Prepare variables .......................................................
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize

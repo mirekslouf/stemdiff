@@ -1,5 +1,19 @@
+'''
+stemdiff.msum
+------------
+The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
+Runs on all available cores, parallel processing.
 
-import numpy as np
+
+In stemdiff, we can sum datafiles in with or without 2D-PSF deconvolution.
+We just call function sum_datafiles with various arguments as explained below.
+The key argument determining type of deconvolution is deconv:
+    
+* deconv=0 = sum *without* deconvolution
+* deconv=1 = sum deconvolution, fixed PSF from selected datafiles
+* deconv=2 = sum with deconvolution, individual PSF from central region
+'''
+
 import os
 import concurrent.futures as future
 import stemdiff.ssum as ssum
@@ -122,7 +136,7 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
         stderr_original = sys.stderr
         sys.stderr = sys.stdout
         with tqdm.tqdm(total=total_tasks, 
-                       desc=f"Deconvolving using {func.__name__}") as pbar:
+                       desc="Processing ") as pbar:
             # Wait for all tasks to complete
             for future_obj in future.as_completed(futures):
                 try:
@@ -143,12 +157,8 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     # (a) sum deconvoluted data
     sum_arr = sum(deconvolved_data)
     
-    # (b) normalize the final array
-    sum_arr = sum_arr/len(deconvolved_data)
-    
-    # (c) convert to final array with integer values
-    # (why integer values? => arr with int's can be plotted as image and saved)
-    final_arr = np.round(sum_arr).astype(np.uint16)
+    # (b) post-process data
+    final_arr = ssum.sum_postprocess(sum_arr,len(deconvolved_data))
     
     return final_arr
 
