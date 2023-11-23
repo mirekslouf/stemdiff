@@ -21,11 +21,11 @@ Quick start
 -----------
 
 * See how it works:
-	- Look at [worked example](https://mirekslouf.github.io/stemdiff/docs/examples/ex1_stemdiff.nb.html)
-      in Jupyter.
+	- Look at [worked example](https://www.dropbox.com/scl/fi/ga39mzk7vj9xm7nkkknfu/01_sdiff_au.nb.html.pdf?rlkey=kxmvpfjsvu2gd1f35bfv58gfz&dl=0)
+      in Jupyter
 * Try it yourself:
-	- Download and unzip the [complete example with data](https://www.dropbox.com/scl/fo/321rnw7ywyiym0gsv68r1/h?dl=0&rlkey=ucr4kmaxqmgewsx20soo4rjsm).
-	- Look at `00readme.txt` and run the example in Jupyter.
+	- Download and unzip the [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0)
+	- After downloading, unzip and follow the instructions in *readme* file
 
 Documentation, help and examples
 --------------------------------
@@ -48,7 +48,7 @@ Documentation, help and examples
 * Version 4.2 = like v.4.0 + a few important improvements, such as:
 	* sum just the central region with the strongest diffractions
 	  &rArr; higher speed
-	* 3 centering types: (0) geometry, (1) weight of 1st, (2) individual weights 
+	* 3 centering types: (0) geometry, (1) center of 1st, (2) individual centers 
 	* better definition of summation and centering parameters
 	* better documentation strings + demo data + improved *master script*
 * Version 5.0 = complete rewrite of v.4.2
@@ -60,4 +60,3 @@ Documentation, help and examples
 		- more types of deconvolution (experimental; to be finished in v.6.0)
 * Version 5.1 = (beta) support for parallel processing
 * Version 5.2 = (beta) improvement of diff.patterns in sister package idiff
-	

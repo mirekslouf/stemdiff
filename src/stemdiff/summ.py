@@ -1,5 +1,5 @@
 '''
-stemdiff.msum
+stemdiff.summ
 -------------
 The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
 
