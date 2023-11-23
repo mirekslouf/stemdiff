@@ -1,32 +1,33 @@
 '''
 stemdiff.msum
-------------
+-------------
 The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
-Runs on all available cores, parallel processing.
 
+* The summation runs on all available cores (parallel processing).
+* This module takes functions from stemdiff.sum and runs them parallelly. 
 
-In stemdiff, we can sum datafiles in with or without 2D-PSF deconvolution.
+In stemdiff, we can sum datafiles with or without 2D-PSF deconvolution.
 We just call function sum_datafiles with various arguments as explained below.
 The key argument determining type of deconvolution is deconv:
     
 * deconv=0 = sum *without* deconvolution
-* deconv=1 = sum deconvolution, fixed PSF from selected datafiles
-* deconv=2 = sum with deconvolution, individual PSF from central region
+* deconv=1 = deconvolute using global PSF from low-diffraction datafiles
+* deconv=2 = subtract background + deconvolute using PSF from central region
 '''
+
 
 import os
 import concurrent.futures as future
-import stemdiff.ssum as ssum
+import stemdiff.sum
 import tqdm
 import sys
-
 
 
 def sum_datafiles(
         SDATA, DIFFIMAGES,
         df, deconv=0, iterate=10, psf=None, cake=None, subtract=None):
     '''
-    Sum datafiles from a 4D-STEM dataset.
+    Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
     
     Parameters
     ----------
@@ -63,22 +64,20 @@ def sum_datafiles(
     if deconv == 0:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = ssum.no_deconvolution)
+            func = stemdiff.sum.dfile_without_deconvolution)
     elif deconv == 1:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = ssum.deconvolution_type1)
+            func = stemdiff.sum.dfile_with_deconvolution_type1)
     elif deconv == 2:
         arr = run_sums(
             SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract,
-            func = ssum.deconvolution_type2)
-
+            func = stemdiff.sum.dfile_with_deconvolution_type2)
     else:
         print(f'Unknown deconvolution type: deconv={deconv}')
         print('Nothing to do.')
         return None
     return arr
-
 
 
 def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
@@ -114,20 +113,17 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
         
         for i, file in enumerate(datafiles): 
             try:
-                if func == ssum.no_deconvolution:
-                    future_obj = executor.submit(func, 
-                                                 file, 
-                                                 SDATA, 
-                                                 DIFFIMAGES)
-                    
+                if func == stemdiff.sum.dfile_without_deconvolution:
+                    future_obj = executor.submit(
+                        func, SDATA, DIFFIMAGES, file)
+                elif func == stemdiff.sum.dfile_with_deconvolution_type1:
+                    future_obj = executor.submit(
+                        func, SDATA, DIFFIMAGES, file, psf, iterate)
+                elif func == stemdiff.sum.dfile_with_deconvolution_type2:
+                    future_obj = executor.submit(
+                        func, SDATA, DIFFIMAGES, file, iterate)
                 else:
-                    future_obj = executor.submit(func, 
-                                                 file, 
-                                                 SDATA, 
-                                                 DIFFIMAGES, 
-                                                 psf, 
-                                                 iterate)
-                    
+                    raise Exception("Uknown deconvolution function!")
                 futures.append(future_obj)
             except Exception as e:
                 print(f"Error processing file {file}: {str(e)}")
@@ -146,10 +142,9 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
                 pbar.update(1)
             sys.stderr = stderr_original
 
-    
     # Print a new line to complete the progress bar
     print()
-        
+    
     # Collect results
     deconvolved_data = [f.result() for f in futures]
 
@@ -158,8 +153,6 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     sum_arr = sum(deconvolved_data)
     
     # (b) post-process data
-    final_arr = ssum.sum_postprocess(sum_arr,len(deconvolved_data))
+    final_arr = stemdiff.sum.sum_postprocess(sum_arr,len(deconvolved_data))
     
     return final_arr
-
-

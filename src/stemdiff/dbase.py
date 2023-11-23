@@ -1,10 +1,9 @@
 '''
 stemdiff.dbase
 --------------
-Functions for the reading of 4D-STEM datafiles
-to create database of all files.
+Functions to calculate, save and re-read the database of 4D-STEM datafiles.
 
-* The database is a pandas DataFrame which contains the following
+* The database is a pandas.DataFrame object which contains the following
   data for each datafile:
   filename, XY-center, MaximumIntensity, NoOfPeaks, Entropy.
 * The database enables fast filtering of datafiles
