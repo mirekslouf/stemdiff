@@ -155,4 +155,4 @@ def run_sums(SDATA, DIFFIMAGES, df, psf, iterate, cake, subtract, func):
     # (b) post-process data
     final_arr = stemdiff.sum.sum_postprocess(sum_arr,len(deconvolved_data))
     
-    return final_arr
+    return(final_arr)

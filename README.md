@@ -37,7 +37,7 @@ Documentation, help and examples
 
 ## Versions of STEMDIFF
 
-* Version 1.0 = Matlab: just simple summation of 4D-dataset
+* Version 1.0 = Matlab: just a simple summation of 4D-dataset
 * Version 2.0 = like v.1.0 + post-processing in Jupyter
 * Version 3.0 = Python scripts: summation + S-filtering
 * Version 4.0 = Python package: summation + S-filtering + deconvolution

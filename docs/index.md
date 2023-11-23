@@ -6,7 +6,7 @@ Quick start =
 which shows complete data processing.
 
 External
-[directory with examples](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0);
+[DropBox folder with examples](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0);
 each example contains testing data.
 
 Complete [stemdiff package documentation](./pdoc.html/index.html),
