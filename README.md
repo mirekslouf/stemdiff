@@ -21,11 +21,11 @@ Quick start
 -----------
 
 * See how it works:
-	- Look at [worked example](https://www.dropbox.com/scl/fi/ga39mzk7vj9xm7nkkknfu/01_sdiff_au.nb.html.pdf?rlkey=kxmvpfjsvu2gd1f35bfv58gfz&dl=0)
-      in Jupyter
+	- Look at [worked example](https://www.dropbox.com/scl/fi/moic552kc35dl95wr6qji/01_sdiff_au.nb.html.pdf?rlkey=olaso0gwcousxezhvaaqm6w0q&dl=0)
+      in Jupyter.
 * Try it yourself:
-	- Download and unzip the [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0)
-	- After downloading, unzip and follow the instructions in *readme* file
+	- Download [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0).
+	- After downloading, unzip and follow the instructions in *readme* file.
 
 Documentation, help and examples
 --------------------------------
