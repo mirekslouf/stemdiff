@@ -12,7 +12,7 @@ and how to read/save datafiles in given detector format.
 All detector parameters are described below in TimePix detector class.
 Therefore, the new classes = new detectors can be added quite easily:
 
-* Copy class describing detector TimePix.
+* Copy the class describing TimePix detector.
 * Rename the class as needed, for example: My_new_STEM_detector.
 * Re-define all properties and methods of the new class as necessary.
 * When you are done, the new detector can be used within STEMDIFF package.
@@ -140,7 +140,6 @@ class TimePix:
     
 
 class Secom:
-    
     '''
     Definition of Secom detector.
     
@@ -152,8 +151,10 @@ class Secom:
     detector_size : integer, default is 2048
         Size of the detector in pixels.
         Keep the default unless you have specific reasons.
-    data_type : tiff files
-        
+    data_type : numpy data type, optional, default is np.uint16
+        Type of data, which are saved in the Secom TIFF-files.
+        Secom detector saves the data as 16-bit TIFF files.
+        This corresponds to np.uint16 (more info in NumPy documentation).
     upscale : integer, default is 1
         Upscaling coefficient.
         Final image size = detector_size * upscale.
@@ -208,6 +209,6 @@ class Secom:
 class Arina:
     
     # TODO: Radim
-    # Stejne jako u detektoru Secom metodou copy+paste+modify :-)
+    # The same like for Secom, using method copy+paste+modify :-)
     
     pass

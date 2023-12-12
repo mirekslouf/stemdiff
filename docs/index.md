@@ -1,11 +1,12 @@
 STEMDIFF :: Documentation and examples
 --------------------------------------
 
-Quick start = [Jupyter notebook](./examples/ex1_stemdiff.nb.html)
+Quick start =
+[Jupyter notebook](https://www.dropbox.com/scl/fi/ga39mzk7vj9xm7nkkknfu/01_sdiff_au.nb.html.pdf?rlkey=kxmvpfjsvu2gd1f35bfv58gfz&dl=0)
 which shows complete data processing.
 
 External
-[directory with examples](https://www.dropbox.com/scl/fo/321rnw7ywyiym0gsv68r1/h?dl=0&rlkey=ucr4kmaxqmgewsx20soo4rjsm);
+[DropBox folder with examples](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0);
 each example contains testing data.
 
 Complete [stemdiff package documentation](./pdoc.html/index.html),
