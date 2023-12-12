@@ -205,7 +205,6 @@ class Secom:
         im = Image.fromarray(arr.astype(np.uint16))
         im.save(filename)
 
-
 class Arina:
     
     # TODO: Radim
