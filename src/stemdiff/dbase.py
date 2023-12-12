@@ -43,9 +43,8 @@ def calc_database(SDATA, DIFFIMAGES):
     list_of_datafiles = []
     # Pre-calculate additional variables
     # (it would be wasteful to calculate them in each for-cycle loop
-    # half_of_csquare = round(DIFFIMAGES.csquare/2)
     neighborhood_matrix = np.ones((DIFFIMAGES.peak_dist,DIFFIMAGES.peak_dist))
-    # Go through datafiles and calculated their entropy
+    # Go through datafiles and calculate their entropy
     for datafile in SDATA.filenames:
         # a) Read datafile
         arr = stemdiff.io.Datafiles.read(SDATA,datafile)
@@ -66,7 +65,13 @@ def calc_database(SDATA, DIFFIMAGES):
             geometric_center = round(SDATA.detector.detector_size*R/2)
             xc,yc = (geometric_center,geometric_center)
         # d) Determine maximum intensity
-        max_intensity = np.max(arr)
+        # NOTE: max_intensity must be saved as float
+        # Reason: when we later convert to pandas.Dataframe
+        # ...the datatypes are inferred from the first value in each column
+        # ...which may not be correct if the first integer is a small number
+        # ...as the estimated datatype may be int16
+        # ...and this may not work for larger values in the next datafiles
+        max_intensity = float(np.max(arr))
         # e) Estimate number of peaks (local maxima)
         no_of_maxima = stemdiff.io.Arrays.number_of_peaks(arr,
             peak_height = DIFFIMAGES.peak_height, 
@@ -81,6 +86,7 @@ def calc_database(SDATA, DIFFIMAGES):
     df = pd.DataFrame(
         list_of_datafiles,
         columns=['DatafileName','Xcenter','Ycenter', 'MaxInt', 'Peaks','S'])
+    
     # Return the dataframe containing names of datafiles + their entropies
     return(df)
 
