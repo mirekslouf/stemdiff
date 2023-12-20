@@ -3,11 +3,11 @@ stemdiff.dbase
 --------------
 Functions to calculate, save and re-read the database of 4D-STEM datafiles.
 
-* The database is a pandas.DataFrame object which contains the following
-  data for each datafile:
-  filename, XY-center, MaximumIntensity, NoOfPeaks, Entropy.
+* The database is saved as a pandas.DataFrame object,
+  which contains the following data for each datafile:
+  filename, XY-center coordinates, MaximumIntensity, NoOfPeaks, ShannonEntropy.
 * The database enables fast filtering of datafiles
-  and fast access to each datafile features,
+  and fast access to datafile features,
   which do not have to be re-calculated repeatedly.
 '''
 
@@ -18,15 +18,16 @@ from skimage import measure
     
 def calc_database(SDATA, DIFFIMAGES):
     """
-    Read 4D-STEM datafiles and calculate database of all files,
-    which contains [filename, S-entropy and XY-center] for each datafile.
+    Read 4D-STEM datafiles and calculate database of all files, which contains
+    [filename, XY-center coordinates, MaxIntensity, NoOfPeaks, ShannonEntropy]
+    for each datafile.
         
     Parameters
     ----------
     SDATA : stemdiff.gvars.SourceData object
         The object describes source data (detector, data_dir, filenames).
     DIFFIMAGES : stemdiff.gvars.DiffImages object
-        Object describing the diffraction images/patterns.
+        The object describing the diffraction images/patterns.
         
     Returns
     -------
@@ -92,14 +93,14 @@ def calc_database(SDATA, DIFFIMAGES):
 
 def save_database(df, output_file):
     """
-    Save database, which contains [filenames, entropies and XY-centers]
-    of all 4D-STEM datafiles; the dbase is saved as pickled object/zip-file.
+    Save the database of 4D-STEM datafiles;
+    the dbase is a pandas.DataFrame object saved as pickled object/zip-file.
         
     Parameters
     ----------
-    df : pandas DataFrame object
-        This object is a database of all datafiles,
-        which contains [filenames, entropies and XY-centers]
+    df : pandas.DataFrame object
+        This object is a database of all 4D-STEM datafiles,
+        which contains basic characteristics (filename, XY-center, entropy ...)
         of each datafile in 4D-STEM dataset.
     output_file : str
         Filename of the output file (without extension).
@@ -114,8 +115,7 @@ def save_database(df, output_file):
     
 def read_database(input_database):
     """
-    Read database, which contains [filenames, entropies and centers]
-    of all 4D-STEM datafiles.
+    Read the calculated database of 4D-STEM datafiles.
     
     Parameters
     ----------
@@ -124,11 +124,12 @@ def read_database(input_database):
         * pandas.Dataframe = dataframe that contains the database.
         * Why two possile types of input?
           If the database is in memory in the form of pandas.DataFrame
-          (which is quite common), it is useles to re-read it from file.
+          (which is quite common when using STEMDIFF package),
+          it is useles to re-read it from file.
           
     Returns
     -------
-    df : pandas DataFrame object
+    df : pandas.DataFrame object
         Database that has been read from disk or pandas.Dataframe.
     """
     # Read database from [input_file]

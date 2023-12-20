@@ -17,6 +17,13 @@ Principle
 
 <img src="https://mirekslouf.github.io/stemdiff/docs/assets/principle.pptx.png" alt="STEMDIFF principle" width="500"/>
 
+Installation
+------------
+* Requirement: Python with sci-modules: numpy, matplotlib, scipy, pandas
+* `pip install scikit-image` = 3rd party package for advanced image processing 
+* `pip install idiff` = to improve diffractograms (remove noise, background ...)
+* `pip install stemdiff` = STEMDIFF package itself (uses all packages above)
+
 Quick start
 -----------
 

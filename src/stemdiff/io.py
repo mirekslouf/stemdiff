@@ -12,12 +12,12 @@ Three types of stemdiff.io objects
 General strategy for working with stemdiff.io objects
     
 * Datafiles and Images are usually
-  not used directly, but just converted to Array objects.
+  not used directly, but just converted to np.array objects.
 * All data manipulation (showing, scaling, saving ...)
-  is done within Array objects.
+  is done within np.array objects.
 * Datafiles and Images have (intentionally) just a limited amount of methods,
   the most important of which is read - this method simply reads
-  Datafile/Image to an array.
+  Datafile/Image to a np.array.
 
 Additional stemdiff.io utilities
 
@@ -86,7 +86,7 @@ def plot_2d_diffractograms(data_to_plot,
                            icut=None, cmap='viridis',
                            output_file=None, dpi=300):
     '''
-    Plot a few selected 2D diffraction patterns, one-by-one.
+    Plot a few selected 2D diffraction patterns in a row, one-by-one.
 
     Parameters
     ----------
@@ -99,7 +99,8 @@ def plot_2d_diffractograms(data_to_plot,
         (i) PNG-file or (ii) 2D-array containing the 2D diffractogram. 
     integer, optional, default is None
         Cut of intensity;
-        if icut = 300, all image intensities > 300 will be equal to 300.
+        if icut = 300, all image intensities > 300 will be equal to 300
+        (this is used just for plotting; the array values are not changed).
     cmap : str - matplotlib.colormap name, optional, the default is 'viridis'
         Matplotlib colormap for plotting of the diffractogram.
         Other interesting or high-contrast options:
@@ -111,13 +112,13 @@ def plot_2d_diffractograms(data_to_plot,
         the plot is also saved in *output_file* image
         with *dpi* resolution (dpi is specified by the following argument).
     dpi : int, optional, default is 300
-        The (optional) argument gives resolution of (optional) output image. 
+        The (optional) argument gives resolution of (an optional) output image. 
 
     Returns
     -------
-    None.
-    The output is the plot of the diffraction patterns on the screen.
-    If argument *ouput_file* is given, the plot is also saved as an image. 
+    None
+        The output is the plot of the diffraction patterns on the screen.
+        If argument *ouput_file* is given, the plot is also saved as an image. 
     '''
     # Initialize
     n = len(data_to_plot)
@@ -149,9 +150,13 @@ def plot_2d_diffractograms(data_to_plot,
     fig.tight_layout()
     if output_file: fig.savefig(output_file, dpi=dpi)
 
-    
+
+
 class Datafiles:
-    
+    '''
+    Datafiles class = a collection of functions
+    that work with datafiles from 2D-STEM detector saved as files in a disk.
+    '''
 
     def read(SDATA, filename):
         '''
@@ -220,7 +225,7 @@ class Datafiles:
             
         Technical note
         --------------
-        This function just combines Datafiles.read + Arrays.show functions.
+        * This function just combines Datafiles.read + Arrays.show functions.
         '''
         # Read datafile to array
         arr = Datafiles.read(SDATA, filename)
@@ -288,7 +293,7 @@ class Datafiles:
         
         Technical note
         --------------
-        This function uses Datafiles.read and than Arrays.functions.
+        * This function uses Datafiles.read and than Arrays.functions.
         '''
         # Initialization
         file_counter = 0
@@ -353,10 +358,12 @@ class Datafiles:
         Nothing
             The output are the files and their characteristics on the screen.
         
-        Technical note
-        --------------
-        This function uses Datafiles.read function to read data from database.
-        As it uses database data, it cannot use standard Arrays functions. 
+        Technical notes
+        ---------------
+        * This function uses Datafiles.read function
+          to read data from database.
+        * As the function uses database data,
+          it cannot use standard Arrays functions. 
         '''
         # Initialize file counter
         file_counter = 0
@@ -391,7 +398,12 @@ class Datafiles:
             if file_counter >= max_files: break
 
 
+
 class Arrays:
+    '''
+    Arrays class = a collection of functions
+    that work with 2D-arrays, which represent datafiles from 2D-STEM detector.
+    '''
 
 
     def show(arr,
@@ -641,8 +653,8 @@ class Arrays:
     
         Returns
         -------
-        2D numpy array
-            The array has new_size = original_size * R
+        arr : 2D numpy array
+            The array has `new_size = original_size * R`.
         '''
         # Keep original value of array maximum.
         arr_max = np.max(arr)
@@ -720,8 +732,33 @@ class Arrays:
         
 
     def save_as_datafile(SDATA, arr, filename):
+        '''
+        Save array as a datafile (in current detector format).
+
+        Parameters
+        ----------
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        arr : 2D numpy array
+            Array or image object to save.
+        filename : str or path
+            Name of the file to save.
+
+        Returns
+        -------
+        None
+            The output is *arr* saved as a datafile named *filename*.
+            The format of the saved datafile corresponds to current detector.
+        
+        Technical notes
+        ---------------
+        * This function io.Arrays.save_as_datafile
+          is just a wrapper that calls *save_datafile* function
+          for given detector.
+        * The detector object is accessible in this function
+          thanks to SDATA argument as *SDATA.detector*.
+        '''
         SDATA.detector.save_datafile(arr, filename) 
-        pass
 
 
     def prepare_for_show_or_save(arr, icut=None, itype=None, R=None):
@@ -742,7 +779,7 @@ class Arrays:
         R: integer, optional, default is None
             Rescale coefficient;
             the input array is rescaled/enlarged R-times.
-            For typical 2D-STEM detector with size 256x256 pixels,
+            For smaller 2D-STEM detectors with size 256x256 pixels,
             the array should be saved with R = 2 (or 4)
             in order to get sufficiently large image for further processing.
     
@@ -768,7 +805,12 @@ class Arrays:
         return(arr)
 
 
+
 class Images:
+    '''
+    Images class = a collection of functions
+    that work with images representing datafiles from 2D-STEM detector.
+    '''
 
 
     def read(image_name, itype='8bit'):

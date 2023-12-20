@@ -1,12 +1,13 @@
 '''
 stemdiff.detectors
 ------------------
-Known detectors for package stemdiff.
+Description of detectors that can be used in stemdiff package.
 
 This module is basically a container of classes.
-Each class describes a pixelated STEM detector, from which we get datafiles.
-The description is not difficult - all we need to define is
-detector name, detector size, data type, upscaling coefficient,
+Each class describes a 2D STEM detector, from which we can read datafiles.
+The description of the detector not difficult.
+All we need to define is the detector name,
+a few technical parameters described below,
 and how to read/save datafiles in given detector format.
 
 All detector parameters are described below in TimePix detector class.
@@ -22,7 +23,9 @@ import sys
 import inspect
 import numpy as np
 from PIL import Image
-    
+
+
+  
 def list_of_known_detectors():
     '''
     Get a list of known detectors = classes defined in stemdiff.detectors.
@@ -42,6 +45,7 @@ def list_of_known_detectors():
     # Return list of known detectors
     return(detectors)
 
+
 def print_known_detectors():
     '''
     Print a list of known detectors = classes defined in stemdiff.detectors.
@@ -55,6 +59,8 @@ def print_known_detectors():
     print('List of knonw detectors = classes defined in stemdiff.detectors:')
     for detector in detectors:
         print(detector)
+
+
 
 class TimePix:
     '''
@@ -83,22 +89,30 @@ class TimePix:
     
     Returns
     -------
-    TimePix detector object.
+    TimePix detector object
+    
+    Format of TimePix datafiles
+    ---------------------------
+    * binary data files, usually with DAT extension
+    * a 1D arrays of 16-bit intensities = np.uint16 values
     '''
+
     
     def __init__(self, detector_name='TimePix', 
                  detector_size=256, max_intensity=11810, 
                  data_type=np.uint16, upscale=4):
         '''
-        Initialize parameters of TimePix detector.
-        The parameters are described above in class definition.
+        * The initialization of TimePix detector objects.
+        * The parameters are described above in class definition.
+        * Auto-documentation list (some of) the initialization parameters.
         '''
         self.detector_name = detector_name
         self.detector_size = detector_size
         self.max_intensity = max_intensity
         self.data_type = data_type
         self.upscale = upscale
-    
+
+        
     def read_datafile(self, filename, arr_size=None):
         '''
         Read datafile in TimePix detector format.
@@ -108,9 +122,11 @@ class TimePix:
         filename : str or path
             Name of the datafile to read.
         arr_size : int, optional, default is None
-            Size of the square array to reade.
-            Typically, we read original datafiles with size = detector.size.
-            Nonetheless, we can read saved also datafiles with size = arr_size.
+            Size of the square array to read.
+            Typically, we read original datafiles,
+            whose size = detector.size.
+            Nonetheless, the datafiles might have been saved
+            with a smaller size = arr_size.
 
         Returns
         -------
@@ -125,10 +141,24 @@ class TimePix:
         # Reshape the array and return
         arr = arr.reshape(edge, edge)
         return(arr)
+
     
     def save_datafile(self, arr, filename):
         '''
         Save 2D-array as a datafile in the TimePix detector format.
+        
+        Parameters
+        ----------
+        arr : numpy array
+            The array to save in the datafile with [filename].
+        filename : str or path-like object
+            The filename of the saved array.
+        
+        Returns
+        -------
+        None
+            The result is the file named *filename*,
+            containing the *arr* in stemdiff.detectors.TimePix format.
         '''
         # Slightly modified according to
         # https://stackoverflow.com/q/43211616
@@ -138,6 +168,7 @@ class TimePix:
         BlockArray.tofile(fh)
         fh.close()
     
+
 
 class Secom:
     '''
@@ -164,7 +195,13 @@ class Secom:
     Returns
     -------
     Secom detector object.
+    
+    Format of Secom datafiles
+    ---------------------------
+    * image files, TIFF format
+    * 16-bit images = images containing np.uint16 values
     '''
+
     
     def __init__(self, detector_name='Secom', 
                  detector_size=2048, max_intensity=65536,
@@ -178,8 +215,9 @@ class Secom:
         self.max_intensity = max_intensity
         self.data_type = data_type
         self.upscale = upscale
+
     
-    def read_datafile(self, filename, arr_size=None):
+    def read_datafile(self, filename):
         '''
         Read datafile in Secom detector format.
 
@@ -201,13 +239,28 @@ class Secom:
     def save_datafile(self, arr, filename):
         '''
         Save 2D-array as a datafile in the Secom detector format.
+        
+        Parameters
+        ----------
+        arr : numpy array
+            The array to save in the datafile with [filename].
+        filename : str or path-like object
+            The filename of the saved array.
+        
+        Returns
+        -------
+        None
+            The result is the file named *filename*,
+            containing the *arr* in stemdiff.detectors.Secom format.
         '''
         im = Image.fromarray(arr.astype(np.uint16))
         im.save(filename)
 
 class Arina:
     
-    # TODO: Radim
-    # The same like for Secom, using method copy+paste+modify :-)
+    '''
+    * TODO: Radim
+    * The same like for Secom, using method copy+paste+modify :-)
+    '''
     
     pass

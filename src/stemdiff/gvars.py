@@ -22,7 +22,7 @@ In 99% cases, we just add the following code at beginning of STEMDIFF script
 >>>     data_dir  = r'D:/DATA.SH/STEMDIFF/SAMPLE_8',
 >>>     filenames = r'??/*.dat')
 >>>
->>> # Set parameters of diffractin images
+>>> # Set parameters of diffraction images
 >>> # (we consider only central region with imgsize=100
 >>> # (size of the region for PSF estimate will be: psfsize=30
 >>> # (values of other/all args => documentation of stemdiff.gvars.DiffImages
@@ -33,6 +33,7 @@ In 99% cases, we just add the following code at beginning of STEMDIFF script
 '''
 
 from pathlib import Path
+
 
 class SourceData:
     '''
@@ -57,12 +58,14 @@ class SourceData:
 
     def __init__(self, detector, data_dir, filenames):
         '''
-        Initialize DataFiles object.
-        The parameters are described above in class definition.
+        * The initialization of SourceData objects.
+        * The parameters are described above in class definition.
+        * Auto-documentation list (some of) the initialization parameters.
         '''
         self.detector = detector
         self.data_dir = Path(data_dir)
         self.filenames = self.data_dir.glob(filenames)
+
         
 class DiffImages:
     '''
@@ -102,9 +105,10 @@ class DiffImages:
                  ctype=2, csquare=20, cintensity=0.8,
                  peak_height=100, peak_dist=3):
         '''
-        Initialize parameters for center determination.
-        The parameters are described above in class definition.
-        '''
+        * The initialization of DiffImages objects.
+        * The parameters are described above in class definition.
+        * Auto-documentation list (some of) the initialization parameters.
+        ''' 
         self.imgsize = imgsize
         self.psfsize = psfsize
         self.ctype = ctype

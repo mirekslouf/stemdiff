@@ -3,16 +3,25 @@ stemdiff.sum
 ------------
 The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
 
-* The summation runs in a standard way on a single core (serial processing).
-* To run summmation on multiple cores, use the sister module stemdiff.summ.
+* stemdiff.sum = this module, which runs on a single core (serial processing)
+* stemdiff.summ = sister module running on multiple cores (parallel processing)
 
-In stemdiff, we can sum datafiles with or without 2D-PSF deconvolution.
-We just call function sum_datafiles with various arguments as explained below.
-The key argument determining type of deconvolution is deconv:
+To perform the summation, we just call function sum_datafiles:
+
+* serial   : stemdiff.sum.sum_datafiles(SDATA, DIFFIMAGES, df, deconv, ...)
+* parallel : stemdiff.summ.sum_datafiles(SDATA, DIFFIMAGES, df, deconv, ...)
+
+The initial arguments are:
+
+* SDATA = stemdiff.gvars.SourceData object = description of source data
+* DIFFIMAGES = stemdiff.gvars.DiffImages object = description of diffractograms
+* df = pre-calculated database of datafiles/diffratograms to sum
+
+Key argument is deconv, which determines the processing type:
     
 * deconv=0 = sum *without* deconvolution
-* deconv=1 = deconvolute using global PSF from low-diffraction datafiles
-* deconv=2 = subtract background + deconvolute using PSF from central region
+* deconv=1 = R-L deconvolution with global PSF from low-diffraction datafiles
+* deconv=2 = subtract background + R-L deconvolution with PSF from the center
 '''
 
 
@@ -60,11 +69,11 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
  
      Technical notes
      ---------------
-     This function works as a signpost.
-     It reads the summation parameters and calls a more specific summation 
-     function.
-     Handles exceptions during processing, closes the progress bar, 
-     and returns the post-processed result.
+     * This function works as a signpost.
+     * It reads the summation parameters and calls a more specific summation 
+       functions (which aren NOT called directly by the end-user).
+     * It employs progress bar, handles possible exceptions,
+       and returns the final array (= post-processed and normalized array).
     """
 
     # (1) Prepare variables for summation 
@@ -81,7 +90,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
     # (3) Run summations
     # (summations will run with tqdm
     # (we will use several types of summations
-    # (each summations uses individual datafiles prepared in a different way
+    # (each summations uses datafiles prepared in a different way
     with tqdm.tqdm(total=total_tasks, desc="Processing ") as pbar:
         try:
             # Process each image in the database
@@ -112,7 +121,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
 
 def sum_postprocess(sum_of_arrays, n):
     """
-    Normalize and convert the sum array to 16-bit unsigned integers.
+    Normalize and convert the summed array to 16-bit unsigned integers.
     
     Parameters
     ----------
@@ -121,7 +130,7 @@ def sum_postprocess(sum_of_arrays, n):
         usually from stemdiff.sum.sum_datafiles function.
     n : int
         Number of summed arrays -
-        usually from stemdiff.sum.sum_datafiles func.
+        usually from stemdiff.sum.sum_datafiles function.
     
     Returns
     -------
@@ -135,7 +144,7 @@ def sum_postprocess(sum_of_arrays, n):
     
 def dfile_without_deconvolution(SDATA, DIFFIMAGES, datafile):
     """
-    Prepare datafile for summation without deconvolution.
+    Prepare datafile for summation without deconvolution (deconv=0).
 
     Parameters
     ----------
@@ -192,7 +201,7 @@ def dfile_without_deconvolution(SDATA, DIFFIMAGES, datafile):
 
 def dfile_with_deconvolution_type1(SDATA, DIFFIMAGES, datafile, psf, iterate):
     """
-    Prepare datafile for summation with deconvolution type1.
+    Prepare datafile for summation with deconvolution type1 (deconv=1).
 
     Parameters
     ----------
@@ -267,7 +276,7 @@ def dfile_with_deconvolution_type1(SDATA, DIFFIMAGES, datafile, psf, iterate):
 
 def dfile_with_deconvolution_type2(SDATA, DIFFIMAGES, datafile, iterate):
     """
-    Prepare datafile for summation with deconvolution type1.
+    Prepare datafile for summation with deconvolution type2 (deconv=2).
 
     Parameters
     ----------

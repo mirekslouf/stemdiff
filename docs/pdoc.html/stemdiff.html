@@ -52,19 +52,17 @@ stemdiff    </h1>
 
                         <div class="docstring"><h6 id="stemdiff-package">STEMDIFF package</h6>
 
-<p>Conversion of 4D-STEM dataset to single 2D-powder diffration pattern.</p>
+<p>Conversion of a 4D-STEM dataset to a 2D-powder diffration pattern.</p>
 
 <ul>
-<li>Input = 4D-STEM dataset
+<li>Input = 4D-STEM dataset = 2D-array of 2D-NBD patterns.
 <ul>
-<li>The 4D-STEM dataset = 2D-array of 2D-NBD (nanobeam diffraction) patterns.</li>
 <li>2D-array = usually one (or more) two-dimensional scanning array(s).</li>
-<li>2D-NBD's = monocrystalline-like nanobeam diffraction patterns.</li>
+<li>2D-NBD = monocrystalline-like nanobeam diffraction pattern.</li>
 </ul></li>
 <li>Output = 2D-powder diffraction pattern
 <ul>
-<li>A 2D-powder diffraction pattern is calculated from a 4D-STEM dataset.</li>
-<li>The calculation is basically a specific summation of 2D-NBD patterns.</li>
+<li>The final 2D-diffractogram is a specific summation of 2D-NBD patterns.</li>
 <li>In other words, a 4D-STEM dataset is reduced to a 2D-diffraction pattern.</li>
 <li>The whole method (and final pattern) is called 4D-STEM/PNBD (powder NBD).</li>
 </ul></li>
@@ -103,55 +101,53 @@ stemdiff    </h1>
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&#39;&#39;&#39;</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">STEMDIFF package</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">----------------</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">Conversion of 4D-STEM dataset to single 2D-powder diffration pattern.</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">Conversion of a 4D-STEM dataset to a 2D-powder diffration pattern.</span>
 </span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">* Input = 4D-STEM dataset</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    - The 4D-STEM dataset = 2D-array of 2D-NBD (nanobeam diffraction) patterns.</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">    - 2D-array = usually one (or more) two-dimensional scanning array(s).</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">    - 2D-NBD&#39;s = monocrystalline-like nanobeam diffraction patterns.</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">* Output = 2D-powder diffraction pattern</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">    - A 2D-powder diffraction pattern is calculated from a 4D-STEM dataset.</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    - The calculation is basically a specific summation of 2D-NBD patterns.</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">    - In other words, a 4D-STEM dataset is reduced to a 2D-diffraction pattern.</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">    - The whole method (and final pattern) is called 4D-STEM/PNBD (powder NBD).</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="sd">* Input = 4D-STEM dataset = 2D-array of 2D-NBD patterns.</span>
+</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="sd">    - 2D-array = usually one (or more) two-dimensional scanning array(s).</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="sd">    - 2D-NBD = monocrystalline-like nanobeam diffraction pattern.</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="sd">* Output = 2D-powder diffraction pattern</span>
+</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">    - The final 2D-diffractogram is a specific summation of 2D-NBD patterns.</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="sd">    - In other words, a 4D-STEM dataset is reduced to a 2D-diffraction pattern.</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    - The whole method (and final pattern) is called 4D-STEM/PNBD (powder NBD).</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="sd">    </span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">STEMDIFF modules:</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">    </span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">STEMDIFF modules:</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">    </span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">* stemdiff.dbase = calculate database of 4D-stem datafiles </span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">* stemdiff.detectors = objects describing detectors and format of the datafiles</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">* stemdiff.gvars = objects describing *source data* and *diffraction images*</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">* stemdiff.io = input/output for datafiles and corresponding arrays + images</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="sd">* stemdiff.sum = summation of datafiles (standard, serial processing)</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">* stemdiff.summ = summation of datafiles (parallel, multicore processing)</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="sd">* stemdiff.dbase = calculate database of 4D-stem datafiles </span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">* stemdiff.detectors = objects describing detectors and format of the datafiles</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="sd">* stemdiff.gvars = objects describing *source data* and *diffraction images*</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">* stemdiff.io = input/output for datafiles and corresponding arrays + images</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">* stemdiff.sum = summation of datafiles (standard, serial processing)</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">* stemdiff.summ = summation of datafiles (parallel, multicore processing)</span>
+</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>
+</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">STEMDIFF auxiliary package IDIFF and its modules:</span>
 </span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">STEMDIFF auxiliary package IDIFF and its modules:</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">* IDIFF contains functions for the improvement of diffraction patterns</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="sd">* IDIFF is imported below so that it could be used as: sd.idiff.some_module</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">* IDIFF modules are:</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    - idiff.bcorr = background correction/subtraction</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">    - idiff.deconv = advanced deconvolution methods</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">    - idiff.ncore = noise correction/reduction</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="sd">    - idiff.psf = estimate of PSF function</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="sd">&#39;&#39;&#39;</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;5.2.0&quot;</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="c1"># Import modules of stemdiff package</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="c1"># this enables us to use modules as follows:</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="c1"># &gt;&gt;&gt; import stemdiff as sd</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="c1"># &gt;&gt;&gt; sd.io.Datafiles.read(SDATA, &#39;000_001.dat&#39;)</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="kn">import</span> <span class="nn">stemdiff.dbase</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="kn">import</span> <span class="nn">stemdiff.detectors</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="kn">import</span> <span class="nn">stemdiff.gvars</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="kn">import</span> <span class="nn">stemdiff.io</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="kn">import</span> <span class="nn">stemdiff.sum</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="kn">import</span> <span class="nn">stemdiff.summ</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="c1"># Import supplementary package idiff</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="c1"># this enables us to use the modules as follows:</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="c1"># &gt;&gt;&gt; import stemdiff as sd</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="c1"># &gt;&gt;&gt; sd.idiff.bcorr.rolling_ball(arr)</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a><span class="kn">import</span> <span class="nn">idiff</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">* IDIFF contains functions for the improvement of diffraction patterns</span>
+</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="sd">* IDIFF is imported below so that it could be used as: sd.idiff.some_module</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">* IDIFF modules are:</span>
+</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="sd">    - idiff.bcorr = background correction/subtraction</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">    - idiff.deconv = advanced deconvolution methods</span>
+</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="sd">    - idiff.ncore = noise correction/reduction</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">    - idiff.psf = estimate of PSF function</span>
+</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="sd">&#39;&#39;&#39;</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;5.2.1&quot;</span>
+</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
+</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="c1"># Import modules of stemdiff package</span>
+</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="c1"># this enables us to use modules as follows:</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="c1"># &gt;&gt;&gt; import stemdiff as sd</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="c1"># &gt;&gt;&gt; sd.io.Datafiles.read(SDATA, &#39;000_001.dat&#39;)</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="kn">import</span> <span class="nn">stemdiff.dbase</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="kn">import</span> <span class="nn">stemdiff.detectors</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="kn">import</span> <span class="nn">stemdiff.gvars</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="kn">import</span> <span class="nn">stemdiff.io</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="kn">import</span> <span class="nn">stemdiff.sum</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="kn">import</span> <span class="nn">stemdiff.summ</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="c1"># Import supplementary package idiff</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="c1"># this enables us to use the modules as follows:</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="c1"># &gt;&gt;&gt; import stemdiff as sd</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="c1"># &gt;&gt;&gt; sd.idiff.bcorr.rolling_ball(arr)</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="kn">import</span> <span class="nn">idiff</span>
 </span></pre></div>
 
 
