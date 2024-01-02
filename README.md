@@ -1,5 +1,5 @@
-STEMDIFF :: Simple processing of 4D-STEM data
----------------------------------------------
+STEMDIFF :: 4D-STEM dataset to 2D-diffractogram
+-----------------------------------------------
 
 * The **STEMDIFF package** converts... <br>
   ... a 4D-STEM dataset from a SEM microscope (huge and complex) <br>
