@@ -9,6 +9,11 @@ Three types of stemdiff.io objects
 * Arrays = the datafiles converted to numpy array objects.
 * Images = the datafiles converted to PNG files.
 
+Additional stemdiff.io utilities
+    
+* Plots = easy multiplots from selected datafiles/arrays/images.
+* set_plot_parameters = a general function available without subclassing.
+
 General strategy for working with stemdiff.io objects
     
 * Datafiles and Images are usually
@@ -18,11 +23,6 @@ General strategy for working with stemdiff.io objects
 * Datafiles and Images have (intentionally) just a limited amount of methods,
   the most important of which is read - this method simply reads
   Datafile/Image to a np.array.
-
-Additional stemdiff.io utilities
-
-* These are stored directly in the package, without any subclassing.
-* Mostly general routines for more convenient I/O within stemdiff package.
 
 Examples how to use Datafiles, Arrays and Images
 
@@ -44,6 +44,7 @@ Examples how to use Datafiles, Arrays and Images
 '''
 
 
+import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -70,88 +71,11 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
     -------
     None; the result is a modification of the global plt.rcParams variable.
     '''
-    if size:  # Figure size
-        # Convert size in [cm] to required size in [inch]
-        size = (size[0]/2.54, size[1]/2.54)
-        plt.rcParams.update({'figure.figsize' : size})
-    if dpi:  # Figure dpi
-        plt.rcParams.update({'figure.dpi' : dpi})
-    if fontsize:  # Global font size
-        plt.rcParams.update({'font.size' : fontsize})
-    if my_rcParams:  # Other possible rcParams in the form of dictionary
-        plt.rcParams.update(my_rcParams)
-
-
-def plot_2d_diffractograms(data_to_plot,
-                           icut=None, cmap='viridis',
-                           output_file=None, dpi=300):
-    '''
-    Plot a few selected 2D diffraction patterns in a row, one-by-one.
-
-    Parameters
-    ----------
-    data_to_plot : list of lists
-        This object is a list of lists.
-        The number of rows = the number of plotted diffractograms.
-        Each row contains two elements:
-        (i) data for diffractogram to plot and (ii) title of the plot.
-        The data (first element of each row) can be:
-        (i) PNG-file or (ii) 2D-array containing the 2D diffractogram. 
-    integer, optional, default is None
-        Cut of intensity;
-        if icut = 300, all image intensities > 300 will be equal to 300
-        (this is used just for plotting; the array values are not changed).
-    cmap : str - matplotlib.colormap name, optional, the default is 'viridis'
-        Matplotlib colormap for plotting of the diffractogram.
-        Other interesting or high-contrast options:
-        'gray', 'plasma', 'magma', ...
-        The full list of matplotlib colormaps:
-        `matplotlib.pyplot.colormaps()` 
-    output_file : str, optional, default is None
-        If this argument is given,
-        the plot is also saved in *output_file* image
-        with *dpi* resolution (dpi is specified by the following argument).
-    dpi : int, optional, default is 300
-        The (optional) argument gives resolution of (an optional) output image. 
-
-    Returns
-    -------
-    None
-        The output is the plot of the diffraction patterns on the screen.
-        If argument *ouput_file* is given, the plot is also saved as an image. 
-    '''
-    # Initialize
-    n = len(data_to_plot)
-    diffs = data_to_plot
-    fig,ax = plt.subplots(nrows=1, ncols=n)
-    # Plot 2D-diffractograms
-    for i in range(n):
-        # Read data to plot
-        data = diffs[i][0]
-        if type(data) == str:  # Datafile
-            if data.lower().endswith('.png'):  # ....PNG file, 2D-diffractogram
-                # we read image as '16bit'
-                # in this case, it works for 8bit images as well    
-                arr = Images.read(data, itype='16bit')
-            else:  # .......some other string not ending on PNG => unknown data
-                print('Unknown type of data to plot!')
-        elif type(data) == np.ndarray:  # Numpy array
-            if data.shape[0] == data.shape[1]:  # sqare array, 2D-diffractogram
-                arr = data
-            else: # .....some other, non-square array => nonstandard array size
-                print('Non-standard array for plotting!')
-        # Read plot parameters
-        my_title = diffs[i][1]
-        # Plot i-th datafile/array
-        ax[i].imshow(arr, vmax=icut, cmap=cmap)
-        ax[i].set_title(my_title)
-    # Finalize plot
-    for i in range(n): ax[i].axis('off')
-    fig.tight_layout()
-    if output_file: fig.savefig(output_file, dpi=dpi)
-
-
-
+    # This function just calls the final function in Plotting module.
+    # (left in the main namespace of the package as it is frequently used
+    Plots.set_plot_parameters(size, dpi, fontsize, my_rcParams)
+    
+    
 class Datafiles:
     '''
     Datafiles class = a collection of functions
@@ -168,15 +92,37 @@ class Datafiles:
             The object describes source data (detector, data_dir, filenames).
         filename : string or pathlib object
             Name of datafile to be read into numpy 2D array.
+            Filename can be given as an absolute path or
+            a path relative to SDATA.data_dir 
+            (i.e. data directory path, which is saved in SDATA object).
             
         Returns
         -------
         arr : 2D numpy array
             The array converted from datafile with given *filename*.
         '''
-        arr = SDATA.detector.read_datafile(filename)
-        return(arr)
-    
+        # The reading of the datafile depends on the filename argument
+        # (it can be an absolute path or a path relative to SDATA.data_dir
+        if os.path.isfile(filename):
+            # Filename given as absolute path:
+            # Everything Ok => just read and return
+            arr = SDATA.detector.read_datafile(filename)
+            return(arr)
+        else:
+            # Filename not given as relative path
+            # Perhaps it is a relative path - test if it exits
+            complete_filename = SDATA.data_dir.joinpath(filename)
+            if os.path.isfile(complete_filename):
+                # Filename was given as relative path and it exists
+                # Everything Ok => read and return the completed filename
+                arr = SDATA.detector.read_datafile(complete_filename)
+                return(arr)
+            else:
+                # Filename not found
+                # (it was not a correct absolute or relative path
+                print(f'Datafile [{filename}] not found!')
+                sys.exit()
+                
 
     def show(SDATA, filename,
              icut=None, itype='8bit', R=None, cmap='gray',
@@ -330,10 +276,12 @@ class Datafiles:
 
         Parameters
         ----------
-        SDATA : TYPE
-            DESCRIPTION.
-        df : TYPE
-            DESCRIPTION.
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        df : pandas.DataFrame object
+            Pre-calculated atabase with datafiles to be shown.
+            Each row of the database contains
+            [filename, xc, yc, MaxInt, NumPeaks, S].
         interactive: bool, optional, the defailt is True
             If True, images are shown interactively,
             i.e. any key = show next image, 'q' = quit.
@@ -498,7 +446,6 @@ class Arrays:
             Y = np.arange(Ysize)
             Xm,Ym = np.meshgrid(X,Y)
             # Create 3D-plot
-            from mpl_toolkits.mplot3d import Axes3D
             fig = plt.figure()
             ax = fig.add_subplot(111, projection='3d')
             ax.plot_surface(
@@ -885,3 +832,270 @@ class Images:
         Arrays.show(arr,
                     icut, itype, R, cmap,
                     center, csquare, cintensity)
+
+
+class Plots:
+    '''
+    Plots class = a collection of functions
+    for easy plotting of diffractograms and/or graphs.
+    '''
+    # The functions in this sub-package are not TOO general.
+    # This is intentional - writing too general plotting funcs makes no sense.
+    # The exception is the 1st func, which sets plot parameters for any plot.
+
+    def set_plot_parameters(size=(12,9), dpi=75, 
+                            fontsize=10, my_rcParams=None):
+        '''
+        Set global plot parameters (mostly for plotting in Jupyter).
+    
+        Parameters
+        ----------
+        size : tuple of two floats, optional, the default is (12,9)
+            Size of the figure (width, height) in [cm].
+        dpi : int, optional, the defalut is 75
+            DPI of the figure.
+        fontsize : int, optional, the default is 10
+            Size of the font used in figure labels etc.
+        my_rcParams : dict, optional, default is None
+            Dictionary in plt.rcParams format
+            containing any other allowed global plot parameters.
+    
+        Returns
+        -------
+        None; the result is a modification of the global plt.rcParams variable.
+        '''
+        # We test all arguments, if they exist.
+        # (Theoretically, user could have redefined them as None
+        # (In such a case we would change nothing and leave default values
+        if size:  # Figure size
+            # Convert size in [cm] to required size in [inch]
+            size = (size[0]/2.54, size[1]/2.54)
+            plt.rcParams.update({'figure.figsize' : size})
+        if dpi:  # Figure dpi
+            plt.rcParams.update({'figure.dpi' : dpi})
+        if fontsize:  # Global font size
+            plt.rcParams.update({'font.size' : fontsize})
+        if my_rcParams:  # Other possible rcParams in the form of dictionary
+            plt.rcParams.update(my_rcParams)
+    
+    
+    def plot_2d_diffractograms(data_to_plot,
+                               icut=None, cmap='viridis',
+                               output_file=None, dpi=300):
+        '''
+        Plot a few selected 2D diffraction patterns in a row, one-by-one.
+    
+        Parameters
+        ----------
+        data_to_plot : list of lists
+            This object is a list of lists.
+            The number of rows = the number of plotted diffractograms.
+            Each row contains two elements:
+            (i) data for diffractogram to plot and (ii) title of the plot.
+            The data (first element of each row) can be:
+            (i) PNG-file or (ii) 2D-array containing the 2D diffractogram. 
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300
+            (this is used just for plotting; the array values are not changed).
+        cmap : matplotlib.colormap name, optional, the default is 'viridis'
+            Matplotlib colormap for plotting of the diffractogram.
+            Other interesting or high-contrast options:
+            'gray', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()` 
+        output_file : str, optional, default is None
+            If this argument is given,
+            the plot is also saved in *output_file* image
+            with *dpi* resolution (dpi is specified by the following argument).
+        dpi : int, optional, default is 300
+            The (optional) argument gives resolution of
+            (the optional) output image. 
+    
+        Returns
+        -------
+        None
+            The output is the plot of the diffraction patterns on the screen.
+            If argument *ouput_file* is given, the plot is saved as an image. 
+        '''
+        # Initialize
+        n = len(data_to_plot)
+        diffs = data_to_plot
+        fig,ax = plt.subplots(nrows=1, ncols=n)
+        # Plot 2D-diffractograms
+        for i in range(n):
+            # Read data to plot
+            data = diffs[i][0]
+            # Test input data...
+            if type(data) == str: # ...String - we suppose an image
+                if data.lower().endswith('.png'):  # PNG file, 2D-diffractogram
+                    # we read image as '16bit'
+                    # in this case, it works for 8bit images as well    
+                    arr = Images.read(data, itype='16bit')
+                else:  # Other than PNG files are not supported now
+                    print(f'Unsuported format of file {data}!')
+                    sys.exit()
+            elif type(data) == np.ndarray:  # Numpy array
+                if data.shape[0] == data.shape[1]:  # square array, 2D-diff.pat
+                    arr = data
+                else: # Non-square arrays are not supported now
+                    print('Non-square arrays to plot - not supported.')
+                    sys.exit()
+            # Read plot parameters
+            my_title = diffs[i][1]
+            # Plot i-th datafile/array
+            ax[i].imshow(arr, vmax=icut, cmap=cmap)
+            ax[i].set_title(my_title)
+        # Finalize plot
+        for i in range(n): ax[i].axis('off')
+        fig.tight_layout()
+        if output_file: fig.savefig(output_file, dpi=dpi)
+
+
+    def plot_datafiles_with_NS(SDATA, df, N=None, S=None,
+                               icut=None, rsize=None, cmap='viridis',
+                               output_file=None, dpi=300):
+        '''
+        Plot datafiles with selected (N,S)=(NoOfPeaks,Entropy) in a row.
+    
+        Parameters
+        ----------
+        SDATA : stemdiff.gvars.SourceData object
+            The object describes source data (detector, data_dir, filenames).
+        df : pandas.DataFrame object
+            Pre-calculated atabase with datafiles to be shown.
+            Each row of the database contains
+            [filename, xc, yc, MaxInt, NumPeaks, S].
+        N : list of integers, arbitrary lenght, but should it not be empty
+            List of N values, where N = estimated NumberOfPeaks in a datafile.
+            This function will plot datafiles for given combination of (N,S).
+            The sister argument S is described below.
+            The (N,S) lists must have the same length.
+        S : list of integers, arbitrary lenght, but should it not be empty
+            List of S values; S = calculated ShannonEntropy of a datafile.
+            This function will plot datafiles for given combination of (N,S).
+            The sister argument N is described above.
+            The (N,S) lists must have the same length.
+        icut : integer, optional, default is None
+            Cut of intensity;
+            if icut = 300, all image intensities > 300 will be equal to 300
+            (this is used just for plotting; the array values are not changed).
+        rsize : int, optional, default is None
+            Reduced size of an image.
+            If rsize = 100, size of all datafiles/images is reduced
+            so that only the central square with size = rsize is plotted.
+            The center coordinates for given datafile
+            are taken from the (obligatory) df argument (see above).
+        cmap : matplotlib.colormap name, optional, the default is 'viridis'
+            Matplotlib colormap for plotting of the diffractogram.
+            Other interesting or high-contrast options:
+            'gray', 'plasma', 'magma', ...
+            The full list of matplotlib colormaps:
+            `matplotlib.pyplot.colormaps()` 
+        output_file : str, optional, default is None
+            If this argument is given,
+            the plot is also saved in *output_file* image
+            with *dpi* resolution (dpi is specified by the following argument).
+        dpi : int, optional, default is 300
+            The (optional) argument gives resolution of
+            (the optional) output image. 
+
+        Returns
+        -------
+        None
+            The output are the datafiles plotted on the screen.
+            If *ouput_file* is given, the plot is also saved as an image.
+        
+        Technical note
+        --------------
+        The function has no return statement => it returns None.
+        In Jupyter and Spyder, the plot/figure is drawn on the screen.
+        In CLI Python, the figure should be saved => argument *output_file*.
+        '''
+        
+        # STEP 1: Prepare multiplot.
+        fig,ax = plt.subplots(nrows=1, ncols=len(N))
+        
+        # STEP 2: Find datafiles with selected N,S combinations,
+        # and insert them in the prepared multiplot one-by-one.
+        #
+        # The finding of the datafiles:
+        #   In given database (argument df),
+        #   we localize datafiles with selected combination of (N,S)
+        #   a) N = Peaks = NumberOfPeaks
+        #   b) S = index of file sorted according to Shannon entropy
+        #      => S = 1        : the file with given N and the highest S
+        #      => S = 2,3...   : like previous, but the 2nd, 3rd highest S ...
+        #      => S = -1       : the file with given N and the lowest S
+        #      => S = -2,-3... : like previous, but the 2nd,3rd lowest S ...
+
+        # Go through (N,S) pairs,
+        # find datafiles and insert them in the muptiplot.
+        # * We combine enumerate and zip
+        #   (https://stackoverflow.com/q/16326853
+        #   reason for enumerate => index i = plot/axes number = index in ax[i]
+        #   reason for zip => we need (N,S) pairs = two values together
+        for i,(n,s) in enumerate(zip(N,S)):
+            # (1) Create sub-database, which ...
+            #  a) contains just entries for given n = N = Peaks = NoOfPeaks
+            #  b) is sorted according to S = ShannonEtropy descendingly
+            dfN = df[df.Peaks == n].sort_values(
+                by='S', ascending=False, ignore_index=True)
+            # (2) Modify value of s according to logic ...
+            if s >= 1:
+                # If s >= 1, decrease its value
+                # Reason: Python indexing start from 0, we start from 1
+                s = s - 1
+            elif s > len(dfN):
+                # If s > lenght_of_database_with_given_N, set it to maximum
+                # Reason: if s = 10 and len(dfN) is just 8 => s = 8
+                s = len(dfN)
+            elif s < - len(dfN):
+                # If s < -lenght_of_database_with_given_N, set it to maximum
+                # Reason: if s = -10 and len(dfN) is just 8 => s = -8
+                s = -len(dfN)
+            # (3) Get datafile name
+            # (the datafile name is extracted from df by means of iloc
+            # (the 1st index = 1 => col-index: col 1 in df/dfN = datafile names
+            # (the 2nd index = s => row-index: dfN was sorted according to 'S'
+            datafile = dfN.iloc[s,0]
+            # (4) Read the datafile to an array
+            arr = Datafiles.read(SDATA, datafile)
+            # (5) Reduce size if requested
+            # (remove edges and keep just central square with 
+            if rsize:
+                # Find datafile center coordinates (xc,yc)
+                # (xc,yc are in the database in columns 2 and 3, respectively
+                R = SDATA.detector.upscale
+                xc = int(np.round(dfN.iloc[s,1]/R,0))
+                yc = int(np.round(dfN.iloc[s,2]/R,0))
+                # Keep just central square with size = rsize
+                arr = Arrays.remove_edges(arr, rsize, xc, yc)
+            # (6) Draw datafile in the plot
+            # (a) Get parameters for plot title
+            # (the plot title should be something like N=10,S=1,M=1200
+            # (where N,S,M are NoOfPeaks, ShannonEntropy and MaxIntensity
+            max_intensity = dfN.iloc[s,3]
+            peaks         = dfN.iloc[s,4]
+            entropy       = dfN.iloc[s,5]
+            # (b) Prepare title
+            plot_title = \
+                f'N={peaks:d}  S={entropy:.2f}  M={int(max_intensity):d}'
+            # (c) Create the plot
+            ax[i].imshow(arr, vmax=icut, cmap=cmap)
+            ax[i].set_title(plot_title)
+            
+        # STEP 3: Finalize the figure (and save it, if requested)
+        # Finalize figure
+        for i in range(len(N)): ax[i].axis('off')
+        fig.tight_layout()
+        # Save if requested
+        if output_file:
+            fig.savefig(output_file, dpi=dpi, facecolor='white')
+        
+        # IMPORTANT TECHNICAL NOTE: Ooutput of this function
+        # The function has no return statement => it returns None.
+        # In Jupyter and Spyder, the plot/figure is drawn on the screen.
+        # This is a property of figs - last command draws them in iPython.
+        # Here the last command is: fig.tight_layout() => figure is drawn.
+        # In classical/CLI Python, the fig should be saved => output_file arg.

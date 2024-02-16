@@ -6,20 +6,22 @@ The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
 * The summation runs on all available cores (parallel processing).
 * This module takes functions from semdiff.sum, but runs them parallelly. 
 
-The key function of the module (from user's point of view)
-= stemdiff.summ.sum_datafiles:
+The key function of the module (for a user) = stemdiff.summ.sum_datafiles:
                   
 * The function takes the same arguments as stemdiff.sum.sum_datafiles.
 * The only difference consists in that  the summation runs on multiple cores.
 
 How it works:
 
-1. User calls stemdiff.summ.sum_datafiles function.
-    - the function is called in the same way as stemdiff.sum.sum_datafiles
-    - the arguments are identical, only module name is different (sum -> summ)
-2. The *sum_datafiles function calls stemdiff.summ.multicore_sum function.
-    - the *multicore_sum* function calls specific functions from stemdiff.sum
-    - but the functions run in this module, using multiple cores
+* This module contains just two functions:
+    - `summ.sum_datafiles` - wrapper for the next function
+    - `summ.multicore_sum` - runs the summation on multiple cores
+* The rest is done with the functions of sister module *stemdiff.sum*.
+    - i.e. the summ.multicore_sum calls functions from stemdiff.sum
+    - but the functions run within this module, using multiple cores
+* Summary:
+    - `sum.sum_datafiles`  - runs on a single core (docs in stemdiff.sum)
+    - `summ.sum_datafiles` - runs on multiple cores, aguments are identical 
 '''
 
 import os
