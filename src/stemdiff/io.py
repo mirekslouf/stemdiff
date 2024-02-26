@@ -782,7 +782,7 @@ class Images:
         else:
             arr = np.asarray(img, dtype=np.uint16)
         return(arr)
-    
+
 
     def show(image_name,
              icut=None, itype='8bit', R=None, cmap='gray',
@@ -951,7 +951,7 @@ class Plots:
         fig.tight_layout()
         if output_file: fig.savefig(output_file, dpi=dpi)
 
-
+    
     def plot_datafiles_with_NS(SDATA, df, N=None, S=None,
                                icut=None, rsize=None, cmap='viridis',
                                output_file=None, dpi=300):
@@ -1093,7 +1093,7 @@ class Plots:
         if output_file:
             fig.savefig(output_file, dpi=dpi, facecolor='white')
         
-        # IMPORTANT TECHNICAL NOTE: Ooutput of this function
+        # IMPORTANT TECHNICAL NOTE: Output of this function
         # The function has no return statement => it returns None.
         # In Jupyter and Spyder, the plot/figure is drawn on the screen.
         # This is a property of figs - last command draws them in iPython.
