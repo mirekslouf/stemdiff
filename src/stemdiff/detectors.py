@@ -61,6 +61,51 @@ def print_known_detectors():
         print(detector)
 
 
+def describe_detector(detector_object):
+    '''
+    Print the description of the detector on the screen.
+    
+    Parameters
+    ----------
+    detector_object : object of any class in stemdiff.detectors
+        The initialized detector object.
+        The object contains description of the detector.
+        It is created by calling init method of any stemdiff.detectors class.
+        
+    Returns
+    -------
+    None
+        The output is the text on the screen.
+        
+    Example
+    -------
+    >>> # Short example
+    >>> # (minimalistic example
+    >>> import stemdiff as sd
+    >>> my_detector = sd.detectors.TimePix()
+    >>> my_detector.self_describe()
+    >>>
+    >>> # Real usage
+    >>> # (in STEMDIFF scripts,
+    >>> # (the detector is usually defined
+    >>> # (within stemdiff.gvars.SourceData object
+    >>> import stemdiff as sd
+    >>> SDATA = sd.gvars.SourceData(
+    >>>     detector  = sd.detectors.TimePix(),
+    >>>     data_dir  = r'./DATA',
+    >>>     filenames = r'*.dat')
+    >>> SDATA.detector.self_describe()
+    '''
+    print('Detector name       :', detector_object.detector_name)
+    print('Detector size       :', detector_object.detector_size)
+    print('Maximum intensity   :', detector_object.max_intensity)
+    print('Intensity data type :', detector_object.data_type.__name__)
+    print('Upscale parameter   :', detector_object.upscale)
+    print('-----')
+    print('* Detector size = size of the (square) detector (in pixels).')
+    print('* Maximum intensity = max.intensity the detector can measure.')
+    print('* Intensity data type = the format of the saved intensities.')
+    print('* Upscale parameter: each datafile/image is upscaled by it.')
 
 class TimePix:
     '''
@@ -112,7 +157,25 @@ class TimePix:
         self.data_type = data_type
         self.upscale = upscale
 
-        
+    def self_describe(self):
+        '''
+        Print a simple textual description of the detector on the screen.
+
+        Returns
+        -------
+        None
+            The description of the detector is just printed on the screen.
+            
+        Technical note
+        --------------
+        * This is just a wrapper around global function named
+          stemdiff.detectors.describe_detector.
+        * Reason: this global function is common to all detector types.
+        * This simple solution is used instead of (needlessly complex)
+          inheritance in this case.
+        ''' 
+        describe_detector(self)
+    
     def read_datafile(self, filename, arr_size=None):
         '''
         Read datafile in TimePix detector format.
@@ -216,6 +279,26 @@ class Secom:
         self.data_type = data_type
         self.upscale = upscale
 
+
+    def self_describe(self):
+        '''
+        Print a simple textual description of the detector on the screen.
+
+        Returns
+        -------
+        None
+            The description of the detector is just printed on the screen.
+            
+        Technical note
+        --------------
+        * This is just a wrapper around global function named
+          stemdiff.detectors.describe_detector.
+        * Reason: this global function is common to all detector types.
+        * This simple solution is used instead of (needlessly complex)
+          inheritance in this case.
+        ''' 
+        describe_detector(self)
+
     
     def read_datafile(self, filename):
         '''
@@ -236,6 +319,7 @@ class Secom:
         arr = np.array(Image.open(filename)) 
         return(arr)
     
+
     def save_datafile(self, arr, filename):
         '''
         Save 2D-array as a datafile in the Secom detector format.
@@ -255,6 +339,8 @@ class Secom:
         '''
         im = Image.fromarray(arr.astype(np.uint16))
         im.save(filename)
+
+
 
 class Arina:
     
