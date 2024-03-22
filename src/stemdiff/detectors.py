@@ -22,7 +22,14 @@ import sys
 import inspect
 import numpy as np
 from PIL import Image
+<<<<<<< Updated upstream
     
+=======
+import h5py
+import hdf5plugin
+
+  
+>>>>>>> Stashed changes
 def list_of_known_detectors():
     '''
     Get a list of known detectors = classes defined in stemdiff.detectors.
@@ -207,7 +214,179 @@ class Secom:
 
 class Arina:
     
+<<<<<<< Updated upstream
     # TODO: Radim
     # The same like for Secom, using method copy+paste+modify :-)
+=======
+    '''
+    Definition of Arina detector.
+>>>>>>> Stashed changes
     
+    Parameters
+    ----------
+    detector_name : str, default is 'Arina'
+        Name of the detector.
+        Keep the default unless you have specific reasons.
+    detector_size : integer, default is 192
+        Size of the detector in pixels.
+        Keep the default unless you have specific reasons.
+    data_type : numpy data type, optional, default is np.uint16
+        Type of data, which are saved in the Arina .h5-files.
+        Arina detector saves the data as 64-bit .h5 files.
+        This corresponds to np.uint64 (more info in NumPy documentation).
+        Data have to be converted from 4D data cubu into batch of files.        
+    upscale : integer, default is 1
+        Upscaling coefficient.
+        Final image size = detector_size * upscale.
+        The upscaling coefficient increases the detector resolution.
+        Surprisingly enough, the upscaling helps to improve final resolution.
+    
+    Returns
+    -------
+    Arina detector object.
+    
+    Format of Secom datafiles
+    ---------------------------
+    * hierarchical data format, .h5 format
+    '''
+
+    
+    def __init__(self, detector_name='Arina', 
+                 detector_size=192, max_intensity=4294967295,
+                 data_type=np.uint32, upscale=1):
+        '''
+        Initialize parameters of Arina detector.
+        The parameters are described above in class definition.
+        '''
+        self.detector_name = detector_name
+        self.detector_size = detector_size
+        self.max_intensity = max_intensity
+        self.data_type = data_type
+        self.upscale = upscale
+
+
+    def self_describe(self):
+        '''
+        Print a simple textual description of the detector on the screen.
+
+        Returns
+        -------
+        None
+            The description of the detector is just printed on the screen.
+            
+        Technical note
+        --------------
+        * This is just a wrapper around global function named
+          stemdiff.detectors.describe_detector.
+        * Reason: this global function is common to all detector types.
+        * This simple solution is used instead of (needlessly complex)
+          inheritance in this case.
+        ''' 
+        describe_detector(self)
+
+    
+    def read_datafile(self, filename):
+        '''
+        Read datafile in Arina detector format.
+
+        Parameters
+        ----------
+        filename : str or path
+            Name of the ".npy" datafile to read.
+
+        Returns
+        -------
+        arr : 2D-numpy array
+            2D-array containing image from Secom detector.
+            Each element of the array = the intensity detected at given pixel.
+        '''
+        
+        arr = np.load(filename) 
+        return(arr)
+    
+
+    def save_datafile(self, arr, filename):
+        '''
+        Save 2D-array as a datafile in the Arina detector format.
+        
+        Parameters
+        ----------
+        arr : numpy array
+            The array to save in the datafile with [filename].
+        filename : str or path-like object
+            The filename of the saved array.
+        
+        Returns
+        -------
+        None
+            The result is the file named *filename*,
+            containing the *arr* in stemdiff.detectors.Arina format.
+        '''
+
+        np.save(filename,arr.astype(np.uint16))
+
+    def h5_to_npy(folder, file, data_dir, files_adress, data_adress, type2save):
+        '''
+        Preprocess ".h5" data by cutting 4D datacube into independent files.
+        
+        Parameters
+        ----------
+        folder : str or path-like object
+            The path for the dataset in .h5 format.
+        file : str or path-like object
+            The filename of the "_master.h5 file".
+        data_dir : str or path-like object
+            The pathe where individual files will be saved.
+        files_adress : str
+            Inner h5 adress to list of related data files.
+        data_adress : str
+            Inner h5 adress to data localisation.
+        type2save: int
+            Number of bits used for saving. One of 8, 16, 32, 64.
+        
+        Returns
+        -------
+        None
+        '''
+
+        # Number of files in the dataset (beam positions are saved with  100,000 pieces per file)
+        print(f"Opening {folder + file}")
+        f = h5py.File(folder + file, "r") # Open for reading - preserve the original file    
+        f.close
+        files = len(f[files_adress])
+        
+        print('Dataset consists of', files, 'data file(s).')
+        
+        for i in range(1,files+1):
+            f = h5py.File(folder + file[0:-9] + 'data_'+ '{:06d}'.format(i) + '.h5', "r") # Open for reading - preserve the original file 
+            arr = f[data_adress[:]]                               # inner h5 file adress for data 
+            f.close
+            
+            if i == 1:
+                signal = np.empty([0,arr.shape[1],arr.shape[1]])
+                
+            signal  = np.concatenate((signal, arr), axis=0)    # Add the new file results to the end of the old one
+        
+        print('Dataset shape is',signal.shape)
+        print('Probable scanning matrix is', np.sqrt(signal.shape[0]),'x',np.sqrt(signal.shape[0]), 'beam positions.')  
+        
+        for i in range(signal.shape[0]):
+            file_name_npy = data_dir+'p' + str(i)+'.npy'
+            if type2save == 8:
+                np.save(file_name_npy, signal[int(i),:,:].astype(np.uint8))
+            elif type2save == 16:
+                np.save(file_name_npy, signal[int(i),:,:].astype(np.uint16))
+            elif type2save == 32:  
+                np.save(file_name_npy, signal[int(i),:,:].astype(np.uint32))
+            elif type2save == 64:   
+                np.save(file_name_npy, signal[int(i),:,:].astype(np.uint64))
+            else:
+                print('Bit depth did not recognised. Use 8, 16, 32 or 64.')  
+                
+        print(i, ' individual ".npy" files was saved.')  
+        
+        return 
+
+
+        
     pass
