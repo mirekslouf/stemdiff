@@ -1,6 +1,6 @@
 '''
-stemdiff.sum
-------------
+Module: stemdiff.sum
+--------------------
 The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
 
 * stemdiff.sum = this module, which runs on a single core (serial processing)

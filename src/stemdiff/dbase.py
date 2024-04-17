@@ -1,6 +1,6 @@
 '''
-stemdiff.dbase
---------------
+Module: stemdiff.dbase
+----------------------
 Functions to calculate, save and re-read the database of 4D-STEM datafiles.
 
 * The database is saved as a pandas.DataFrame object,

@@ -1,6 +1,6 @@
 '''
-stemdiff.detectors
-------------------
+Module: stemdiff.detectors
+--------------------------
 Description of detectors that can be used in stemdiff package.
 
 This module is basically a container of classes.
@@ -63,7 +63,7 @@ def print_known_detectors():
 
 def describe_detector(detector_object):
     '''
-    Print the description of the detector on the screen.
+    Global method: the description of the detector on the screen.
     
     Parameters
     ----------
@@ -83,7 +83,8 @@ def describe_detector(detector_object):
     >>> # (minimalistic example
     >>> import stemdiff as sd
     >>> my_detector = sd.detectors.TimePix()
-    >>> my_detector.self_describe()
+    >>> my_detector.self_describe()     # OO-interface, indirect call
+    >>> describe_detector(my_detector)  # procedural interface, direct call
     >>>
     >>> # Real usage
     >>> # (in STEMDIFF scripts,
@@ -145,12 +146,10 @@ class TimePix:
     
     def __init__(self, detector_name='TimePix', 
                  detector_size=256, max_intensity=11810, 
-                 data_type=np.uint16, upscale=4):
-        '''
-        * The initialization of TimePix detector objects.
-        * The parameters are described above in class definition.
-        * Auto-documentation list (some of) the initialization parameters.
-        '''
+                 data_type=np.uint16, upscale=4):   
+        # The initialization of TimePix detector objects.
+        # The parameters are described above in class definition.
+        # -----
         self.detector_name = detector_name
         self.detector_size = detector_size
         self.max_intensity = max_intensity
@@ -259,8 +258,8 @@ class Secom:
     -------
     Secom detector object.
     
-    Format of Secom datafiles
-    ---------------------------
+    Format of SECOM datafiles
+    -------------------------
     * image files, TIFF format
     * 16-bit images = images containing np.uint16 values
     '''
@@ -269,10 +268,9 @@ class Secom:
     def __init__(self, detector_name='Secom', 
                  detector_size=2048, max_intensity=65536,
                  data_type=np.uint16, upscale=1):
-        '''
-        Initialize parameters of Secom detector.
-        The parameters are described above in class definition.
-        '''
+        # The initialization of Secom detector objects.
+        # The parameters are described above in class definition.
+        # -----
         self.detector_name = detector_name
         self.detector_size = detector_size
         self.max_intensity = max_intensity

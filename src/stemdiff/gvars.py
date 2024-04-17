@@ -1,6 +1,6 @@
 '''
-stemdiff.gvars
---------------
+Module: stemdiff.gvars
+----------------------
 Global variables/objects for package stemdiff.
 
 The global variables are used throughout the whole program.
@@ -53,15 +53,13 @@ class SourceData:
     
     Returns
     -------
-    DataFiles object.
+    DataFiles object
     '''
 
     def __init__(self, detector, data_dir, filenames):
-        '''
-        * The initialization of SourceData objects.
-        * The parameters are described above in class definition.
-        * Auto-documentation list (some of) the initialization parameters.
-        '''
+        # The initialization of SourceData objects.
+        # The parameters are described above in class definition.
+        # -----
         self.detector = detector
         self.data_dir = Path(data_dir)
         self.filenames = self.data_dir.glob(filenames)
@@ -97,18 +95,16 @@ class DiffImages:
 
     Returns
     -------
-    DiffImages object.
+    DiffImages object
     '''
     
     def __init__(self, 
                  imgsize=100, psfsize=30,
                  ctype=2, csquare=20, cintensity=0.8,
                  peak_height=100, peak_dist=3):
-        '''
-        * The initialization of DiffImages objects.
-        * The parameters are described above in class definition.
-        * Auto-documentation list (some of) the initialization parameters.
-        ''' 
+        # The initialization of DiffImages objects.
+        # The parameters are described above in class definition.
+        # -----
         self.imgsize = imgsize
         self.psfsize = psfsize
         self.ctype = ctype

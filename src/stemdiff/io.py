@@ -1,6 +1,6 @@
 '''
-stemdiff.io
------------
+Module: stemdiff.io
+-------------------
 Input/output functions for package stemdiff.
 
 Three types of stemdiff.io objects
@@ -69,7 +69,8 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
 
     Returns
     -------
-    None; the result is a modification of the global plt.rcParams variable.
+    None
+        The result is a modification of the global plt.rcParams variable.
     '''
     # This function just calls the final function in Plotting module.
     # (left in the main namespace of the package as it is frequently used
@@ -79,7 +80,8 @@ def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
 class Datafiles:
     '''
     Datafiles class = a collection of functions
-    that work with datafiles from 2D-STEM detector saved as files in a disk.
+    that work with datafiles from 2D-STEM detector
+    (assumption: the datafiles were saved as standard files on a disk).
     '''
 
     def read(SDATA, filename):

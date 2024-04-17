@@ -1,6 +1,6 @@
 '''
-STEMDIFF package
-----------------
+Package: STEMDIFF
+-----------------
 Conversion of a 4D-STEM dataset to a 2D-powder diffration pattern.
 
 * Input = 4D-STEM dataset = 2D-array of 2D-NBD patterns.
@@ -30,7 +30,7 @@ STEMDIFF auxiliary package IDIFF and its modules:
     - idiff.ncore = noise correction/reduction
     - idiff.psf = estimate of PSF function
 '''
-__version__ = "5.2.5"
+__version__ = "5.2.6"
 
 # Import modules of stemdiff package
 # this enables us to use modules as follows:
