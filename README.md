@@ -68,3 +68,9 @@ Documentation, help and examples
 		- more types of deconvolution (experimental; to be finished in v.6.0)
 * Version 5.1 = (beta) support for parallel processing
 * Version 5.2 = (beta) improvement of diff.patterns in sister package idiff
+
+Acknowledgement
+---------------
+
+The development was co-funded by TACR, program NCK,
+project [TN02000020](https://www.isibrno.cz/en/centre-advanced-electron-and-photonic-optics).
