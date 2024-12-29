@@ -10,7 +10,7 @@ STEMDIFF :: 4D-STEM dataset to 2D-diffractogram
 	   [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
 	2. *Materials* 14 (2021) 7550.
        [https://doi.org/10.3390/ma14247550](https://doi.org/10.3390/ma14247550)
-* If you use STEMDIFF package, **please cite** the 2nd publication (or both :-).
+* If you use STEMDIFF package, **please cite** the 2nd publication (or both :-)
 
 Principle
 ---------
@@ -19,7 +19,7 @@ Principle
 
 Installation
 ------------
-* Requirement: Python with sci-modules: numpy, matplotlib, scipy, pandas
+* Requirement: Python with sci-modules = numpy, matplotlib, scipy, pandas
 * `pip install scikit-image` = 3rd party package for advanced image processing 
 * `pip install tqdm` = to show progress meter during long summations
 * `pip install idiff` = to improve diffractograms (remove noise, background ...)
@@ -28,20 +28,23 @@ Installation
 Quick start
 -----------
 
-* See how it works:
-	- Look at [worked example](https://www.dropbox.com/scl/fi/l5eskdgxo7976ea9x35fp/01_sdiff_au.nb.pdf?rlkey=7yd5tqtcm3zxr1uc0m0aisenl&dl=0)
-      in Jupyter.
-* Try it yourself:
-	- Download [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0).
-	- After downloading, unzip and follow the instructions in *readme* file.
+* Look at the
+  [worked example](https://www.dropbox.com/scl/fi/l5eskdgxo7976ea9x35fp/01_sdiff_au.nb.pdf?rlkey=7yd5tqtcm3zxr1uc0m0aisenl&dl=0)
+  to see STEMDIFF in action.
+* Download
+  [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0)
+  and try STEMDIFF yourself.
 
 Documentation, help and examples
 --------------------------------
 
-* [PyPI](https://pypi.org/project/stemdiff) repository.
-* [GitHub](https://github.com/mirekslouf/stemdiff) repository.
+* [PyPI](https://pypi.org/project/stemdiff) repository -
+  the stable version to install.
+* [GitHub](https://github.com/mirekslouf/stemdiff) repository - 
+  the current version under development.
 * [GitHub Pages](https://mirekslouf.github.io/stemdiff)
-  with [documentation](https://mirekslouf.github.io/stemdiff/docs).
+  with [help](https://mirekslouf.github.io/stemdiff/docs)
+  and [complete package documentation](https://mirekslouf.github.io/stemdiff/docs/pdoc.html/stemdiff.html).
 
 ## Versions of STEMDIFF
 
