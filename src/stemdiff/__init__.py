@@ -30,7 +30,7 @@ STEMDIFF auxiliary package IDIFF and its modules:
     - idiff.ncore = noise correction/reduction
     - idiff.psf = estimate of PSF function
 '''
-__version__ = "5.2.8"
+__version__ = "5.2.7"
 
 
 # Import modules of stemdiff package
