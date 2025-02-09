@@ -47,6 +47,7 @@ Examples how to use Datafiles, Arrays and Images
 import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits import axes_grid1  # to add nice colorbars
 from PIL import Image
 from skimage import transform, measure, morphology
 
@@ -416,7 +417,23 @@ class Arrays:
           which means that the function shows a *non-cenered central region*.
         * If you need to show *centered central region* of an array,
           combine Arrays.find_center + Arrays.remove_edges + Arrays.show
-        '''        
+        '''
+        
+        # Function that adds colorbar not exceeding plot height
+        # * this is surprisingly tricky => solution found in StackOverflow
+        #   https://stackoverflow.com/q/18195758
+        # * the usage of the function is slightly non-standard
+        #   see the link above + search for: I created an IPython notebook
+        def add_colorbar(im, aspect=20, pad_fraction=0.5, **kwargs):
+            '''Add a vertical color bar to an image plot.'''
+            divider = axes_grid1.make_axes_locatable(im.axes)
+            width = axes_grid1.axes_size.AxesY(im.axes, aspect=1./aspect)
+            pad = axes_grid1.axes_size.Fraction(pad_fraction, width)
+            current_ax = plt.gca()
+            cax = divider.append_axes("right", size=width, pad=pad)
+            plt.sca(current_ax)
+            return im.axes.figure.colorbar(im, cax=cax, **kwargs)
+
         # Prepare array for saving
         arr = Arrays.prepare_for_show_or_save(arr, icut, itype, R)
         # Remove edges of the plot, if requested
@@ -434,9 +451,15 @@ class Arrays:
                 cmap='viridis'
             plt.imshow(arr, cmap=cmap)
             if colorbar:  # Add colorbar
-                plt.colorbar()
+               # We add colorbar by means of local functions defined above
+               # Reason: default colorbar usually exceeds plot height - ugly!
+               # (the usage of {add colorbar} func look strange, but it works
+               # (see the description in the (local) func definition above
+               im = plt.imshow(arr, cmap=cmap)
+               add_colorbar(im)
+               # plt.colorbar(shrink=cbar_shrink, aspect=20*cbar_shrink)
             if center==True:  # Mark intensity center in the plot
-                xc,yc = Arrays.find_center(arr,csquare, cintensity)
+                xc,yc = Arrays.find_center(arr, csquare, cintensity)
                 plt.plot(yc,xc, 'r+', markersize=20) # switch xc,yc for img! 
         # (b) Prepare 3D plot (option; if plt_type is not the default '2D')
         else:  

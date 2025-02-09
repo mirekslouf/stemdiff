@@ -41,6 +41,9 @@ class SourceData:
     
     Parameters
     ----------
+    detector : detector object from stemdiff.detectors module
+        The detector object specifies data format + how to read datafiles.
+        For available detectors in STEMDIFF, see stemdiff.detectors module.
     data_dir : str (which will be passed to Path method)
         This parameter is passed to Path method from pathlib library.
         It is strongly recommeded to use r-strings.

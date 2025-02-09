@@ -8,7 +8,7 @@ Functions to calculate, save and re-read the database of 4D-STEM datafiles.
   filename, XY-center coordinates, MaximumIntensity, NoOfPeaks, ShannonEntropy.
 * The database enables fast filtering of datafiles
   and fast access to datafile features,
-  which do not have to be re-calculated repeatedly.
+  which we do not want to re-calculate repeatedly.
 '''
 
 import numpy as np

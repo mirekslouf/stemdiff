@@ -13,12 +13,12 @@ Conversion of a 4D-STEM dataset to a 2D-powder diffration pattern.
     
 STEMDIFF modules:
     
-* stemdiff.dbase = calculate database of 4D-stem datafiles 
+* stemdiff.dbase = database of 4D-STEM datafiles + their basic parameters 
 * stemdiff.detectors = objects describing detectors and format of the datafiles
 * stemdiff.gvars = objects describing *source data* and *diffraction images*
 * stemdiff.io = input/output for datafiles and corresponding arrays + images
 * stemdiff.sum = summation of datafiles (standard, serial processing)
-* stemdiff.summ = summation of datafiles (parallel, multicore processing)
+* stemdiff.summ = summation of datafiles (multicore, parallel processing)
 
 STEMDIFF auxiliary package IDIFF and its modules:
 
@@ -30,7 +30,7 @@ STEMDIFF auxiliary package IDIFF and its modules:
     - idiff.ncore = noise correction/reduction
     - idiff.psf = estimate of PSF function
 '''
-__version__ = "5.2.7"
+__version__ = "5.2.9"
 
 
 # Import modules of stemdiff package
