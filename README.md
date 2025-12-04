@@ -4,18 +4,15 @@ STEMDIFF :: 4D-STEM dataset to 2D-diffractogram
 * The **STEMDIFF package** converts... <br>
   ... a 4D-STEM dataset from a SEM microscope (huge and complex) <br>
   ... to a 2D-powder diffraction pattern (simple and easy to work with).
-* The STEMDIFF package is a key part of our **4D-STEM/PNBD** method, <br>
-  which was described (together with the package) in open-access publications:
-	1. *Nanomaterials* 11 (2021) 962.
-	   [https://doi.org/10.3390/nano11040962](https://doi.org/10.3390/nano11040962)
-	2. *Materials* 14 (2021) 7550.
-       [https://doi.org/10.3390/ma14247550](https://doi.org/10.3390/ma14247550)
-* If you use STEMDIFF package, **please cite** the 2nd publication (or both :-)
+* If you use EDIFF in your research, **please cite** our recent paper:
+	- *Microscopy and Microanalysis* 31, 2025, ozaf045. <br>
+	  [https://doi.org/10.1093/mam/ozaf045](https://doi.org/10.1093/mam/ozaf045)
 
 Principle
 ---------
 
 <img src="https://mirekslouf.github.io/stemdiff/docs/assets/principle.pptx.png" alt="STEMDIFF principle" width="500"/>
+
 
 Installation
 ------------
@@ -25,15 +22,17 @@ Installation
 * `pip install idiff` = to improve diffractograms (remove noise, background ...)
 * `pip install stemdiff` = STEMDIFF package itself (uses all packages above)
 
+
 Quick start
 -----------
 
-* Look at the
-  [worked example](https://www.dropbox.com/scl/fi/l5eskdgxo7976ea9x35fp/01_sdiff_au.nb.pdf?rlkey=7yd5tqtcm3zxr1uc0m0aisenl&dl=0)
-  to see STEMDIFF in action.
-* Download
-  [complete examples with data](https://www.dropbox.com/scl/fo/ccb6hs28er9dc1xufshh4/h?rlkey=omk5bqoe17jmedhj407ng9xr0&dl=0)
-  and try STEMDIFF yourself.
+* [Worked example](https://www.dropbox.com/scl/fi/l5eskdgxo7976ea9x35fp/01_sdiff_au.nb.pdf?rlkey=7yd5tqtcm3zxr1uc0m0aisenl&dl=0)
+  shows the STEMDIFF package in action.
+* [Help on GitHub](https://mirekslouf.github.io/stemdiff/docs/)
+  with complete
+  [package documentation](https://mirekslouf.github.io/stemdiff/docs/pdoc.html/stemdiff.html)
+  and
+  [additional examples](https://drive.google.com/drive/folders/1X4TOdnMHVGSskzQJZ12edLt6MVl3HLvm?usp=sharing).
 
 Documentation, help and examples
 --------------------------------
@@ -42,11 +41,12 @@ Documentation, help and examples
   the stable version to install.
 * [GitHub](https://github.com/mirekslouf/stemdiff) repository - 
   the current version under development.
-* [GitHub Pages](https://mirekslouf.github.io/stemdiff)
-  with [help](https://mirekslouf.github.io/stemdiff/docs)
-  and [complete package documentation](https://mirekslouf.github.io/stemdiff/docs/pdoc.html/stemdiff.html).
+* [GitHub Pages](https://mirekslouf.github.io/stemdiff/) -
+  the more user-friendly version of GitHub website.
 
-## Versions of STEMDIFF
+
+Versions of STEMDIFF
+--------------------
 
 * Version 1.0 = Matlab: just a simple summation of 4D-dataset
 * Version 2.0 = like v.1.0 + post-processing in Jupyter
@@ -60,17 +60,14 @@ Documentation, help and examples
 	* sum just the central region with the strongest diffractions
 	  &rArr; higher speed
 	* 3 centering types: (0) geometry, (1) center of 1st, (2) individual centers 
-	* better definition of summation and centering parameters
-	* better documentation strings + demo data + improved *master script*
+	* improved definition of summation and better documentation
 * Version 5.0 = complete rewrite of v.4.2
-	* all key features of v.4.2 (summation, filtering, deconvolution)
 	* conversion *2D-diffractogram &rarr; 1D-profile* moved to package EDIFF
-	* several generalizations and improvements, namely:
-		- possibility to define and use more detectors/datafile formats
-		- better filtering (including estimated number of diffractions)
-		- more types of deconvolution (experimental; to be finished in v.6.0)
+	* better filtering (including estimated number of diffractions)
+	* more detectors + more types of deconvolution (beta; to finish in v.6.0)
 * Version 5.1 = (beta) support for parallel processing
 * Version 5.2 = (beta) improvement of diff.patterns in sister package idiff
+
 
 Acknowledgement
 ---------------
