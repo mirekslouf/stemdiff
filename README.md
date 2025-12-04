@@ -26,7 +26,7 @@ Installation
 Quick start
 -----------
 
-* [Worked example](https://www.dropbox.com/scl/fi/l5eskdgxo7976ea9x35fp/01_sdiff_au.nb.pdf?rlkey=7yd5tqtcm3zxr1uc0m0aisenl&dl=0)
+* [Worked example](https://drive.google.com/file/d/1K3jWqiO1CpX-d4avcoYK0S8JfbAkZU78/view?usp=sharing)
   shows the STEMDIFF package in action.
 * [Help on GitHub](https://mirekslouf.github.io/stemdiff/docs/)
   with complete

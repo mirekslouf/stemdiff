@@ -20,4 +20,8 @@ STEMDIFF :: Documentation and examples
 
 ### Selected examples for quick start
 
-* TODO, at the moment see the *00_readme* in the repository above.
+* [01_sdiff](https://drive.google.com/file/d/1K3jWqiO1CpX-d4avcoYK0S8JfbAkZU78/view?usp=sharing)
+  = convert 4D-STEM dataset to 2D-powder diffractogram
+* [02_ediff](https://drive.google.com/file/d/1YMWEWwhgcplEzf4f3psHAk7KWD52hhlu/view?usp=sharing)
+  = convert 2D-diffractogram to 1D-profile and compare with XRD
+
