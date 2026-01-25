@@ -2,7 +2,7 @@
 
 A modern, user-friendly tool for generating physically accurate STEM (Scanning Transmission Electron Microscopy) diffraction patterns. Perfect for creating training datasets for machine learning segmentation models.
 
-## ✨ Features
+## Features
 
 - **Clean Architecture**: Modular design with separated physics, materials database, and generation logic
 - **Beautiful GUI**: Modern web interface with real-time preview
@@ -11,18 +11,18 @@ A modern, user-friendly tool for generating physically accurate STEM (Scanning T
 - **Segmentation Masks**: Automatically generate ground truth masks for ML training
 - **Easy to Use**: No more cryptic parameters—just select material and go!
 
-## 🎯 What's New?
+## What's New?
 
 This is a complete rewrite of the original monolithic code with:
 
-- ✅ **Crystal Database**: Materials defined in clean JSON format
-- ✅ **Simplified API**: Generate patterns in 3 lines of code
-- ✅ **Modern GUI**: Beautiful, intuitive interface
-- ✅ **Better Organization**: Separate files for physics, generation, and UI
-- ✅ **Batch Processing**: Generate 1000s of patterns effortlessly
-- ✅ **Real-time Preview**: See results immediately
+- **Crystal Database**: Materials defined in clean JSON format
+- **Simplified API**: Generate patterns in 3 lines of code
+- **Modern GUI**: Beautiful, intuitive interface
+- **Better Organization**: Separate files for physics, generation, and UI
+- **Batch Processing**: Generate 1000s of patterns effortlessly
+- **Real-time Preview**: See results immediately
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
@@ -50,7 +50,7 @@ python server.py
 
 That's it! The GUI will open automatically.
 
-## 🚀 Usage
+## Usage
 
 ### Option 1: GUI (Recommended)
 
@@ -109,7 +109,7 @@ python -c "from generator import DiffractionGenerator; \
            gen.generate_dataset(['Al', 'Cu'], 100, 'dataset')"
 ```
 
-## 📁 File Structure
+## File Structure
 
 ```
 stem-diffraction-generator/
@@ -125,7 +125,7 @@ stem-diffraction-generator/
     └── metadata.json      # Dataset information
 ```
 
-## 🔧 Customization
+## Customization
 
 ### Adding New Materials
 
@@ -163,7 +163,7 @@ pattern, mask = gen.generate(
 )
 ```
 
-## 📊 Output Format
+## Output Format
 
 ### Dataset Structure
 ```
@@ -198,7 +198,7 @@ dataset/
 }
 ```
 
-## 🎓 Physical Background
+## Physical Background
 
 This generator uses proper electron diffraction physics:
 
@@ -209,7 +209,7 @@ This generator uses proper electron diffraction physics:
 - **Kinematical Approximation**: Intensity calculations with temperature factors
 - **Realistic Noise**: Poisson noise, detector effects, and background
 
-## 🧪 Supported Materials
+## Supported Materials
 
 ### Simple Metals
 - **FCC**: Al, Cu, Ni, Au
@@ -223,7 +223,7 @@ This generator uses proper electron diffraction physics:
 - **TiO2**: Rutile Titanium Dioxide
 - **ZnO**: Zinc Oxide (Wurtzite)
 
-## 🤝 Contributing
+## Contributing
 
 Want to add more materials or features?
 
