@@ -1,0 +1,183 @@
+{
+  "simple_materials": {
+    "Al": {
+      "name": "Aluminum",
+      "structure": "fcc",
+      "lattice": {"a": 4.046, "b": 4.046, "c": 4.046, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Al"],
+      "atomic_positions": [{"element": "Al", "position": [0, 0, 0]}],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 40
+    },
+    "Cu": {
+      "name": "Copper",
+      "structure": "fcc",
+      "lattice": {"a": 3.615, "b": 3.615, "c": 3.615, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Cu"],
+      "atomic_positions": [{"element": "Cu", "position": [0, 0, 0]}],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 40
+    },
+    "Fe": {
+      "name": "Iron",
+      "structure": "bcc",
+      "lattice": {"a": 2.866, "b": 2.866, "c": 2.866, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Fe"],
+      "atomic_positions": [{"element": "Fe", "position": [0, 0, 0]}],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 40
+    },
+    "Ni": {
+      "name": "Nickel",
+      "structure": "fcc",
+      "lattice": {"a": 3.524, "b": 3.524, "c": 3.524, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Ni"],
+      "atomic_positions": [{"element": "Ni", "position": [0, 0, 0]}],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 40
+    },
+    "Au": {
+      "name": "Gold",
+      "structure": "fcc",
+      "lattice": {"a": 4.078, "b": 4.078, "c": 4.078, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Au"],
+      "atomic_positions": [{"element": "Au", "position": [0, 0, 0]}],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 40
+    },
+    "Si": {
+      "name": "Silicon",
+      "structure": "diamond",
+      "lattice": {"a": 5.431, "b": 5.431, "c": 5.431, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Si"],
+      "atomic_positions": [
+        {"element": "Si", "position": [0, 0, 0]},
+        {"element": "Si", "position": [0.25, 0.25, 0.25]}
+      ],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 30
+    },
+    "Ge": {
+      "name": "Germanium",
+      "structure": "diamond",
+      "lattice": {"a": 5.658, "b": 5.658, "c": 5.658, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Ge"],
+      "atomic_positions": [
+        {"element": "Ge", "position": [0, 0, 0]},
+        {"element": "Ge", "position": [0.25, 0.25, 0.25]}
+      ],
+      "common_zone_axes": [[0,0,1], [0,1,1], [1,1,1], [1,1,2]],
+      "default_thickness": 30
+    }
+  },
+  
+  "complex_materials": {
+    "Fe3O4": {
+      "name": "Magnetite (Fe3O4)",
+      "structure": "spinel",
+      "lattice": {"a": 8.396, "b": 8.396, "c": 8.396, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Fe", "O"],
+      "atomic_positions": [
+        {"element": "Fe", "position": [0, 0, 0]},
+        {"element": "Fe", "position": [0.625, 0.625, 0.625]},
+        {"element": "Fe", "position": [0.625, 0.375, 0.375]},
+        {"element": "Fe", "position": [0.375, 0.625, 0.375]},
+        {"element": "Fe", "position": [0.375, 0.375, 0.625]},
+        {"element": "O", "position": [0.375, 0.375, 0.375]},
+        {"element": "O", "position": [0.375, 0.625, 0.625]},
+        {"element": "O", "position": [0.625, 0.375, 0.625]},
+        {"element": "O", "position": [0.625, 0.625, 0.375]}
+      ],
+      "common_zone_axes": [[1,1,1], [1,0,0], [1,1,0]],
+      "default_thickness": 40
+    },
+    
+    "TiO2_rutile": {
+      "name": "Rutile TiO2",
+      "structure": "rutile",
+      "lattice": {"a": 4.594, "b": 4.594, "c": 2.959, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Ti", "O"],
+      "atomic_positions": [
+        {"element": "Ti", "position": [0, 0, 0]},
+        {"element": "Ti", "position": [0.5, 0.5, 0.5]},
+        {"element": "O", "position": [0.3, 0.3, 0]},
+        {"element": "O", "position": [0.7, 0.7, 0]},
+        {"element": "O", "position": [0.8, 0.2, 0.5]},
+        {"element": "O", "position": [0.2, 0.8, 0.5]}
+      ],
+      "common_zone_axes": [[0,0,1], [1,0,0], [1,1,0]],
+      "default_thickness": 30
+    },
+    
+    "SrTiO3": {
+      "name": "Strontium Titanate",
+      "structure": "perovskite",
+      "lattice": {"a": 3.905, "b": 3.905, "c": 3.905, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Sr", "Ti", "O"],
+      "atomic_positions": [
+        {"element": "Sr", "position": [0, 0, 0]},
+        {"element": "Ti", "position": [0.5, 0.5, 0.5]},
+        {"element": "O", "position": [0.5, 0.5, 0]},
+        {"element": "O", "position": [0.5, 0, 0.5]},
+        {"element": "O", "position": [0, 0.5, 0.5]}
+      ],
+      "common_zone_axes": [[0,0,1], [1,0,0], [1,1,0], [1,1,1]],
+      "default_thickness": 35
+    },
+    
+    "GaAs": {
+      "name": "Gallium Arsenide",
+      "structure": "zincblende",
+      "lattice": {"a": 5.653, "b": 5.653, "c": 5.653, "alpha": 90, "beta": 90, "gamma": 90},
+      "elements": ["Ga", "As"],
+      "atomic_positions": [
+        {"element": "Ga", "position": [0, 0, 0]},
+        {"element": "Ga", "position": [0, 0.5, 0.5]},
+        {"element": "Ga", "position": [0.5, 0, 0.5]},
+        {"element": "Ga", "position": [0.5, 0.5, 0]},
+        {"element": "As", "position": [0.25, 0.25, 0.25]},
+        {"element": "As", "position": [0.25, 0.75, 0.75]},
+        {"element": "As", "position": [0.75, 0.25, 0.75]},
+        {"element": "As", "position": [0.75, 0.75, 0.25]}
+      ],
+      "common_zone_axes": [[1,1,0], [0,0,1], [1,1,1]],
+      "default_thickness": 30
+    },
+    
+    "ZnO": {
+      "name": "Zinc Oxide",
+      "structure": "wurtzite",
+      "lattice": {"a": 3.25, "b": 3.25, "c": 5.21, "alpha": 90, "beta": 90, "gamma": 120},
+      "elements": ["Zn", "O"],
+      "atomic_positions": [
+        {"element": "Zn", "position": [0, 0, 0]},
+        {"element": "Zn", "position": [0.333, 0.667, 0.5]},
+        {"element": "O", "position": [0, 0, 0.382]},
+        {"element": "O", "position": [0.333, 0.667, 0.882]}
+      ],
+      "common_zone_axes": [[0,0,1], [1,0,0], [1,1,0]],
+      "default_thickness": 25
+    }
+  },
+  
+  "structure_rules": {
+    "fcc": "h, k, l must all be even or all odd",
+    "bcc": "h + k + l must be even",
+    "diamond": "All even with h+k+l=4n, or all odd",
+    "spinel": "Complex systematic absences",
+    "perovskite": "h, k, l all odd or all even",
+    "zincblende": "All even with h+k+l=4n, or all odd with h+k+l odd",
+    "wurtzite": "l even: all allowed; l odd: h+2k≠3n",
+    "rutile": "Complex systematic absences"
+  },
+  
+  "scattering_factors": {
+    "H": 1.0, "He": 1.5, "Li": 2.5, "Be": 3.5, "B": 4.0, "C": 4.8,
+    "N": 5.7, "O": 6.6, "F": 7.5, "Ne": 8.5, "Na": 9.5, "Mg": 10.5,
+    "Al": 11.5, "Si": 12.5, "P": 13.5, "S": 14.5, "Cl": 15.5, "Ar": 16.5,
+    "K": 17.5, "Ca": 18.5, "Ti": 20.5, "V": 21.5, "Cr": 22.5, "Mn": 23.5,
+    "Fe": 24.5, "Co": 25.5, "Ni": 26.5, "Cu": 27.5, "Zn": 28.5, "Ga": 29.5,
+    "Ge": 30.5, "As": 31.5, "Se": 32.5, "Br": 33.5, "Kr": 34.5,
+    "Sr": 38.0, "Zr": 40.0, "Au": 79.0
+  }
+}

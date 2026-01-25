@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STEM Diffraction Pattern Generator</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #131827;
+            --bg-tertiary: #1a2033;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8b5cf6;
+            --accent-orange: #ff6b35;
+            --text-primary: #e5e7eb;
+            --text-secondary: #9ca3af;
+            --border: #2d3748;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255, 107, 53, 0.05) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            animation: fadeIn 1s ease-out;
+        }
+
+        .control-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .preview-panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .section {
+            margin-bottom: 2rem;
+        }
+
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
+        }
+
+        .zone-axis-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .zone-axis-input input {
+            text-align: center;
+            padding: 0.75rem 0.5rem;
+        }
+
+        .button {
+            width: 100%;
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Space Grotesk', sans-serif;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .button-primary {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            color: white;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .button-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .button-secondary:hover {
+            background: var(--bg-primary);
+            border-color: var(--accent-cyan);
+        }
+
+        .preview-container {
+            position: relative;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            image-rendering: crisp-edges;
+        }
+
+        .preview-placeholder {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 2rem;
+        }
+
+        .preview-placeholder svg {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            transition: width 0.3s ease;
+            border-radius: 4px;
+        }
+
+        .status-message {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .status-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+
+        .status-info {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            font-family: 'Space Grotesk', sans-serif;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .tab:hover {
+            color: var(--text-primary);
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--accent-cyan);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent-cyan);
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            margin-left: 0.5rem;
+        }
+
+        .material-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .material-card {
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .material-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .material-card.selected {
+            background: rgba(0, 212, 255, 0.1);
+            border-color: var(--accent-cyan);
+        }
+
+        .material-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .material-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Mock materials data (in real app, this would come from the backend)
+        const MATERIALS = {
+            'Al': { name: 'Aluminum', structure: 'FCC' },
+            'Cu': { name: 'Copper', structure: 'FCC' },
+            'Fe': { name: 'Iron', structure: 'BCC' },
+            'Ni': { name: 'Nickel', structure: 'FCC' },
+            'Au': { name: 'Gold', structure: 'FCC' },
+            'Si': { name: 'Silicon', structure: 'Diamond' },
+            'Ge': { name: 'Germanium', structure: 'Diamond' },
+            'Fe3O4': { name: 'Magnetite', structure: 'Spinel' },
+            'GaAs': { name: 'Gallium Arsenide', structure: 'Zincblende' },
+            'SrTiO3': { name: 'Strontium Titanate', structure: 'Perovskite' },
+        };
+
+        function App() {
+            const [mode, setMode] = useState('single'); // 'single' or 'batch'
+            
+            // Single pattern mode - basic
+            const [material, setMaterial] = useState('Al');
+            const [zoneAxis, setZoneAxis] = useState({ h: 1, k: 1, l: 1 });
+            const [voltage, setVoltage] = useState(200);
+            const [size, setSize] = useState(256);
+            const [noise, setNoise] = useState(0.02);
+            const [generateMask, setGenerateMask] = useState(true);
+
+            // Single pattern mode - advanced
+            const [showAdvanced, setShowAdvanced] = useState(false);
+
+            // Sample & Physics
+            const [sampleThickness, setSampleThickness] = useState(null); // null = auto
+            const [thicknessAuto, setThicknessAuto] = useState(true);
+            const [maxReflectionIndex, setMaxReflectionIndex] = useState(6);
+
+            // Noise & Background
+            const [backgroundVariation, setBackgroundVariation] = useState(0.01);
+            const [detectorDefects, setDetectorDefects] = useState(true);
+
+            // Beam & Optics
+            const [cameraLength, setCameraLength] = useState(300);
+            const [convergenceAngle, setConvergenceAngle] = useState(1.5);
+
+            // Intensity Controls
+            const [directBeamIntensity, setDirectBeamIntensity] = useState(0.7);
+            const [spotIntensityFactor, setSpotIntensityFactor] = useState(0.4);
+            const [spotSizeFactor, setSpotSizeFactor] = useState(1.2);
+
+            // Physical Parameters
+            const [temperatureFactor, setTemperatureFactor] = useState(0.8);
+            const [deviationParameter, setDeviationParameter] = useState(0.1);
+
+            // Features
+            const [enableKikuchi, setEnableKikuchi] = useState(true);
+            const [kikuchiIntensity, setKikuchiIntensity] = useState(0.03);
+            const [kikuchiProbability, setKikuchiProbability] = useState(0.3); // Probability of appearance
+
+            const [enableHolz, setEnableHolz] = useState(true);
+            const [holzIntensity, setHolzIntensity] = useState(0.02);
+            const [holzProbability, setHolzProbability] = useState(0.2);
+
+            // Detector Response
+            const [detectorResponse, setDetectorResponse] = useState(0.9); // Power law exponent
+            const [radialDecayFactor, setRadialDecayFactor] = useState(3.0);
+            const [logarithmicScaling, setLogarithmicScaling] = useState(5.0);
+
+            // Mask Options
+            const [maskType, setMaskType] = useState('binary');
+            const [maskVisibilityThreshold, setMaskVisibilityThreshold] = useState(0.15);
+
+            // Animation
+            const [isAnimating, setIsAnimating] = useState(false);
+            const [animationUrl, setAnimationUrl] = useState(null);
+            const [showAnimation, setShowAnimation] = useState(false);
+
+            // Batch mode
+            const [selectedMaterials, setSelectedMaterials] = useState(['Al', 'Cu']);
+            const [patternsPerMaterial, setPatternsPerMaterial] = useState(100);
+            const [voltageRange, setVoltageRange] = useState({ min: 100, max: 300 });
+
+            // Preview and status
+            const [previewImage, setPreviewImage] = useState(null);
+            const [maskImage, setMaskImage] = useState(null);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [progress, setProgress] = useState(0);
+            const [statusMessage, setStatusMessage] = useState(null);
+            const [stats, setStats] = useState({ patterns: 0, time: 0 });
+
+            const generateSinglePattern = async () => {
+                setIsGenerating(true);
+                setStatusMessage({ type: 'info', text: 'Generating pattern...' });
+
+                try {
+                    // Call the backend API with all parameters
+                    const response = await fetch('/api/generate/single', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            material: material,
+                            zone_axis: [zoneAxis.h, zoneAxis.k, zoneAxis.l],
+                            voltage: voltage,
+                            size: size,
+
+                            // Sample & Physics
+                            sample_thickness: thicknessAuto ? null : sampleThickness,
+                            max_reflection_index: maxReflectionIndex,
+
+                            // Noise & Detector
+                            noise_level: noise,
+                            background_variation: backgroundVariation,
+                            detector_defects: detectorDefects,
+                            detector_response: detectorResponse,
+                            radial_decay_factor: radialDecayFactor,
+                            logarithmic_scaling: logarithmicScaling,
+
+                            // Beam & Optics
+                            camera_length: cameraLength,
+                            convergence_angle: convergenceAngle,
+
+                            // Intensity
+                            direct_beam_intensity: directBeamIntensity,
+                            spot_intensity_factor: spotIntensityFactor,
+                            spot_size_factor: spotSizeFactor,
+
+                            // Physical
+                            temperature_factor: temperatureFactor,
+                            deviation_parameter: deviationParameter,
+
+                            // Features
+                            kikuchi_intensity_factor: enableKikuchi ? kikuchiIntensity : 0,
+                            kikuchi_probability: kikuchiProbability,
+                            holz_intensity: enableHolz ? holzIntensity : 0,
+                            holz_probability: holzProbability,
+
+                            // Mask
+                            generate_mask: generateMask,
+                            mask_type: maskType,
+                            mask_visibility_threshold: maskVisibilityThreshold
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        setStatusMessage({
+                            type: 'success',
+                            text: `Generated ${material} [${zoneAxis.h},${zoneAxis.k},${zoneAxis.l}] at ${voltage}kV`
+                        });
+
+                        // Set the actual generated images
+                        setPreviewImage(data.pattern);
+                        if (generateMask && data.mask) {
+                            setMaskImage(data.mask);
+                        }
+                    } else {
+                        throw new Error(data.error || 'Generation failed');
+                    }
+
+                } catch (error) {
+                    setStatusMessage({ type: 'error', text: error.message });
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+
+            const generateBatchDataset = async () => {
+                setIsGenerating(true);
+                setProgress(0);
+                setStatusMessage({ type: 'info', text: 'Starting batch generation...' });
+
+                const startTime = Date.now();
+
+                try {
+                    const response = await fetch('/api/generate/batch', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            materials: selectedMaterials,
+                            num_patterns_per_material: patternsPerMaterial,
+                            output_dir: 'dataset',
+                            voltage_range: [voltageRange.min, voltageRange.max],
+                            size: size,
+                            mask_type: 'binary',
+                            // Include advanced parameters
+                            noise_level: noise,
+                            background_variation: backgroundVariation,
+                            detector_defects: detectorDefects,
+                            temperature_factor: temperatureFactor,
+                            direct_beam_intensity: directBeamIntensity,
+                            spot_intensity_factor: spotIntensityFactor,
+                            kikuchi_intensity_factor: enableKikuchi ? kikuchiIntensity : 0,
+                            holz_intensity: enableHolz ? holzIntensity : 0,
+                            spot_size_factor: spotSizeFactor,
+                            camera_length: cameraLength,
+                            convergence_angle: convergenceAngle,
+                            deviation_parameter: deviationParameter
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+                        setProgress(100);
+                        setStats({
+                            patterns: data.stats.total_patterns,
+                            time: elapsed
+                        });
+                        setStatusMessage({
+                            type: 'success',
+                            text: `Successfully generated ${data.stats.total_patterns} patterns in ${elapsed}s!`
+                        });
+                    } else {
+                        throw new Error(data.error || 'Generation failed');
+                    }
+
+                } catch (error) {
+                    setStatusMessage({ type: 'error', text: error.message });
+                } finally {
+                    setIsGenerating(false);
+                }
+            };
+
+            const generateAnimation = async () => {
+                setIsAnimating(true);
+                setStatusMessage({ type: 'info', text: 'Creating animation... This may take 30-60 seconds.' });
+
+                try {
+                    const response = await fetch('/api/create/animation', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            material: material,
+                            zone_axis: [zoneAxis.h, zoneAxis.k, zoneAxis.l],
+                            voltage: voltage,
+                            duration: 10,
+                            fps: 30
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        // Open animation in new tab or display
+                        setAnimationUrl(`/animations/${data.filename}`);
+                        setShowAnimation(true);
+                        setStatusMessage({
+                            type: 'success',
+                            text: `Animation created! File: ${data.filename}`
+                        });
+                    } else {
+                        throw new Error(data.error || 'Animation creation failed');
+                    }
+
+                } catch (error) {
+                    setStatusMessage({ type: 'error', text: error.message });
+                } finally {
+                    setIsAnimating(false);
+                }
+            };
+
+            const toggleMaterialSelection = (mat) => {
+                setSelectedMaterials(prev =>
+                    prev.includes(mat)
+                        ? prev.filter(m => m !== mat)
+                        : [...prev, mat]
+                );
+            };
+
+            return (
+                <div className="app-container">
+                    <header className="header">
+                        <h1>STEM Diffraction Pattern Generator</h1>
+                        <p>Professional diffraction pattern synthesis for ML training</p>
+                    </header>
+
+                    <div className="main-grid">
+                        <div className="control-panel">
+                            <div className="tabs">
+                                <button
+                                    className={`tab ${mode === 'single' ? 'active' : ''}`}
+                                    onClick={() => setMode('single')}
+                                >
+                                    Single Pattern
+                                </button>
+                                <button
+                                    className={`tab ${mode === 'batch' ? 'active' : ''}`}
+                                    onClick={() => setMode('batch')}
+                                >
+                                    Batch Dataset
+                                </button>
+                            </div>
+
+                            {mode === 'single' ? (
+                                <>
+                                    <div className="section">
+                                        <div className="section-title">Material Selection</div>
+                                        <div className="form-group">
+                                            <label className="form-label">Material</label>
+                                            <select
+                                                className="form-select"
+                                                value={material}
+                                                onChange={(e) => setMaterial(e.target.value)}
+                                            >
+                                                {Object.entries(MATERIALS).map(([key, val]) => (
+                                                    <option key={key} value={key}>
+                                                        {val.name} ({key})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="badge">{MATERIALS[material].structure}</div>
+                                    </div>
+
+                                    <div className="section">
+                                        <div className="section-title">Zone Axis [h k l]</div>
+                                        <div className="zone-axis-input">
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={zoneAxis.h}
+                                                onChange={(e) => setZoneAxis({...zoneAxis, h: parseInt(e.target.value)})}
+                                            />
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={zoneAxis.k}
+                                                onChange={(e) => setZoneAxis({...zoneAxis, k: parseInt(e.target.value)})}
+                                            />
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={zoneAxis.l}
+                                                onChange={(e) => setZoneAxis({...zoneAxis, l: parseInt(e.target.value)})}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="section">
+                                        <div className="section-title">Parameters</div>
+                                        <div className="form-group">
+                                            <label className="form-label">Voltage (kV)</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={voltage}
+                                                onChange={(e) => setVoltage(parseFloat(e.target.value))}
+                                                min="50"
+                                                max="500"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Image Size (px)</label>
+                                            <select
+                                                className="form-select"
+                                                value={size}
+                                                onChange={(e) => setSize(parseInt(e.target.value))}
+                                            >
+                                                <option value="128">128</option>
+                                                <option value="256">256</option>
+                                                <option value="512">512</option>
+                                                <option value="1024">1024</option>
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Noise Level</label>
+                                            <input
+                                                type="range"
+                                                className="form-input"
+                                                value={noise}
+                                                onChange={(e) => setNoise(parseFloat(e.target.value))}
+                                                min="0"
+                                                max="0.1"
+                                                step="0.01"
+                                            />
+                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                {noise.toFixed(2)}
+                                            </span>
+                                        </div>
+                                        <div className="checkbox-group">
+                                            <input
+                                                type="checkbox"
+                                                className="checkbox"
+                                                checked={generateMask}
+                                                onChange={(e) => setGenerateMask(e.target.checked)}
+                                            />
+                                            <label className="form-label" style={{marginBottom: 0}}>
+                                                Generate segmentation mask
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div className="section">
+                                        <button
+                                            className="button button-secondary"
+                                            onClick={() => setShowAdvanced(!showAdvanced)}
+                                            style={{marginBottom: '1rem'}}
+                                        >
+                                            {showAdvanced ? '▼' : '▶'} Advanced Parameters
+                                        </button>
+
+                                        {showAdvanced && (
+                                            <>
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1rem', marginBottom: '0.5rem'}}>
+                                                    📐 Sample & Physics
+                                                </div>
+
+                                                <div className="checkbox-group">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox"
+                                                        checked={thicknessAuto}
+                                                        onChange={(e) => setThicknessAuto(e.target.checked)}
+                                                    />
+                                                    <label className="form-label" style={{marginBottom: 0}}>
+                                                        Auto sample thickness
+                                                    </label>
+                                                </div>
+
+                                                {!thicknessAuto && (
+                                                    <div className="form-group">
+                                                        <label className="form-label">Sample Thickness (nm)</label>
+                                                        <input
+                                                            type="number"
+                                                            className="form-input"
+                                                            value={sampleThickness || 100}
+                                                            onChange={(e) => setSampleThickness(parseFloat(e.target.value))}
+                                                            min="10"
+                                                            max="500"
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Max Reflection Index</label>
+                                                    <input
+                                                        type="number"
+                                                        className="form-input"
+                                                        value={maxReflectionIndex}
+                                                        onChange={(e) => setMaxReflectionIndex(parseInt(e.target.value))}
+                                                        min="3"
+                                                        max="10"
+                                                    />
+                                                    <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>
+                                                        Higher = more spots (slower)
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Temperature Factor (Debye-Waller)</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={temperatureFactor}
+                                                        onChange={(e) => setTemperatureFactor(parseFloat(e.target.value))}
+                                                        min="0.5"
+                                                        max="1.0"
+                                                        step="0.01"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {temperatureFactor.toFixed(2)} (higher = less thermal vibration)
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Deviation Parameter (1/nm)</label>
+                                                    <input
+                                                        type="number"
+                                                        className="form-input"
+                                                        value={deviationParameter}
+                                                        onChange={(e) => setDeviationParameter(parseFloat(e.target.value))}
+                                                        min="0.01"
+                                                        max="1.0"
+                                                        step="0.01"
+                                                    />
+                                                    <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>
+                                                        Excitation error
+                                                    </span>
+                                                </div>
+
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '0.5rem'}}>
+                                                    🔭 Beam & Optics
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Camera Length (mm)</label>
+                                                    <input
+                                                        type="number"
+                                                        className="form-input"
+                                                        value={cameraLength}
+                                                        onChange={(e) => setCameraLength(parseFloat(e.target.value))}
+                                                        min="100"
+                                                        max="1000"
+                                                        step="10"
+                                                    />
+                                                    <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>
+                                                        Pattern magnification
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Convergence Angle (mrad)</label>
+                                                    <input
+                                                        type="number"
+                                                        className="form-input"
+                                                        value={convergenceAngle}
+                                                        onChange={(e) => setConvergenceAngle(parseFloat(e.target.value))}
+                                                        min="0.1"
+                                                        max="10"
+                                                        step="0.1"
+                                                    />
+                                                    <span style={{fontSize: '0.75rem', color: 'var(--text-secondary)'}}>
+                                                        Beam convergence
+                                                    </span>
+                                                </div>
+
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '0.5rem'}}>
+                                                    💡 Intensity Controls
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Direct Beam Intensity</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={directBeamIntensity}
+                                                        onChange={(e) => setDirectBeamIntensity(parseFloat(e.target.value))}
+                                                        min="0.0"
+                                                        max="1.0"
+                                                        step="0.05"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {directBeamIntensity.toFixed(2)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Spot Intensity Factor</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={spotIntensityFactor}
+                                                        onChange={(e) => setSpotIntensityFactor(parseFloat(e.target.value))}
+                                                        min="0.0"
+                                                        max="1.0"
+                                                        step="0.05"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {spotIntensityFactor.toFixed(2)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Spot Size Factor</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={spotSizeFactor}
+                                                        onChange={(e) => setSpotSizeFactor(parseFloat(e.target.value))}
+                                                        min="0.5"
+                                                        max="3.0"
+                                                        step="0.1"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {spotSizeFactor.toFixed(1)} (larger = more diffuse)
+                                                    </span>
+                                                </div>
+
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '0.5rem'}}>
+                                                    ✨ Special Features
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
+                                                        <label className="form-label" style={{marginBottom: 0}}>Kikuchi Lines</label>
+                                                        <div className="checkbox-group" style={{marginBottom: 0}}>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox"
+                                                                checked={enableKikuchi}
+                                                                onChange={(e) => setEnableKikuchi(e.target.checked)}
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                Enable
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {enableKikuchi && (
+                                                        <>
+                                                            <label className="form-label" style={{fontSize: '0.85rem'}}>Intensity</label>
+                                                            <input
+                                                                type="range"
+                                                                className="form-input"
+                                                                value={kikuchiIntensity}
+                                                                onChange={(e) => setKikuchiIntensity(parseFloat(e.target.value))}
+                                                                min="0"
+                                                                max="0.15"
+                                                                step="0.005"
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                {kikuchiIntensity.toFixed(3)}
+                                                            </span>
+
+                                                            <label className="form-label" style={{fontSize: '0.85rem', marginTop: '0.5rem'}}>
+                                                                Probability
+                                                            </label>
+                                                            <input
+                                                                type="range"
+                                                                className="form-input"
+                                                                value={kikuchiProbability}
+                                                                onChange={(e) => setKikuchiProbability(parseFloat(e.target.value))}
+                                                                min="0"
+                                                                max="1.0"
+                                                                step="0.05"
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                {(kikuchiProbability * 100).toFixed(0)}% chance to appear
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem'}}>
+                                                        <label className="form-label" style={{marginBottom: 0}}>HOLZ Rings</label>
+                                                        <div className="checkbox-group" style={{marginBottom: 0}}>
+                                                            <input
+                                                                type="checkbox"
+                                                                className="checkbox"
+                                                                checked={enableHolz}
+                                                                onChange={(e) => setEnableHolz(e.target.checked)}
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                Enable
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    {enableHolz && (
+                                                        <>
+                                                            <label className="form-label" style={{fontSize: '0.85rem'}}>Intensity</label>
+                                                            <input
+                                                                type="range"
+                                                                className="form-input"
+                                                                value={holzIntensity}
+                                                                onChange={(e) => setHolzIntensity(parseFloat(e.target.value))}
+                                                                min="0"
+                                                                max="0.15"
+                                                                step="0.005"
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                {holzIntensity.toFixed(3)}
+                                                            </span>
+
+                                                            <label className="form-label" style={{fontSize: '0.85rem', marginTop: '0.5rem'}}>
+                                                                Probability
+                                                            </label>
+                                                            <input
+                                                                type="range"
+                                                                className="form-input"
+                                                                value={holzProbability}
+                                                                onChange={(e) => setHolzProbability(parseFloat(e.target.value))}
+                                                                min="0"
+                                                                max="1.0"
+                                                                step="0.05"
+                                                            />
+                                                            <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                                {(holzProbability * 100).toFixed(0)}% chance to appear
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '0.5rem'}}>
+                                                    📷 Detector & Noise
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Background Variation</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={backgroundVariation}
+                                                        onChange={(e) => setBackgroundVariation(parseFloat(e.target.value))}
+                                                        min="0"
+                                                        max="0.05"
+                                                        step="0.001"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {backgroundVariation.toFixed(3)}
+                                                    </span>
+                                                </div>
+
+                                                <div className="checkbox-group">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="checkbox"
+                                                        checked={detectorDefects}
+                                                        onChange={(e) => setDetectorDefects(e.target.checked)}
+                                                    />
+                                                    <label className="form-label" style={{marginBottom: 0}}>
+                                                        Detector defects (dead/hot pixels)
+                                                    </label>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Detector Response (power)</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={detectorResponse}
+                                                        onChange={(e) => setDetectorResponse(parseFloat(e.target.value))}
+                                                        min="0.5"
+                                                        max="1.5"
+                                                        step="0.05"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {detectorResponse.toFixed(2)} (1.0 = linear)
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Radial Decay Factor</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={radialDecayFactor}
+                                                        onChange={(e) => setRadialDecayFactor(parseFloat(e.target.value))}
+                                                        min="1.0"
+                                                        max="5.0"
+                                                        step="0.1"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {radialDecayFactor.toFixed(1)} (intensity fall-off)
+                                                    </span>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Logarithmic Scaling</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={logarithmicScaling}
+                                                        onChange={(e) => setLogarithmicScaling(parseFloat(e.target.value))}
+                                                        min="1.0"
+                                                        max="10.0"
+                                                        step="0.5"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {logarithmicScaling.toFixed(1)} (dynamic range compression)
+                                                    </span>
+                                                </div>
+
+                                                <div style={{fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary)', marginTop: '1.5rem', marginBottom: '0.5rem'}}>
+                                                    🎭 Mask Options
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Mask Type</label>
+                                                    <select
+                                                        className="form-input"
+                                                        value={maskType}
+                                                        onChange={(e) => setMaskType(e.target.value)}
+                                                    >
+                                                        <option value="binary">Binary (0/1)</option>
+                                                        <option value="intensity">Intensity-based</option>
+                                                        <option value="adaptive">Adaptive threshold</option>
+                                                    </select>
+                                                </div>
+
+                                                <div className="form-group">
+                                                    <label className="form-label">Intensity Threshold</label>
+                                                    <input
+                                                        type="range"
+                                                        className="form-input"
+                                                        value={maskVisibilityThreshold}
+                                                        onChange={(e) => setMaskVisibilityThreshold(parseFloat(e.target.value))}
+                                                        min="0.01"
+                                                        max="0.50"
+                                                        step="0.01"
+                                                    />
+                                                    <span style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                                        {maskVisibilityThreshold.toFixed(2)} (only spots above this intensity)
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    <button
+                                        className="button button-primary"
+                                        onClick={generateSinglePattern}
+                                        disabled={isGenerating}
+                                    >
+                                        {isGenerating ? 'Generating...' : 'Generate Pattern'}
+                                    </button>
+
+                                    <button
+                                        className="button button-secondary"
+                                        onClick={generateAnimation}
+                                        disabled={isAnimating || isGenerating}
+                                        style={{marginTop: '0.5rem'}}
+                                    >
+                                        {isAnimating ? '🎬 Creating Animation...' : '🎬 Animate Diffraction'}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="section">
+                                        <div className="section-title">Select Materials</div>
+                                        <div className="material-grid">
+                                            {Object.entries(MATERIALS).map(([key, val]) => (
+                                                <div
+                                                    key={key}
+                                                    className={`material-card ${selectedMaterials.includes(key) ? 'selected' : ''}`}
+                                                    onClick={() => toggleMaterialSelection(key)}
+                                                >
+                                                    <div className="material-name">{key}</div>
+                                                    <div className="material-desc">{val.structure}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="section">
+                                        <div className="section-title">Dataset Parameters</div>
+                                        <div className="form-group">
+                                            <label className="form-label">Patterns per Material</label>
+                                            <input
+                                                type="number"
+                                                className="form-input"
+                                                value={patternsPerMaterial}
+                                                onChange={(e) => setPatternsPerMaterial(parseInt(e.target.value))}
+                                                min="10"
+                                                max="10000"
+                                            />
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Voltage Range (kV)</label>
+                                            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem'}}>
+                                                <input
+                                                    type="number"
+                                                    className="form-input"
+                                                    placeholder="Min"
+                                                    value={voltageRange.min}
+                                                    onChange={(e) => setVoltageRange({...voltageRange, min: parseInt(e.target.value)})}
+                                                />
+                                                <input
+                                                    type="number"
+                                                    className="form-input"
+                                                    placeholder="Max"
+                                                    value={voltageRange.max}
+                                                    onChange={(e) => setVoltageRange({...voltageRange, max: parseInt(e.target.value)})}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="form-group">
+                                            <label className="form-label">Image Size (px)</label>
+                                            <select
+                                                className="form-select"
+                                                value={size}
+                                                onChange={(e) => setSize(parseInt(e.target.value))}
+                                            >
+                                                <option value="128">128</option>
+                                                <option value="256">256</option>
+                                                <option value="512">512</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="stats-grid">
+                                        <div className="stat-card">
+                                            <div className="stat-label">Total Patterns</div>
+                                            <div className="stat-value">
+                                                {selectedMaterials.length * patternsPerMaterial}
+                                            </div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-label">Est. Time</div>
+                                            <div className="stat-value">
+                                                {((selectedMaterials.length * patternsPerMaterial) / 20).toFixed(0)}s
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        className="button button-primary"
+                                        onClick={generateBatchDataset}
+                                        disabled={isGenerating || selectedMaterials.length === 0}
+                                    >
+                                        {isGenerating ? 'Generating...' : 'Generate Dataset'}
+                                    </button>
+
+                                    {isGenerating && (
+                                        <div className="progress-bar">
+                                            <div className="progress-fill" style={{width: `${progress}%`}}></div>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+
+                            {statusMessage && (
+                                <div className={`status-message status-${statusMessage.type}`}>
+                                    {statusMessage.text}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="preview-panel">
+                            <div className="section-title">Preview</div>
+
+                            {showAnimation && animationUrl && (
+                                <div style={{marginBottom: '2rem'}}>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+                                        <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)'}}>
+                                            Animation
+                                        </div>
+                                        <button
+                                            className="button button-secondary"
+                                            onClick={() => setShowAnimation(false)}
+                                            style={{padding: '0.5rem 1rem', width: 'auto', fontSize: '0.85rem'}}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                    <div className="preview-container" style={{aspectRatio: 'auto'}}>
+                                        <img src={animationUrl} alt="Diffraction Animation" style={{width: '100%', height: 'auto'}} />
+                                    </div>
+                                </div>
+                            )}
+
+                            {mode === 'single' ? (
+                                <div style={{display: 'grid', gridTemplateColumns: generateMask ? '1fr 1fr' : '1fr', gap: '1.5rem'}}>
+                                    <div>
+                                        <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem'}}>
+                                            Diffraction Pattern
+                                        </div>
+                                        <div className="preview-container">
+                                            {previewImage ? (
+                                                <img src={previewImage} alt="Preview" className="preview-image" />
+                                            ) : (
+                                                <div className="preview-placeholder">
+                                                    <svg fill="currentColor" viewBox="0 0 20 20">
+                                                        <path d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"/>
+                                                    </svg>
+                                                    <p>Pattern will appear here</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {generateMask && (
+                                        <div>
+                                            <div style={{fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.5rem'}}>
+                                                Segmentation Mask
+                                            </div>
+                                            <div className="preview-container">
+                                                {maskImage ? (
+                                                    <img src={maskImage} alt="Mask" className="preview-image" />
+                                                ) : (
+                                                    <div className="preview-placeholder">
+                                                        <svg fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd"/>
+                                                        </svg>
+                                                        <p>Mask will appear here</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="stats-grid">
+                                    <div className="stat-card">
+                                        <div className="stat-label">Generated</div>
+                                        <div className="stat-value">{stats.patterns}</div>
+                                    </div>
+                                    <div className="stat-card">
+                                        <div className="stat-label">Time Elapsed</div>
+                                        <div className="stat-value">{stats.time}s</div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{marginTop: '2rem', padding: '1.5rem', background: 'var(--bg-tertiary)', borderRadius: '12px', border: '1px solid var(--border)'}}>
+                                <div style={{fontSize: '0.9rem', fontWeight: '600', marginBottom: '1rem', color: 'var(--accent-purple)'}}>
+                                    Quick Guide
+                                </div>
+                                <ul style={{fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: '1.8', paddingLeft: '1.2rem'}}>
+                                    <li><strong>Single Pattern:</strong> Generate individual patterns with precise control</li>
+                                    <li><strong>Batch Dataset:</strong> Create training datasets with multiple materials and orientations</li>
+                                    <li><strong>Zone Axis:</strong> Crystallographic viewing direction [h k l]</li>
+                                    <li><strong>Voltage:</strong> Higher voltage = smaller wavelength, different patterns</li>
+                                    <li><strong>Masks:</strong> Binary segmentation masks for spot detection training</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
