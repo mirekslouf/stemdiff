@@ -52,7 +52,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, method=0, psf=None, iterate=10, regular
         RL = RichardsonLucy(iterations=iterate, cuda=True, timer=False, turn_off_progress_bar=True)
     if method in ("Segment_polar", "Segment_polar_with_deconv"):
         polar_processing = PolarProcessor()
-    if method == "Segment_polar_threshold":
+    if method == "Row_thresholding":
         processor = DiffractionPeakSegmenter(verbose=False, centroid_power=60, threshold_factor=5.5, start_row=50, center_radius=40)
     if method == "PeakFinding":
         processor = DiffractionPeakFinder(peak_min_sigma=10, peak_max_sigma=40, num_sigma_steps=20, bg_disk_radius=70)
