@@ -1,0 +1,36 @@
+# Diffraction Processing GUI Requirements
+# Install with: pip install -r requirements.txt
+
+# Core dependencies
+numpy>=1.20.0
+scipy>=1.7.0
+matplotlib>=3.3.0
+pandas>=1.3.0
+
+# GUI
+PyQt5>=5.15.0
+
+# Image processing
+scikit-image>=0.18.0
+opencv-python>=4.5.0
+
+# Scientific computation
+scikit-learn>=0.24.0
+
+# STEM diff library (if available)
+# stemdiff  # May need to be installed separately
+
+# Deep learning (for UNet method)
+torch>=1.9.0
+torchvision>=0.10.0
+pytorch-lightning>=1.4.0
+
+# Additional utilities
+tqdm>=4.60.0
+numba>=0.53.0
+
+# Optional: For CIF file handling and PXRD calculation
+# ediff  # May need to be installed separately
+
+# Background correction
+# bground  # May need to be installed separately
