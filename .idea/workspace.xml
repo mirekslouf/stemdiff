@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="2a99f418-ec62-427a-90ab-4dc0e23b490a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/default/yolox_nano.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/default/yolox_nano.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/default/yolox_tiny.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/default/yolox_tiny.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/example/custom/nano.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/example/custom/nano.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/example/custom/yolox_s.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/exps/example/custom/yolox_s.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/yolox/exp/yolox_base.py" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/YOLOX/yolox/exp/yolox_base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/label-studio-ml-backend/label_studio_ml/examples/segment_anything_model/docker-compose.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../../SDIG_fun/Segmentation_diff_finding/label-studio-ml-backend/label_studio_ml/examples/segment_anything_model/docker-compose.yml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "rendldav"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/mirekslouf/stemdiff.git",
+    "accountId": "23b6f493-fdd3-4568-9428-0fd649ea442c"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="39YzOlGvkzq66sZyyM4L7U454Rk" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "david",
+    "last_opened_file_path": "C:/Users/drend/OneDrive/Plocha/STEMDIFF_whole_update/stemdiff",
+    "nodejs_package_manager_path": "npm",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.19416.19" />
+        <option value="bundled-python-sdk-337b0a7a993a-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.19416.19" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="2a99f418-ec62-427a-90ab-4dc0e23b490a" name="Changes" comment="" />
+      <created>1770887761699</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1770887761699</updated>
+      <workItem from="1770887762759" duration="48000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
