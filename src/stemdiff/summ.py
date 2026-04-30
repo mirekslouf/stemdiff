@@ -29,32 +29,42 @@ import sys
 import tqdm
 import stemdiff.sum
 import concurrent.futures as future
+import idiff
 
 
-def sum_datafiles(
-        SDATA, DIFFIMAGES,
-        df, deconv=0, psf=None, iterate=10):
+def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False, 
+                  peaks=False, iterate=10, nn_path=None):
     '''
     Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
     
     Parameters
-    ----------
-    SDATA : stemdiff.gvars.SourceData object
-        The object describes source data (detector, data_dir, filenames).
-    DIFFIMAGES : stemdiff.gvars.DiffImages object
-        Object describing the diffraction images/patterns.
-    df : pandas.DataFrame object
-        Database with datafile names and characteristics.
-    deconv : int, optional, default is 0
-        Deconvolution type:
-        0 = no deconvolution,
-        1 = deconvolution based on external PSF,
-        2 = deconvolution based on PSF from central region,
-    psf : 2D-numpy array or None, optional, default is None
-        Array representing 2D-PSF function.
-        Relevant only for deconv = 1.
-    iterate : integer, optional, default is 10  
-        Number of iterations during the deconvolution.
+     ----------
+     SDATA : stemdiff.gvars.SourceData object
+         The object describes source data (detector, data_dir, filenames).
+     DIFFIMAGES : stemdiff.gvars.DiffImages object
+         Object describing the diffraction images/patterns.
+     df_sum : pandas.DataFrame object
+         Pre-calculated database with datafiles to be summed.
+         Each row of the database contains
+         [filename, xc, yc, MaxInt, NumPeaks, S].
+     df_psf : pandas.DataFrame object, optional
+         Database with datafiles to calculate PSF.
+         If None, PSF is calculated from central region of each datafile.
+     bkg : int, optional, default is 0
+         Background subtraction type:
+         0 = no background subtraction,
+         1 = rolling ball,
+         2 = neural network.
+
+         Neural network also needs the nn_path argument.
+     deconv : int, optional, default is False
+         Use deconvolution base on PSF determined by parameter df_psf.
+     peaks : bool, optional, default is False
+         If true, run peak detection algorithm.
+     iterate : integer, optional, default is 10
+         Number of iterations during the deconvolution.
+     nn_path : str, optional
+         Path to neural network for background subtraction.
         
     Returns
     -------
@@ -72,74 +82,23 @@ def sum_datafiles(
         - the *function for summation* depends on the deconvolution type
     '''
     
-    if deconv == 0:
-        arr = multicore_sum(
-            SDATA, DIFFIMAGES, df, psf, iterate,
-            func = stemdiff.sum.dfile_without_deconvolution)
-    elif deconv == 1:
-        arr = multicore_sum(
-            SDATA, DIFFIMAGES, df, psf, iterate,
-            func = stemdiff.sum.dfile_with_deconvolution_type1)
-    elif deconv == 2:
-        arr = multicore_sum(
-            SDATA, DIFFIMAGES, df, psf, iterate,
-            func = stemdiff.sum.dfile_with_deconvolution_type2)
-    else:
-        print(f'Unknown deconvolution type: deconv={deconv}')
-        print('Nothing to do.')
-        return None
-    return arr
-
-
-def multicore_sum(SDATA, DIFFIMAGES, df, psf, iterate, func):
-    '''
-    Execute concurrent data processing using a thread pool.
-
-    This function processes a list of datafiles using a thread pool 
-    for parallel execution. The number of concurrent workers is determined 
-    by subtracting 1 from the available CPU cores.
-
-    Parameters
-    ----------
-    SDATA : stemdiff.gvars.SourceData object
-        The object describes source data (detector, data_dir, filenames).
-    DIFFIMAGES : stemdiff.gvars.DiffImages object
-        Object describing the diffraction images/patterns.
-    df : pandas.DataFrame object
-        Database with datafile names and characteristics.
-    psf : 2D-numpy array or None, optional, default is None
-        Array representing 2D-PSF function.
-        Relevant only for deconv = 1.
-    iterate : integer, optional, default is 10  
-        Number of iterations during the deconvolution.
-    func : a function from stemdiff.sum module to be used for summation
-        A function from sister module stemdiff.sum,
-        which will be used for summation on multiple cores.
-        This argument is (almost always) passed from the calling function
-        stemdiff.summ.sum_datafiles so that it corresponded to
-        the user-selected deconvolution type.
-    
-    Returns
-    -------
-    final_arr : 2D numpy array
-        The array is a sum of datafiles;
-        if the datafiles are pre-filtered, we get sum of filtered datafiles,
-        if PSF is given, we get sum of datafiles with PSF deconvolution.
-    
-    Technical notes
-    ---------------
-    * This function is NOT to be called directly.
-    * It is called by wrapper function stemdiff.summ.sum_datafiles.
-    * The two functions work as follows:
-        - calling function = stemdiff.summ.sum_datafiles
-            - passes all relevant arguments including function for summation
-        - this function = stemdiff.summ.multicore_sum
-            - runs the summation on multiple cores and returns the result
-    '''
-    
     # (0) Initialize
     num_workers = os.cpu_count()  # Number of concurrent workers
-    datafiles = [datafile[1] for datafile in df.iterrows()] 
+    datafiles = [datafile[1] for datafile in df_sum.iterrows()] 
+
+
+
+    if nn_path != None:
+        nn = idiff.bkg2d.NeuralNetwork(nn_path)
+    else:
+        if bkg == 2:
+            raise ValueError("Argument nn_path must be specified, if bkg=2.")
+        nn = None
+
+    if df_psf != None:
+        psf = idiff.psf.PSFtype1.get_psf(SDATA, DIFFIMAGES, df_psf)
+    else:
+        psf = None
     
     # (1) Use ThreadPool to perform multicore summation  
     with future.ThreadPoolExecutor(max_workers=num_workers) as executor:
@@ -148,21 +107,14 @@ def multicore_sum(SDATA, DIFFIMAGES, df, psf, iterate, func):
         total_tasks = len(datafiles)
         # (b) Submit tasks to the executor            
         for i, file in enumerate(datafiles): 
-            try:
-                if func == stemdiff.sum.dfile_without_deconvolution:
-                    future_obj = executor.submit(
-                        func, SDATA, DIFFIMAGES, file)
-                elif func == stemdiff.sum.dfile_with_deconvolution_type1:
-                    future_obj = executor.submit(
-                        func, SDATA, DIFFIMAGES, file, psf, iterate)
-                elif func == stemdiff.sum.dfile_with_deconvolution_type2:
-                    future_obj = executor.submit(
-                        func, SDATA, DIFFIMAGES, file, iterate)
-                else:
-                    raise Exception("Uknown deconvolution function!")
+            # try:
+                func = stemdiff.sum.prepare_dfile
+                future_obj = executor.submit(func, SDATA, DIFFIMAGES, file, 
+                                             psf, bkg, deconv, peaks, iterate,
+                                             nn)
                 futures.append(future_obj)
-            except Exception as e:
-                print(f"Error processing file {file}: {str(e)}")
+            # except Exception as e:
+            #     print(f"Error processing file {file}: {str(e)}")
         # (c) Use tqdm to create a progress bar
         stderr_original = sys.stderr
         sys.stderr = sys.stdout

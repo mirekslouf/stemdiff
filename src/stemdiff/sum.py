@@ -27,14 +27,16 @@ Key argument is deconv, which determines the processing type:
 
 import numpy as np
 import stemdiff.io
-import stemdiff.dbase
 import idiff
+import ediff.center
 from skimage import restoration
+from scipy.ndimage import shift
 import tqdm
 import sys
 
 
-def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
+def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False,
+                  peaks=False, iterate=10, nn_path=None):
     """
      Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
  
@@ -44,20 +46,28 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
          The object describes source data (detector, data_dir, filenames).
      DIFFIMAGES : stemdiff.gvars.DiffImages object
          Object describing the diffraction images/patterns.
-     df : pandas.DataFrame object
-         Pre-calculated atabase with datafiles to be summed.
+     df_sum : pandas.DataFrame object
+         Pre-calculated database with datafiles to be summed.
          Each row of the database contains
          [filename, xc, yc, MaxInt, NumPeaks, S].
-     deconv : int, optional, default is 0
-         Deconvolution type:
-         0 = no deconvolution,
-         1 = deconvolution based on external PSF,
-         2 = deconvolution based on PSF from central region,
-     psf : 2D-numpy array or None, optional, default is None
-         Array representing 2D-PSF function.
-         Relevant only for deconv = 1.
+     df_psf : pandas.DataFrame object, optional
+         Database with datafiles to calculate PSF.
+         If None, PSF is calculated from central region of each datafile.
+     bkg : int, optional, default is 0
+         Background subtraction type:
+         0 = no background subtraction,
+         1 = rolling ball,
+         2 = neural network.
+
+         Neural network also needs the nn_path argument.
+     deconv : int, optional, default is False
+         Use deconvolution base on PSF determined by parameter df_psf.
+     peaks : bool, optional, default is False
+         If true, run peak detection algorithm.
      iterate : integer, optional, default is 10
          Number of iterations during the deconvolution.
+     nn_path : str, optional
+         Path to neural network for background subtraction.
  
      Returns
      -------
@@ -79,8 +89,20 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
     # (1) Prepare variables for summation 
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
-    datafiles = [datafile[1] for datafile in df.iterrows()] 
+    datafiles = [datafile[1] for datafile in df_sum.iterrows()] 
     sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
+
+    if nn_path != None:
+        nn = idiff.bkg2d.NeuralNetwork(nn_path)
+    else:
+        if bkg == 2:
+            raise ValueError("Argument nn_path must be specified, if bkg=2.")
+        nn = None
+
+    if df_psf != None:
+        psf = idiff.psf.PSFtype1.get_psf(SDATA, DIFFIMAGES, df_psf)
+    else:
+        psf = None
 
     # (2) Prepare variables for tqdm
     # (to create a single progress bar for the entire process
@@ -92,31 +114,22 @@ def sum_datafiles(SDATA, DIFFIMAGES, df, deconv=0, psf=None, iterate=10):
     # (we will use several types of summations
     # (each summations uses datafiles prepared in a different way
     with tqdm.tqdm(total=total_tasks, desc="Processing ") as pbar:
-        try:
+        # try:
             # Process each image in the database
-            for index, datafile in df.iterrows():
-                # Deconv0 => sum datafiles without deconvolution
-                if deconv == 0:
-                    sum_arr += dfile_without_deconvolution(
-                        SDATA, DIFFIMAGES, datafile)
-                # Deconv1 => sum datafiles with DeconvType1
-                elif deconv == 1:
-                    sum_arr += dfile_with_deconvolution_type1(
-                        SDATA, DIFFIMAGES, datafile, psf, iterate)
-                # Deconv2 => sum datafiles with DeconvType2
-                elif deconv == 2:
-                    sum_arr += dfile_with_deconvolution_type2(
-                        SDATA, DIFFIMAGES, datafile, iterate)
+            for index, datafile in df_sum.iterrows():
+                sum_arr += prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg,
+                                         deconv, peaks, iterate, nn)
+                
                 # Update the progress bar for each processed image
                 pbar.update(1)
-        except Exception as e:
-            print(f"Error processing a task: {str(e)}")
+        # except Exception as e:
+        #     print(f"Error processing a task: {str(e)}")
 
     # (4) Move to the next line after the progress bar is complete
     print('')
 
     # (5) Post-process the summation and return the result
-    return sum_postprocess(sum_arr, len(df))
+    return sum_postprocess(sum_arr, len(df_sum))
 
 
 def sum_postprocess(sum_of_arrays, n):
@@ -142,7 +155,8 @@ def sum_postprocess(sum_of_arrays, n):
     return(arr)
 
     
-def dfile_without_deconvolution(SDATA, DIFFIMAGES, datafile):
+def prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg, deconv, peaks,
+                  iterate, nn):
     """
     Prepare datafile for summation without deconvolution (deconv=0).
 
@@ -174,186 +188,130 @@ def dfile_without_deconvolution(SDATA, DIFFIMAGES, datafile):
     # (0) Prepare variables
     R = SDATA.detector.upscale
     img_size = DIFFIMAGES.imgsize
-
-    # (1) Read datafile
-    datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
-    arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
-    
-    # (2) Rescale/upscale datafile and THEN remove border region
-    # (a) upscale datafile
-    arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-    # (b) get the accurate center of the upscaled datafile
-    # (the center coordinates for each datafile are saved in the database
-    # (note: our datafile is one row from the database => we know the coords!
-    xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-    # (c) finally, the borders can be removed with respect to the center
-    arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)
-    # (Important technical notes:
-    # (* This 3-step procedure is necessary to center the images precisely.
-    # (  The accurate centers from upscaled images are saved in database.
-    # (  The centers from original/non-upscaled datafiles => wrong results.
-    # (* Some border region should ALWAYS be cut, for two reasons:
-    # (  (i) weak/zero diffractions at edges and (ii) detector edge artifacts
-    
-    # (3) Return the datafile as an array that is ready for summation
-    return(arr)
-
-
-def dfile_with_deconvolution_type1(SDATA, DIFFIMAGES, datafile, psf, iterate):
-    """
-    Prepare datafile for summation with deconvolution type1 (deconv=1).
-
-    Parameters
-    ----------
-    SDATA : stemdiff.gvars.SourceData object
-        The object describing source data (detector, data_dir, filenames).
-    DIFFIMAGES : stemdiff.gvars.DiffImages object
-        The bject describing the diffraction images/patterns.
-    datafile : one row from the prepared database of datafiles
-        The database of datafiles is created
-        in stemdiff.dbase.calc_database function.
-        Each row of the database contains
-        [filename, xc, yc, MaxInt, NumPeaks, S].
-    psf : 2D-numpy array
-        Array representing the 2D-PSF function.
-    iterate : int
-        Number of iterations during the deconvolution.
-
-    Returns
-    -------
-    arr : 2D numpy array
-        The datafile in the form of the array,
-        which is ready for summation (with DeconvType1 => see Notes below). 
-    
-    Notes
-    -----
-    * The parameters are transferred from the `sum_datafiles` function.
-    * DeconvType1 = Richardson-Lucy deconvolution using PSFtype1.
-    * PSFtype1 = 2D-PSF estimated from files with negligible diffractions.
-    """
-       
-    # (0) Prepare variables
-    R = SDATA.detector.upscale
-    img_size = DIFFIMAGES.imgsize
-    
-    # (1) Read datafile
-    datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
-    arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
-
-    # (2) Rescale/upscale datafile and THEN remove border region
-    # (a) upscale datafile
-    arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
-    # (b) get the accurate center of the upscaled datafile
-    # (the center coordinates for each datafile are saved in the database
-    # (note: our datafile is one row from the database => we know the coords!
-    xc,yc = (round(datafile.Xcenter), round(datafile.Ycenter))
-    # (c) finally, the borders can be removed with respect to the center
-    arr = stemdiff.io.Arrays.remove_edges(arr, img_size*R,xc,yc)        
-    # (Important technical notes:
-    # (* This 3-step procedure is necessary to center the images precisely.
-    # (  The accurate centers from upscaled images are saved in database.
-    # (  The centers from original/non-upscaled datafiles => wrong results.
-    # (* Some border region should ALWAYS be cut, for two reasons:
-    # (  (i) weak/zero diffractions at edges and (ii) detector edge artifacts
-        
-    # (3) Deconvolution: Richardson-Lucy using a global PSF
-    # (a) save np.max, normalize
-    # (reason: deconvolution algorithm requires normalized arrays...
-    # (...and we save original max.intensity to re-normalize the result
-    norm_const = np.max(arr)
-    arr_norm = arr/np.max(arr)
-    psf_norm = psf/np.max(psf)
-    # (b) perform the deconvolution
-    arr_deconv = restoration.richardson_lucy(
-        arr_norm, psf_norm, num_iter=iterate)
-    # (c) restore original range of intensities = re-normalize
-    arr = arr_deconv * norm_const
-    
-    # (4) Return the deconvolved datafile
-    # as an array that is ready for summation
-    return arr
-
-
-def dfile_with_deconvolution_type2(SDATA, DIFFIMAGES, datafile, iterate):
-    """
-    Prepare datafile for summation with deconvolution type2 (deconv=2).
-
-    Parameters
-    ----------
-    SDATA : stemdiff.gvars.SourceData object
-        The object describing source data (detector, data_dir, filenames).
-    DIFFIMAGES : stemdiff.gvars.DiffImages object
-        The bject describing the diffraction images/patterns.
-    datafile : one row from the prepared database of datafiles
-        The database of datafiles is created
-        in stemdiff.dbase.calc_database function.
-        Each row of the database contains
-        [filename, xc, yc, MaxInt, NumPeaks, S].
-    iterate : int
-        Number of iterations during the deconvolution.
-
-    Returns
-    -------
-    arr : 2D numpy array
-        The datafile in the form of the array,
-        which is ready for summation (with DeconvType1 => see Notes below). 
-    
-    Notes
-    -----
-    * The parameters are transferred from the `sum_datafiles` function.
-    * DeconvType2 = Richardson-Lucy deconvolution
-      using PSFtype2 + simple background subtraction. 
-    * PSFtype2 = 2D-PSF estimated from central region of the datafile
-      AFTER background subtraction.
-    """
-    
-    # (0) Prepare variables
-    R = SDATA.detector.upscale
-    img_size = DIFFIMAGES.imgsize
     psf_size = DIFFIMAGES.psfsize
-    
+
     # (1) Read datafile
     datafile_name = SDATA.data_dir.joinpath(datafile.DatafileName)
-    arr = stemdiff.io.Datafiles.read(SDATA, datafile_name) 
+    arr = stemdiff.io.Datafiles.read(SDATA, datafile_name)
+
+    # (2) Remove background
+    if bkg == 1:
+        arr = idiff.bkg2d.rolling_ball(arr, radius=3)
+        arr[arr < 50] = 0
+    elif bkg == 2:
+        arr = nn.predict(arr)
+    elif bkg == 3:
+        arr = idiff.bkg2d.tophat(arr)
     
-    # (2) Rescale/upscale datafile and THEN remove border region
+    # (3) Rescale/upscale datafile and THEN remove border region
     # (a) upscale datafile
     arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
     # (b) get the accurate center of the upscaled datafile
     # (the center coordinates for each datafile are saved in the database
     # (note: our datafile is one row from the database => we know the coords!
-    xc,yc = (round(datafile.Xcenter),round(datafile.Ycenter))
-    # (c) finally, the borders can be removed with respect to the center
-    arr = stemdiff.io.Arrays.remove_edges(arr,img_size*R,xc,yc)        
+    # (c) finally, recenter the image and zero the edges
+    # if bkg >= 2:
+    #     arr = recenter_on_max(arr)
+    # else:
+    #     center = ediff.center.CenterLocator(
+    #             arr, "intensity", final_print=False)
+    #     xc, yc = round(center.x), round(center.y)
+    #     arr = recenter(arr, xc, yc)
+    center = ediff.center.CenterLocator(
+            arr, "intensity", final_print=False)
+    xc, yc = round(center.x), round(center.y)
+    arr = recenter(arr, xc, yc)
+    arr = zero_spatial_edges(arr)
     # (Important technical notes:
     # (* This 3-step procedure is necessary to center the images precisely.
     # (  The accurate centers from upscaled images are saved in database.
     # (  The centers from original/non-upscaled datafiles => wrong results.
     # (* Some border region should ALWAYS be cut, for two reasons:
     # (  (i) weak/zero diffractions at edges and (ii) detector edge artifacts
-    
-    # (3) Remove background
-    arr = idiff.bcorr.rolling_ball(arr, radius=20)
-    
-    # (4) Prepare PSF from the center of given array
+
+    # (4) Prepare PSF from the center of given array, if not given as parameter
     # (recommended parameters:
     # (psf_size => to be specified in the calling script ~ 30
     # (circular => always True - square PSF causes certain artifacts
-    psf = idiff.psf.PSFtype2.get_psf(arr, psf_size, circular=True)
-    
+    if psf == None and deconv:
+        # remove more background for psf
+        psf = idiff.psf.PSFtype2.get_psf(arr, psf_size, circular=True)
+
     # (5) Deconvolution
     # (a) save np.max, normalize
     # (reason: deconvolution algorithm requires normalized arrays...
     # (...and we save original max.intensity to re-normalize the result
-    norm_const = np.max(arr)
-    arr_norm = arr/np.max(arr)
-    psf_norm = psf/np.max(psf)
-    # (b) perform the deconvolution
-    arr_deconv = restoration.richardson_lucy(
-        arr_norm, psf_norm, num_iter=iterate)
-    # (c) restore original range of intensities = re-normalize
-    arr = arr_deconv * norm_const
+    if deconv:
+        norm_const = np.max(arr)
+        arr_norm = arr/np.max(arr)
+        psf_norm = psf/np.max(psf)
+        # (b) perform the deconvolution
+        arr_deconv = restoration.richardson_lucy(
+            arr_norm, psf_norm, num_iter=iterate)
+        # (c) restore original range of intensities = re-normalize
+        arr = arr_deconv * norm_const
 
-    # (6) Return the deconvolved datafile
-    # as an array that is ready for summation
-    return(arr)
+    # (6) Detect peaks
+    if peaks:
+        arr = idiff.peaks.run_regions(arr)
+
+    # (7) Return the datafile as an array that is ready for summation
+    return arr
+
+def recenter_on_max(img):
+    """
+    Finds the maximum value in a 2D array and centers the image on it.
+    """
+    # 1. Find the 2D coordinates of the maximum value
+    # np.argmax gives the flat index; unravel_index converts it to (row, col)
+    max_y, max_x = np.unravel_index(np.argmax(img), img.shape)
+    
+    h, w = img.shape
+    
+    # 2. Calculate the shift required to move (max_y, max_x) to (h//2, w//2)
+    shift_y = (h // 2) - max_y
+    shift_x = (w // 2) - max_x
+    
+    # 3. Apply the shift with zero-padding
+    # order=0 preserves the original pixel values (nearest neighbor)
+    recentered_img = shift(img, shift=[shift_y, shift_x], mode='constant', cval=0, order=0)
+    
+    return recentered_img
+
+def recenter(img, center_x, center_y):
+    """
+    Recenters the image by shifting (center_x, center_y) to the array center.
+    Empty edges are filled with zeros.
+    """
+    h, w = img.shape
+    
+    # Calculate the required displacement
+    # shift_y = target_y - current_y
+    shift_y = (h // 2) - center_y
+    shift_x = (w // 2) - center_x
+    
+    # mode='constant' fills the boundary with cval (default is 0.0)
+    # order=0 uses nearest-neighbor (keeps pixel values exact)
+    # order=1 uses bilinear interpolation (smoother, better for sub-pixel)
+    shifted_img = shift(img, shift=[shift_y, shift_x], mode='constant', cval=0,
+                        order=0)
+    
+    return shifted_img
+
+def zero_spatial_edges(data, border_width=10):
+    """
+    Zeros the edges of an array with shape (..., H, W).
+    Works for (C, H, W) and (B, C, H, W).
+    """
+    res = data
+    w = border_width
+    
+    # Zero Top and Bottom
+    res[..., :w, :] = 0      # All batches/channels, first 'w' rows
+    res[..., -w:, :] = 0     # All batches/channels, last 'w' rows
+    
+    # Zero Left and Right
+    res[..., :, :w] = 0      # All batches/channels, first 'w' columns
+    res[..., :, -w:] = 0     # All batches/channels, last 'w' columns
+    
+    return res
