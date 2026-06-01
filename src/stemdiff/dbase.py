@@ -56,11 +56,11 @@ def calc_database(SDATA, DIFFIMAGES):
         # (the center must be determined for rescaled/upscaled array
         if DIFFIMAGES.ctype == 2:
             xc,yc = stemdiff.io.Arrays.find_center(
-                stemdiff.io.Arrays.rescale(arr, R, order=3),  # rescaled array
+                stemdiff.io.Arrays.rescale_fast(arr, R, inter=2),  # rescaled array
                 DIFFIMAGES.csquare*R, DIFFIMAGES.cintensity)  # central region
         elif (DIFFIMAGES.ctype == 1) and (xc == None):
-            xc,yc = stemdiff.io.Array.find_center(
-                stemdiff.io.Arrays.rescale(arr, R, order=3),  # rescaled array
+            xc,yc = stemdiff.io.Arrays.find_center(
+                stemdiff.io.Arrays.rescale_fast(arr, R, inter=2),  # rescaled array
                 DIFFIMAGES.csquare*R, DIFFIMAGES.cintensity)  # central region
         elif (DIFFIMAGES.ctype == 0) and (xc == None):
             geometric_center = round(SDATA.detector.detector_size*R/2)

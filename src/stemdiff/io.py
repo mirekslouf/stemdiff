@@ -50,6 +50,8 @@ import matplotlib.pyplot as plt
 from mpl_toolkits import axes_grid1  # to add nice colorbars
 from PIL import Image
 from skimage import transform, measure, morphology
+from scipy.ndimage import shift
+import cv2
 
 
 def set_plot_parameters(size=(12,9), dpi=75, fontsize=10, my_rcParams=None):
@@ -636,7 +638,114 @@ class Arrays:
         arr = arr/np.max(arr) * arr_max
         # Return the rescaled array.
         return(arr)
+    
+    def rescale_fast(arr, R, inter=1):
+        '''
+        Rescale 2D numpy array (which represents an image).
+        Uses resize function from cv2, which is fater than skimage rescale.
 
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Numpy array representing DAT-file/image.
+        R : integer
+            Rescale parameter: new_size_of the array = original_size * R
+        inter : integer
+            Interpolation mode:
+                * 0 = nearest
+                * 1 = linear
+                * 2 = cubic
+    
+        Returns
+        -------
+        arr : 2D numpy array
+            The array has `new_size = original_size * R`.
+        '''
+        # Map inter to cv enum
+        inters = [
+            cv2.INTER_NEAREST,
+            cv2.INTER_LINEAR,
+            cv2.INTER_CUBIC
+        ]
+        # Keep original value of array maximum.
+        arr_max = np.max(arr)
+        # Rescale the array.
+        # dsize is required, (0, 0) means use fx and fy
+        arr = cv2.resize(arr, (0, 0), fx=R, fy=R, interpolation=inters[inter])
+        # Restore the original value of array maximum.
+        arr = arr/np.max(arr) * arr_max
+        # Avoid negative values
+        arr = np.clip(arr, 0, None)
+        # Return the rescaled array.
+        return arr
+
+    def zero_spatial_edges(arr, border_width=10):
+        '''
+        Zeros the edges of an array with shape (..., H, W).
+        This allows processing N images at once - shape (N, H, W).
+        Also works for a single image with shape (H, W).
+
+        Important - this operation happens inplace (the zeros are written
+        to the input array).
+
+        Parameters
+        ----------
+        arr : numpy array
+            Numpy array representing DAT-file/image.
+        border_width : int, optional, default is 10
+            Width of the 
+
+        Returns
+        -------
+        numpy array
+            Array with zeroed edges.
+        '''
+        w = border_width
+        
+        # Zero Top and Bottom
+        arr[..., :w, :] = 0      # first 'w' rows
+        arr[..., -w:, :] = 0     # last 'w' rows
+        
+        # Zero Left and Right
+        arr[..., :, :w] = 0      # first 'w' columns
+        arr[..., :, -w:] = 0     # last 'w' columns
+        
+        return arr
+    
+    def recenter(arr, center_x, center_y):
+        '''
+        Recenters the image by shifting (center_x, center_y) to the array
+        center.
+        Empty edges are filled with zeros.
+
+        Parameters
+        ----------
+        arr : 2D numpy array
+            Numpy array representing DAT-file/image.
+        center_x : int
+            X coordinate of the center.
+        center_y : int
+            Y coordinate of the center.
+
+        Returns
+        -------
+        2D numpy array
+            Centered array.
+        '''
+        h, w = arr.shape
+        
+        # Calculate the required displacement
+        # shift_y = target_y - current_y
+        shift_y = (h // 2) - center_y
+        shift_x = (w // 2) - center_x
+        
+        # mode='constant' fills the boundary with cval (default is 0.0)
+        # order=0 uses nearest-neighbor (keeps pixel values exact)
+        # order=1 uses bilinear interpolation (smoother, better for sub-pixel)
+        shifted_img = shift(arr, shift=[shift_x, shift_y], mode='constant',
+                            cval=0, order=0)
+        
+        return shifted_img
 
     def remove_edges(arr,rsize,xc,yc):
         '''

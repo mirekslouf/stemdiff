@@ -17,11 +17,7 @@ The initial arguments are:
 * DIFFIMAGES = stemdiff.gvars.DiffImages object = description of diffractograms
 * df = pre-calculated database of datafiles/diffratograms to sum
 
-Key argument is deconv, which determines the processing type:
-    
-* deconv=0 = sum *without* deconvolution
-* deconv=1 = R-L deconvolution with global PSF from low-diffraction datafiles
-* deconv=2 = subtract background + R-L deconvolution with PSF from the center
+Key arguments are `deconv` and `bkg`, which determine the processing type.
 '''
 
 
@@ -30,60 +26,84 @@ import stemdiff.io
 import idiff
 import ediff.center
 from skimage import restoration
-from scipy.ndimage import shift
 import tqdm
 import sys
 
 
-def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False,
-                  peaks=False, iterate=10, nn_path=None):
+def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={}, 
+                  deconv=0, deconvp={"num_iter": 10}, peaks=0, peaksp={},
+                  center=None, centerp={}):
     """
-     Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
- 
-     Parameters
-     ----------
-     SDATA : stemdiff.gvars.SourceData object
-         The object describes source data (detector, data_dir, filenames).
-     DIFFIMAGES : stemdiff.gvars.DiffImages object
-         Object describing the diffraction images/patterns.
-     df_sum : pandas.DataFrame object
-         Pre-calculated database with datafiles to be summed.
-         Each row of the database contains
-         [filename, xc, yc, MaxInt, NumPeaks, S].
-     df_psf : pandas.DataFrame object, optional
-         Database with datafiles to calculate PSF.
-         If None, PSF is calculated from central region of each datafile.
-     bkg : int, optional, default is 0
-         Background subtraction type:
-         0 = no background subtraction,
-         1 = rolling ball,
-         2 = neural network.
+    Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
 
-         Neural network also needs the nn_path argument.
-     deconv : int, optional, default is False
-         Use deconvolution base on PSF determined by parameter df_psf.
-     peaks : bool, optional, default is False
-         If true, run peak detection algorithm.
-     iterate : integer, optional, default is 10
-         Number of iterations during the deconvolution.
-     nn_path : str, optional
-         Path to neural network for background subtraction.
- 
-     Returns
-     -------
-     final_arr : 2D numpy array
-         The array is a sum of datafiles;
-         if the datafiles are pre-filtered,
-         we get the sum of filtered datafiles.
-         Additional arguments determin the (optional) type of deconvolution.
- 
-     Technical notes
-     ---------------
-     * This function works as a signpost.
-     * It reads the summation parameters and calls a more specific summation 
-       functions (which aren NOT called directly by the end-user).
-     * It employs progress bar, handles possible exceptions,
-       and returns the final array (= post-processed and normalized array).
+    Parameters
+    ----------
+    SDATA : stemdiff.gvars.SourceData object
+        The object describes source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    df_sum : pandas.DataFrame object
+        Pre-calculated database with datafiles to be summed.
+        Each row of the database contains
+        [filename, xc, yc, MaxInt, NumPeaks, S].
+    df_psf : pandas.DataFrame object, optional
+        Database with datafiles to calculate PSF.
+        If None, PSF is used from deconvp or calculated from central region
+        of each datafile.
+    bkg : int, optional, default is 0
+        Background subtraction type:
+        * 0 = no background subtraction,
+        * 1 = rolling ball,
+        * 2 = tophat,
+        * 3 = gaussian,
+        * 4 = neural network.
+
+        Neural network needs `path` argument.
+    bkgp : dictionary, optional, default is {}
+        Parameters for the background subtraction method.
+    deconv : int, optional, default is 0
+        Use deconvolution.
+        PSF priority: 
+        
+        1. `"psf"` argument in deconvp - this array is directly use as PSF
+        after normalization
+        2. `df_psf` parameter is used to calculate the PSF
+        3. central region (after bkg subtraction) of each array is used as PSF 
+        (every array has its own individual PSF)
+
+        Deconvolution type:
+        * 0 = no deconvolution,
+        * 1 = Richardson-Lucy deconvolution.
+    deconvp : dictionary, optional, default is {"num_iter": 10}
+        Parameters for the deconvolution, default uses 10 iterations.
+    peaks : int, optional, default is 0
+        Possible values:
+        * 0 = no peaks detection
+        * 1 = idiff.peaks.run_regions
+        * 2 = idiff.peaks._run_log
+    peaksp : dictionary, optional, default is {}
+        Parameters for the peaks detection method.
+    center : string or None, optional, default is None
+        Detect center for each image. If None, use the centers from the 
+        database. For possible values refer to `ediff.center.CenterLocator`.
+    centerp : dictionary, optional, default is {}
+        Parameters for the center detection method
+
+    Returns
+    -------
+    final_arr : 2D numpy array
+        The array is a sum of datafiles;
+        if the datafiles are pre-filtered,
+        we get the sum of filtered datafiles.
+        Additional arguments determine the (optional) processing.
+
+    Technical notes
+    ---------------
+    * This function works as a signpost.
+    * It reads the summation parameters and calls a more specific summation 
+    functions (which are NOT called directly by the end-user).
+    * It employs progress bar, handles possible exceptions,
+    and returns the final array (= post-processed and normalized array).
     """
 
     # (1) Prepare variables for summation 
@@ -92,17 +112,14 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False,
     datafiles = [datafile[1] for datafile in df_sum.iterrows()] 
     sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
 
-    if nn_path != None:
-        nn = idiff.bkg2d.NeuralNetwork(nn_path)
+    if bkg == 4:
+        nn = idiff.bkg2d.NeuralNetwork(**bkgp)
     else:
-        if bkg == 2:
-            raise ValueError("Argument nn_path must be specified, if bkg=2.")
         nn = None
 
-    if df_psf != None:
+    if df_psf is not None and "psf" not in deconvp:
         psf = idiff.psf.PSFtype1.get_psf(SDATA, DIFFIMAGES, df_psf)
-    else:
-        psf = None
+        deconvp["psf"] = psf
 
     # (2) Prepare variables for tqdm
     # (to create a single progress bar for the entire process
@@ -114,16 +131,17 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False,
     # (we will use several types of summations
     # (each summations uses datafiles prepared in a different way
     with tqdm.tqdm(total=total_tasks, desc="Processing ") as pbar:
-        # try:
+        try:
             # Process each image in the database
             for index, datafile in df_sum.iterrows():
-                sum_arr += prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg,
-                                         deconv, peaks, iterate, nn)
+                sum_arr += prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg,
+                                         bkgp, deconv, deconvp, peaks, peaksp,
+                                         nn, center, centerp)
                 
                 # Update the progress bar for each processed image
                 pbar.update(1)
-        # except Exception as e:
-        #     print(f"Error processing a task: {str(e)}")
+        except Exception as e:
+            print(f"Error processing a task: {str(e)}")
 
     # (4) Move to the next line after the progress bar is complete
     print('')
@@ -155,10 +173,12 @@ def sum_postprocess(sum_of_arrays, n):
     return(arr)
 
     
-def prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg, deconv, peaks,
-                  iterate, nn):
+def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
+                  peaks, peaksp, nn, center_detection, centerp):
     """
-    Prepare datafile for summation without deconvolution (deconv=0).
+    Prepare datafile for summation.
+    This function is not supposed to be used directly.
+    Use `sum_datafiles`.
 
     Parameters
     ----------
@@ -175,14 +195,11 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg, deconv, peaks,
     Returns
     -------
     arr : 2D numpy array
-        The datafile in the form of the array,
-        which is ready for summation (with DeconvType0 => see Notes below). 
+        The datafile in the form of the array.
     
     Notes
     -----
     * The parameters are transferred from the `sum_datafiles` function.
-    * DeconvType0 = no deconvolution,
-      just summation of the prepared datafiles (upscaled, centered...).
     """
         
     # (0) Prepare variables
@@ -196,32 +213,34 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg, deconv, peaks,
 
     # (2) Remove background
     if bkg == 1:
-        arr = idiff.bkg2d.rolling_ball(arr, radius=3)
-        arr[arr < 50] = 0
+        arr = idiff.bkg2d.rolling_ball(arr, **bkgp)
     elif bkg == 2:
-        arr = nn.predict(arr)
+        arr = idiff.bkg2d.tophat(arr, **bkgp)
     elif bkg == 3:
-        arr = idiff.bkg2d.tophat(arr)
+        arr = idiff.bkg2d.gaussian(arr, **bkgp)
+    elif bkg == 4:
+        arr = nn.predict(arr)
     
     # (3) Rescale/upscale datafile and THEN remove border region
     # (a) upscale datafile
-    arr = stemdiff.io.Arrays.rescale(arr, R, order=3)
+    arr = stemdiff.io.Arrays.rescale_fast(arr, R, inter=2)
+    arr = stemdiff.io.Arrays.zero_spatial_edges(arr, border_width=10)
     # (b) get the accurate center of the upscaled datafile
     # (the center coordinates for each datafile are saved in the database
     # (note: our datafile is one row from the database => we know the coords!
+    # optionally, if user requests, run the provided center detection
+    if center_detection == None:
+        xc, yc = (round(datafile.Xcenter),round(datafile.Ycenter))
+    elif center_detection == "intensity":
+        center_locator = ediff.center.IntensityCenter()
+        xc, yc = center_locator.center_of_intensity(arr, **centerp)
+        xc, yc = round(xc), round(yc)
+    else:
+        center = ediff.center.CenterLocator(
+            arr, center_detection, final_print=False, **centerp)
+        xc, yc = round(center.x), round(center.y)
     # (c) finally, recenter the image and zero the edges
-    # if bkg >= 2:
-    #     arr = recenter_on_max(arr)
-    # else:
-    #     center = ediff.center.CenterLocator(
-    #             arr, "intensity", final_print=False)
-    #     xc, yc = round(center.x), round(center.y)
-    #     arr = recenter(arr, xc, yc)
-    center = ediff.center.CenterLocator(
-            arr, "intensity", final_print=False)
-    xc, yc = round(center.x), round(center.y)
-    arr = recenter(arr, xc, yc)
-    arr = zero_spatial_edges(arr)
+    arr = stemdiff.io.Arrays.recenter(arr, xc, yc)
     # (Important technical notes:
     # (* This 3-step procedure is necessary to center the images precisely.
     # (  The accurate centers from upscaled images are saved in database.
@@ -233,85 +252,40 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, psf, bkg, deconv, peaks,
     # (recommended parameters:
     # (psf_size => to be specified in the calling script ~ 30
     # (circular => always True - square PSF causes certain artifacts
-    if psf == None and deconv:
-        # remove more background for psf
+    if deconv > 0 and "psf" not in deconvp:
         psf = idiff.psf.PSFtype2.get_psf(arr, psf_size, circular=True)
+    elif deconv > 0:
+        psf = deconvp["psf"] # get psf for the next step
+    
 
     # (5) Deconvolution
-    # (a) save np.max, normalize
-    # (reason: deconvolution algorithm requires normalized arrays...
-    # (...and we save original max.intensity to re-normalize the result
-    if deconv:
+    if deconv == 1:
+        # (a) save np.max, normalize
+        # (reason: deconvolution algorithm requires normalized arrays...
+        # (...and we save original max.intensity to re-normalize the result
         norm_const = np.max(arr)
-        arr_norm = arr/np.max(arr)
-        psf_norm = psf/np.max(psf)
+        arr_norm = arr/norm_const
+
+        # PSF sould sum to 1
+        psf_norm = psf/np.sum(psf)
+
+        deconvp = deconvp.copy() # avoid alteration for next iterations
+        deconvp["psf"] = psf_norm # add normalized psf to the arguments
+
         # (b) perform the deconvolution
-        arr_deconv = restoration.richardson_lucy(
-            arr_norm, psf_norm, num_iter=iterate)
+        arr_deconv = restoration.richardson_lucy(arr_norm, **deconvp)
         # (c) restore original range of intensities = re-normalize
         arr = arr_deconv * norm_const
 
     # (6) Detect peaks
-    if peaks:
-        arr = idiff.peaks.run_regions(arr)
+    if peaks == 1:
+        arr = idiff.peaks.run_regions(arr, **peaksp)
+    elif peaks == 2:
+        rows, columns, scores = idiff.peaks._run_log(arr, **peaksp)
+        scores = idiff.peaks.calculate_integrated_intensities(
+            arr, rows, columns, scores
+        )
+        arr = idiff.peaks.dirac_delta_image(arr, rows, columns, scores)
 
     # (7) Return the datafile as an array that is ready for summation
     return arr
-
-def recenter_on_max(img):
-    """
-    Finds the maximum value in a 2D array and centers the image on it.
-    """
-    # 1. Find the 2D coordinates of the maximum value
-    # np.argmax gives the flat index; unravel_index converts it to (row, col)
-    max_y, max_x = np.unravel_index(np.argmax(img), img.shape)
-    
-    h, w = img.shape
-    
-    # 2. Calculate the shift required to move (max_y, max_x) to (h//2, w//2)
-    shift_y = (h // 2) - max_y
-    shift_x = (w // 2) - max_x
-    
-    # 3. Apply the shift with zero-padding
-    # order=0 preserves the original pixel values (nearest neighbor)
-    recentered_img = shift(img, shift=[shift_y, shift_x], mode='constant', cval=0, order=0)
-    
-    return recentered_img
-
-def recenter(img, center_x, center_y):
-    """
-    Recenters the image by shifting (center_x, center_y) to the array center.
-    Empty edges are filled with zeros.
-    """
-    h, w = img.shape
-    
-    # Calculate the required displacement
-    # shift_y = target_y - current_y
-    shift_y = (h // 2) - center_y
-    shift_x = (w // 2) - center_x
-    
-    # mode='constant' fills the boundary with cval (default is 0.0)
-    # order=0 uses nearest-neighbor (keeps pixel values exact)
-    # order=1 uses bilinear interpolation (smoother, better for sub-pixel)
-    shifted_img = shift(img, shift=[shift_y, shift_x], mode='constant', cval=0,
-                        order=0)
-    
-    return shifted_img
-
-def zero_spatial_edges(data, border_width=10):
-    """
-    Zeros the edges of an array with shape (..., H, W).
-    Works for (C, H, W) and (B, C, H, W).
-    """
-    res = data
-    w = border_width
-    
-    # Zero Top and Bottom
-    res[..., :w, :] = 0      # All batches/channels, first 'w' rows
-    res[..., -w:, :] = 0     # All batches/channels, last 'w' rows
-    
-    # Zero Left and Right
-    res[..., :, :w] = 0      # All batches/channels, first 'w' columns
-    res[..., :, -w:] = 0     # All batches/channels, last 'w' columns
-    
-    return res

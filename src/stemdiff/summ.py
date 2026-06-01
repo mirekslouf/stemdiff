@@ -30,116 +30,139 @@ import tqdm
 import stemdiff.sum
 import concurrent.futures as future
 import idiff
+import numpy as np
 
-
-def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, deconv=False, 
-                  peaks=False, iterate=10, nn_path=None):
+def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={}, 
+                  deconv=0, deconvp={"num_iter": 10}, peaks=0, peaksp={},
+                  center=None, centerp={}):
     '''
     Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
     
     Parameters
-     ----------
-     SDATA : stemdiff.gvars.SourceData object
-         The object describes source data (detector, data_dir, filenames).
-     DIFFIMAGES : stemdiff.gvars.DiffImages object
-         Object describing the diffraction images/patterns.
-     df_sum : pandas.DataFrame object
-         Pre-calculated database with datafiles to be summed.
-         Each row of the database contains
-         [filename, xc, yc, MaxInt, NumPeaks, S].
-     df_psf : pandas.DataFrame object, optional
-         Database with datafiles to calculate PSF.
-         If None, PSF is calculated from central region of each datafile.
-     bkg : int, optional, default is 0
-         Background subtraction type:
-         0 = no background subtraction,
-         1 = rolling ball,
-         2 = neural network.
+    ----------
+    SDATA : stemdiff.gvars.SourceData object
+        The object describes source data (detector, data_dir, filenames).
+    DIFFIMAGES : stemdiff.gvars.DiffImages object
+        Object describing the diffraction images/patterns.
+    df_sum : pandas.DataFrame object
+        Pre-calculated database with datafiles to be summed.
+        Each row of the database contains
+        [filename, xc, yc, MaxInt, NumPeaks, S].
+    df_psf : pandas.DataFrame object, optional
+        Database with datafiles to calculate PSF.
+        If None, PSF is used from deconvp or calculated from central region
+        of each datafile.
+    bkg : int, optional, default is 0
+        Background subtraction type:
+        * 0 = no background subtraction,
+        * 1 = rolling ball,
+        * 2 = tophat,
+        * 3 = gaussian,
+        * 4 = neural network.
 
-         Neural network also needs the nn_path argument.
-     deconv : int, optional, default is False
-         Use deconvolution base on PSF determined by parameter df_psf.
-     peaks : bool, optional, default is False
-         If true, run peak detection algorithm.
-     iterate : integer, optional, default is 10
-         Number of iterations during the deconvolution.
-     nn_path : str, optional
-         Path to neural network for background subtraction.
+        Neural network needs `path` argument.
+    bkgp : dictionary, optional, default is {}
+        Parameters for the background subtraction method.
+    deconv : int, optional, default is 0
+        Use deconvolution.
+        PSF priority: 
         
+        1. `"psf"` argument in deconvp - this array is directly use as PSF
+        after normalization
+        2. `df_psf` parameter is used to calculate the PSF
+        3. central region (after bkg subtraction) of each array is used as PSF 
+        (every array has its own individual PSF)
+
+        Deconvolution type:
+        * 0 = no deconvolution,
+        * 1 = Richardson-Lucy deconvolution.
+    deconvp : dictionary, optional, default is {"num_iter": 10}
+        Parameters for the deconvolution, default uses 10 iterations.
+    peaks : int, optional, default is 0
+        Possible values:
+        * 0 = no peaks detection
+        * 1 = idiff.peaks.run_regions
+        * 2 = idiff.peaks._run_log
+    peaksp : dictionary, optional, default is {}
+        Parameters for the peaks detection method.
+    center : string or None, optional, default is None
+        Detect center for each image. If None, use the centers from the 
+        database. For possible values refer to `ediff.center.CenterLocator`.
+    centerp : dictionary, optional, default is {}
+        Parameters for the center detection method
+
     Returns
     -------
     final_arr : 2D numpy array
         The array is a sum of datafiles;
-        if the datafiles are pre-filtered, we get the sum of filtered datafiles,
-        if PSF is given, we get the sum of datafiles with PSF deconvolution.
-    
+        if the datafiles are pre-filtered,
+        we get the sum of filtered datafiles.
+        Additional arguments determine the (optional) processing.
+
     Technical notes
     ---------------
     * This function is a wrapper.
-    * It calls stemdiff.summ.multicore_sum with correct arguments:
-        - all relevant original arguments
-        - one additional argument: the *function for summation*
-        - the *function for summation* depends on the deconvolution type
+    * It calls stemdiff.sum.prepare_dfile in parallel.
     '''
     
     # (0) Initialize
     num_workers = os.cpu_count()  # Number of concurrent workers
     datafiles = [datafile[1] for datafile in df_sum.iterrows()] 
+    R = SDATA.detector.upscale
+    img_size = DIFFIMAGES.imgsize
+    sum_arr = np.zeros((img_size * R, img_size * R), dtype=np.float32)
+    n_arr_summed = 0
 
-
-
-    if nn_path != None:
-        nn = idiff.bkg2d.NeuralNetwork(nn_path)
+    if bkg == 4:
+        nn = idiff.bkg2d.NeuralNetwork(**bkgp)
     else:
-        if bkg == 2:
-            raise ValueError("Argument nn_path must be specified, if bkg=2.")
         nn = None
 
-    if df_psf != None:
+    if df_psf is not None and "psf" not in deconvp:
         psf = idiff.psf.PSFtype1.get_psf(SDATA, DIFFIMAGES, df_psf)
-    else:
-        psf = None
+        deconvp["psf"] = psf
     
-    # (1) Use ThreadPool to perform multicore summation  
+    # (1) Use ThreadPool to perform multicore summation
     with future.ThreadPoolExecutor(max_workers=num_workers) as executor:
         # (a) Prepare variables
-        futures = []
+        futures = set()
         total_tasks = len(datafiles)
         # (b) Submit tasks to the executor            
         for i, file in enumerate(datafiles): 
-            # try:
+            try:
                 func = stemdiff.sum.prepare_dfile
-                future_obj = executor.submit(func, SDATA, DIFFIMAGES, file, 
-                                             psf, bkg, deconv, peaks, iterate,
-                                             nn)
-                futures.append(future_obj)
-            # except Exception as e:
-            #     print(f"Error processing file {file}: {str(e)}")
+                future_obj = executor.submit(func, SDATA, DIFFIMAGES, file, bkg,
+                                             bkgp, deconv, deconvp, peaks,
+                                             peaksp, nn, center, centerp)
+                futures.add(future_obj)
+            except Exception as e:
+                print(f"Error processing file {file}: {str(e)}")
         # (c) Use tqdm to create a progress bar
         stderr_original = sys.stderr
         sys.stderr = sys.stdout
         with tqdm.tqdm(total=total_tasks, 
                        desc="Processing ") as pbar:
-            # ...wait for all tasks to complete
+            # ...wait for tasks to complete
             for future_obj in future.as_completed(futures):
+                # (d) Obtain the processed array and add it to the result
                 try:
-                    future_obj.result()
+                    sum_arr += future_obj.result()
+                    n_arr_summed += 1
                 except Exception as e:
                     print(f"Error processing a task: {str(e)}")
+                finally:
+                    # Remove future from the set to free memory
+                    futures.remove(future_obj)
+                    # Clear the local loop variable
+                    del future_obj 
                 pbar.update(1)
             sys.stderr = stderr_original
     
-    # (2) Summation done, collect the results
-    # (a) Print a new line to complete the progress bar
+    # Print a new line to complete the progress bar
     print()
-    # (b) Collect results
-    deconvolved_data = [f.result() for f in futures]
     
-    # (3) Results collected, perform post-processing
-    # (a) Sum results = the processed/deconvolved files from previous steps
-    sum_arr = sum(deconvolved_data)    
-    # (b) Run post-processing routine = normalization, 
-    final_arr = stemdiff.sum.sum_postprocess(sum_arr,len(deconvolved_data))
+    # (2) Perform post-processing
+    final_arr = stemdiff.sum.sum_postprocess(sum_arr, n_arr_summed)
     
-    # (4) Return final array = sum of datafiles with (optional) deconvolution
-    return(final_arr)
+    # (3) Return final array = sum of datafiles with (optional) deconvolution
+    return final_arr
