@@ -64,17 +64,22 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
         Parameters for the background subtraction method.
     deconv : int, optional, default is 0
         Use deconvolution.
-        PSF priority: 
-        
+        Deconvolution type:
+        * 0 = no deconvolution,
+        * 1 = Richardson-Lucy deconvolution from skimage,
+        * 2 = Richardson-Lucy deconvolution from idiff,
+        * 3 = Richardson-Lucy deconvolution from idiff with 
+        Tikhonov regularization,
+        * 4 = Richardson-Lucy deconvolution from idiff with 
+        L1 regularization.
+
+        Which PSF is used for the deconvolution is determined by this priority: 
         1. `"psf"` argument in deconvp - this array is directly use as PSF
         after normalization
         2. `df_psf` parameter is used to calculate the PSF
         3. central region (after bkg subtraction) of each array is used as PSF 
         (every array has its own individual PSF)
 
-        Deconvolution type:
-        * 0 = no deconvolution,
-        * 1 = Richardson-Lucy deconvolution.
     deconvp : dictionary, optional, default is {"num_iter": 10}
         Parameters for the deconvolution, default uses 10 iterations.
     peaks : int, optional, default is 0

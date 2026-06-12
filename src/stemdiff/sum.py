@@ -63,17 +63,22 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
         Parameters for the background subtraction method.
     deconv : int, optional, default is 0
         Use deconvolution.
-        PSF priority: 
-        
+        Deconvolution type:
+        * 0 = no deconvolution,
+        * 1 = Richardson-Lucy deconvolution from skimage,
+        * 2 = Richardson-Lucy deconvolution from idiff,
+        * 3 = Richardson-Lucy deconvolution from idiff with 
+        Tikhonov regularization,
+        * 4 = Richardson-Lucy deconvolution from idiff with 
+        L1 regularization.
+
+        Which PSF is used for the deconvolution is determined by this priority: 
         1. `"psf"` argument in deconvp - this array is directly use as PSF
         after normalization
         2. `df_psf` parameter is used to calculate the PSF
         3. central region (after bkg subtraction) of each array is used as PSF 
         (every array has its own individual PSF)
 
-        Deconvolution type:
-        * 0 = no deconvolution,
-        * 1 = Richardson-Lucy deconvolution.
     deconvp : dictionary, optional, default is {"num_iter": 10}
         Parameters for the deconvolution, default uses 10 iterations.
     peaks : int, optional, default is 0
@@ -259,7 +264,7 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
     
 
     # (5) Deconvolution
-    if deconv == 1:
+    if deconv > 0:
         # (a) save np.max, normalize
         # (reason: deconvolution algorithm requires normalized arrays...
         # (...and we save original max.intensity to re-normalize the result
@@ -270,11 +275,24 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
         psf_norm = psf/np.sum(psf)
 
         deconvp = deconvp.copy() # avoid alteration for next iterations
-        deconvp["psf"] = psf_norm # add normalized psf to the arguments
+        deconvp.pop("psf", None) # remove psf from deconvp
 
-        # (b) perform the deconvolution
+    # (b) perform the deconvolution
+    if deconv == 1:
+        deconvp["psf"] = psf_norm # add normalized psf to the arguments
         arr_deconv = restoration.richardson_lucy(arr_norm, **deconvp)
-        # (c) restore original range of intensities = re-normalize
+    elif deconv == 2:
+        rl = idiff.deconv.RichardsonLucy(**deconvp)
+        arr_deconv = rl.deconvRL(arr_norm, psf_norm)
+    elif deconv == 3:
+        rl = idiff.deconv.RichardsonLucy(**deconvp)
+        arr_deconv = rl.deconvRLTM(arr_norm, psf_norm)
+    elif deconv == 4:
+        rl = idiff.deconv.RichardsonLucy(**deconvp)
+        arr_deconv = rl.deconvRLTV(arr_norm, psf_norm)
+
+    # (c) restore original range of intensities = re-normalize
+    if deconv > 0:
         arr = arr_deconv * norm_const
 
     # (6) Detect peaks
