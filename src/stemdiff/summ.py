@@ -52,6 +52,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
         If None, PSF is used from deconvp or calculated from central region
         of each datafile.
     bkg : int, optional, default is 0
+        Use background subtraction from `idiff.bkg2d`.
         Background subtraction type:
         * 0 = no background subtraction,
         * 1 = rolling ball,
@@ -83,10 +84,18 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
     deconvp : dictionary, optional, default is {"num_iter": 10}
         Parameters for the deconvolution, default uses 10 iterations.
     peaks : int, optional, default is 0
+        Run peaks detection algorithm on the processed NBD pattern. 
+        Every peak is replaced with a single pixel with intensity equal to
+        the sum of the peaks intensities.
         Possible values:
         * 0 = no peaks detection
-        * 1 = idiff.peaks.run_regions
-        * 2 = idiff.peaks._run_log
+        * 1 = `idiff.peaks.run_regions`
+        * 2 = `idiff.peaks.run_log`
+        * 3 = `idiff.peaks.run_doh`
+        * 4 = `idiff.peaks.run_pcbr`
+
+        `run_regions` or `run_log` are recommended.
+
     peaksp : dictionary, optional, default is {}
         Parameters for the peaks detection method.
     center : string or None, optional, default is None

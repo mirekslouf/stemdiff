@@ -8,14 +8,14 @@ The summation of 4D-STEM datafiles to create one 2D powder diffraction file.
 
 To perform the summation, we just call function sum_datafiles:
 
-* serial   : stemdiff.sum.sum_datafiles(SDATA, DIFFIMAGES, df, deconv, ...)
-* parallel : stemdiff.summ.sum_datafiles(SDATA, DIFFIMAGES, df, deconv, ...)
+* serial   : stemdiff.sum.sum_datafiles(SDATA, DIFFIMAGES, df, ...)
+* parallel : stemdiff.summ.sum_datafiles(SDATA, DIFFIMAGES, df, ...)
 
 The initial arguments are:
 
 * SDATA = stemdiff.gvars.SourceData object = description of source data
 * DIFFIMAGES = stemdiff.gvars.DiffImages object = description of diffractograms
-* df = pre-calculated database of datafiles/diffratograms to sum
+* df_sum = pre-calculated database of datafiles/diffratograms to sum
 
 Key arguments are `deconv` and `bkg`, which determine the processing type.
 '''
@@ -51,6 +51,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
         If None, PSF is used from deconvp or calculated from central region
         of each datafile.
     bkg : int, optional, default is 0
+        Use background subtraction from `idiff.bkg2d`.
         Background subtraction type:
         * 0 = no background subtraction,
         * 1 = rolling ball,
@@ -72,8 +73,8 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
         * 4 = Richardson-Lucy deconvolution from idiff with 
         L1 regularization.
 
-        Which PSF is used for the deconvolution is determined by this priority: 
-        1. `"psf"` argument in deconvp - this array is directly use as PSF
+        Which PSF is used for the deconvolution is determined by this order: 
+        1. `"psf"` argument in deconvp - this array is directly used as PSF
         after normalization
         2. `df_psf` parameter is used to calculate the PSF
         3. central region (after bkg subtraction) of each array is used as PSF 
@@ -82,10 +83,18 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
     deconvp : dictionary, optional, default is {"num_iter": 10}
         Parameters for the deconvolution, default uses 10 iterations.
     peaks : int, optional, default is 0
+        Run peaks detection algorithm on the processed NBD pattern. 
+        Every peak is replaced with a single pixel with intensity equal to
+        the sum of the peaks intensities.
         Possible values:
         * 0 = no peaks detection
-        * 1 = idiff.peaks.run_regions
-        * 2 = idiff.peaks._run_log
+        * 1 = `idiff.peaks.run_regions`
+        * 2 = `idiff.peaks.run_log`
+        * 3 = `idiff.peaks.run_doh`
+        * 4 = `idiff.peaks.run_pcbr`
+
+        `run_regions` or `run_log` are recommended.
+
     peaksp : dictionary, optional, default is {}
         Parameters for the peaks detection method.
     center : string or None, optional, default is None
@@ -129,6 +138,7 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
     # (2) Prepare variables for tqdm
     # (to create a single progress bar for the entire process
     total_tasks = len(datafiles)
+    stderr_original = sys.stderr
     sys.stderr = sys.stdout
 
     # (3) Run summations
@@ -147,6 +157,8 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
                 pbar.update(1)
         except Exception as e:
             print(f"Error processing a task: {str(e)}")
+            
+    sys.stderr = stderr_original
 
     # (4) Move to the next line after the progress bar is complete
     print('')
@@ -299,11 +311,11 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
     if peaks == 1:
         arr = idiff.peaks.run_regions(arr, **peaksp)
     elif peaks == 2:
-        rows, columns, scores = idiff.peaks._run_log(arr, **peaksp)
-        scores = idiff.peaks.calculate_integrated_intensities(
-            arr, rows, columns, scores
-        )
-        arr = idiff.peaks.dirac_delta_image(arr, rows, columns, scores)
+        arr = idiff.peaks._run_log(arr, **peaksp)
+    elif peaks == 3:
+        arr = idiff.peaks._run_doh(arr, **peaksp)
+    elif peaks == 4:
+        arr = idiff.peaks._run_pcbr(arr, **peaksp)
 
     # (7) Return the datafile as an array that is ready for summation
     return arr
