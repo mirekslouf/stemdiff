@@ -311,11 +311,11 @@ def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
     if peaks == 1:
         arr = idiff.peaks.run_regions(arr, **peaksp)
     elif peaks == 2:
-        arr = idiff.peaks._run_log(arr, **peaksp)
+        arr = idiff.peaks.run_log(arr, **peaksp)
     elif peaks == 3:
-        arr = idiff.peaks._run_doh(arr, **peaksp)
+        arr = idiff.peaks.run_doh(arr, **peaksp)
     elif peaks == 4:
-        arr = idiff.peaks._run_pcbr(arr, **peaksp)
+        arr = idiff.peaks.run_pcbr(arr, **peaksp)
 
     # (7) Return the datafile as an array that is ready for summation
     return arr
