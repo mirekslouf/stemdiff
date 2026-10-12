@@ -36,88 +36,109 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
     """
     Sum datafiles from a 4D-STEM dataset to get 2D powder diffractogram.
 
+    Serial (single-threaded) version -- processes datafiles one at a time
+    in a plain loop. Use this when a stable, easy-to-debug/step-through
+    reference implementation is preferred over speed. For the same
+    functionality running in parallel across multiple threads, see the
+    corresponding function in `stemdiff.summ`.
+
     Parameters
     ----------
     SDATA : stemdiff.gvars.SourceData object
         The object describes source data (detector, data_dir, filenames).
+
     DIFFIMAGES : stemdiff.gvars.DiffImages object
         Object describing the diffraction images/patterns.
+
     df_sum : pandas.DataFrame object
         Pre-calculated database with datafiles to be summed.
         Each row of the database contains
-        [filename, xc, yc, MaxInt, NumPeaks, S].
+        ['DatafileName', 'Xcenter', 'Ycenter', 'MaxInt', 'Peaks', 'S'].
+
     df_psf : pandas.DataFrame object, optional
-        Database with datafiles to calculate PSF.
-        If None, PSF is used from deconvp or calculated from central region
-        of each datafile.
+        Database with datafiles to calculate a single, shared PSF (same
+        column structure as df_sum). If None and deconv > 0, a PSF is
+        taken from deconvp['psf'] if given there, or otherwise computed
+        independently for each datafile from its own central region
+        (see the priority order under `deconv` below).
+
     bkg : int, optional, default is 0
-        Use background subtraction from `idiff.bkg2d`.
-        Background subtraction type:
-        * 0 = no background subtraction,
-        * 1 = rolling ball,
-        * 2 = tophat,
-        * 3 = gaussian,
-        * 4 = neural network.
+        Background subtraction method, from `idiff.bkg2d`:
+        * 0 = no background subtraction
+        * 1 = rolling ball -- bkgp: {radius=20}
+        * 2 = tophat -- bkgp: {thr=40, area_size=5, radius=2}
+        * 3 = gaussian -- bkgp: {thr=20, area_size=5, sigma=2, normalize=False}
+        * 4 = neural network -- bkgp: {path} (required: path to an .onnx
+          model file; any other kwargs are passed through to
+          `onnxruntime.InferenceSession`)
 
-        Neural network needs `path` argument.
-    bkgp : dictionary, optional, default is {}
-        Parameters for the background subtraction method.
+    bkgp : dict, optional, default is {}
+        Parameters for the chosen background-subtraction method -- see
+        the per-method breakdown under `bkg` above. Passed as **kwargs
+        directly to the corresponding `idiff.bkg2d` function/class.
+
     deconv : int, optional, default is 0
-        Use deconvolution.
-        Deconvolution type:
-        * 0 = no deconvolution,
-        * 1 = Richardson-Lucy deconvolution from skimage,
-        * 2 = Richardson-Lucy deconvolution from idiff,
-        * 3 = Richardson-Lucy deconvolution from idiff with 
-        Tikhonov regularization,
-        * 4 = Richardson-Lucy deconvolution from idiff with 
-        L1 regularization.
+        Deconvolution method:
+        * 0 = no deconvolution
+        * 1 = Richardson-Lucy from skimage
+        * 2 = Richardson-Lucy from idiff -- deconvp: {num_iter=30, cuda=False}
+        * 3 = Richardson-Lucy from idiff with Tikhonov regularization
+        * 4 = Richardson-Lucy from idiff with L1 regularization
 
-        Which PSF is used for the deconvolution is determined by this order: 
-        1. `"psf"` argument in deconvp - this array is directly used as PSF
-        after normalization
-        2. `df_psf` parameter is used to calculate the PSF
-        3. central region (after bkg subtraction) of each array is used as PSF 
-        (every array has its own individual PSF)
+        Which PSF is used is determined by this priority order:
+        1. `deconvp['psf']` -- used directly (after normalization) if given
+        2. `df_psf` -- used to calculate one shared PSF for every datafile,
+           if given
+        3. otherwise -- the central region of each individual datafile
+           (after background subtraction, before deconvolution) is used
+           as that datafile's own PSF
 
-    deconvp : dictionary, optional, default is {"num_iter": 10}
-        Parameters for the deconvolution, default uses 10 iterations.
+    deconvp : dict, optional, default is {"num_iter": 10}
+        Parameters for the chosen deconvolution method -- see `deconv`
+        above. `num_iter` controls iteration count for all Richardson-Lucy
+        variants; `psf`, if supplied here, takes priority as described above.
+
     peaks : int, optional, default is 0
-        Run peaks detection algorithm on the processed NBD pattern. 
-        Every peak is replaced with a single pixel with intensity equal to
-        the sum of the peaks intensities.
-        Possible values:
-        * 0 = no peaks detection
-        * 1 = `idiff.peaks.run_regions`
-        * 2 = `idiff.peaks.run_log`
-        * 3 = `idiff.peaks.run_doh`
-        * 4 = `idiff.peaks.run_pcbr`
+        Run peak-detection on the processed pattern; every detected peak
+        is replaced with a single pixel carrying the summed intensity of
+        that peak.
+        * 0 = no peak detection
+        * 1 = `idiff.peaks.run_regions` -- peaksp: {threshold=1}
+        * 2 = `idiff.peaks.run_log` -- peaksp: {downsample_factor=4,
+          threshold_factor=3.5, peak_min_sigma=6, ...}
+        * 3 = `idiff.peaks.run_doh` -- peaksp: {downsample_factor=4,
+          threshold_factor=3.5, peak_min_sigma=6, ...}
+        * 4 = `idiff.peaks.run_pcbr` -- peaksp: {sigma=3.0,
+          lambda_thresh=0.5, response_thresh_rel=0.1, ...}
 
         `run_regions` or `run_log` are recommended.
 
-    peaksp : dictionary, optional, default is {}
-        Parameters for the peaks detection method.
-    center : string or None, optional, default is None
-        Detect center for each image. If None, use the centers from the 
-        database. For possible values refer to `ediff.center.CenterLocator`.
-    centerp : dictionary, optional, default is {}
-        Parameters for the center detection method
+    peaksp : dict, optional, default is {}
+        Parameters for the chosen peak-detection method -- see `peaks` above.
+
+    center : str or None, optional, default is None
+        Center-detection method, re-run independently for each datafile.
+        If None, use the (Xcenter, Ycenter) already stored for that file
+        in df_sum instead of re-detecting it. The special value
+        `"intensity"` routes to `ediff.center.IntensityCenter` (a
+        lightweight intensity-centroid method); any other string is
+        passed as the `detection` argument to the more general
+        `ediff.center.CenterLocator`.
+
+    centerp : dict, optional, default is {}
+        Parameters for the chosen center-detection method -- passed as
+        **kwargs to `IntensityCenter.center_of_intensity` (if
+        center="intensity") or to `CenterLocator` (otherwise).
 
     Returns
     -------
-    final_arr : 2D numpy array
-        The array is a sum of datafiles;
-        if the datafiles are pre-filtered,
-        we get the sum of filtered datafiles.
-        Additional arguments determine the (optional) processing.
-
-    Technical notes
-    ---------------
-    * This function works as a signpost.
-    * It reads the summation parameters and calls a more specific summation 
-    functions (which are NOT called directly by the end-user).
-    * It employs progress bar, handles possible exceptions,
-    and returns the final array (= post-processed and normalized array).
+    arr : 2D numpy array, dtype uint16
+        Sum of the (optionally background-subtracted, deconvolved,
+        peak-filtered) datafiles, normalized by the number of datafiles
+        summed and rounded to the nearest integer (see
+        `sum_postprocess`). Shape is (imgsize*R, imgsize*R), where R is
+        SDATA.detector.upscale -- i.e. the *upscaled* resolution, not
+        DIFFIMAGES.imgsize itself.
     """
 
     # (1) Prepare variables for summation 
@@ -170,21 +191,25 @@ def sum_datafiles(SDATA, DIFFIMAGES, df_sum, df_psf=None, bkg=0, bkgp={},
 def sum_postprocess(sum_of_arrays, n):
     """
     Normalize and convert the summed array to 16-bit unsigned integers.
-    
+
     Parameters
     ----------
-    sum_of_arrays : np.array
-        Sum of the arrays -
-        usually from stemdiff.sum.sum_datafiles function.
+    sum_of_arrays : np.array, dtype float32
+        Sum of the arrays -- usually from `stemdiff.sum.sum_datafiles`
+        (its running `sum_arr` accumulator, before normalization).
+
     n : int
-        Number of summed arrays -
-        usually from stemdiff.sum.sum_datafiles function.
-    
+        Number of arrays the sum should be normalized by -- usually
+        `len(df_sum)`, the number of datafiles requested. Note this is
+        the *requested* count, not necessarily the number that actually
+        succeeded and were added to `sum_of_arrays` (see the technical
+        note in `sum_datafiles`).
+
     Returns
     -------
-    arr : np.array
-        Array representing final summation.
-        The array is normalized and converted to unsigned 16bit integers.
+    arr : np.array, dtype uint16
+        `sum_of_arrays / n`, rounded to the nearest integer and cast to
+        uint16. Same shape as `sum_of_arrays`.
     """
     arr = np.round(sum_of_arrays/n).astype(np.uint16)
     return(arr)
@@ -193,30 +218,83 @@ def sum_postprocess(sum_of_arrays, n):
 def prepare_dfile(SDATA, DIFFIMAGES, datafile, bkg, bkgp, deconv, deconvp,
                   peaks, peaksp, nn, center_detection, centerp):
     """
-    Prepare datafile for summation.
-    This function is not supposed to be used directly.
-    Use `sum_datafiles`.
+    Read, process, and center a single datafile, ready for summation.
+
+    Not intended to be called directly -- use `sum_datafiles`, which
+    calls this once per datafile and passes all of these parameters
+    through from its own same-named arguments.
 
     Parameters
     ----------
     SDATA : stemdiff.gvars.SourceData object
         The object describing source data (detector, data_dir, filenames).
+
     DIFFIMAGES : stemdiff.gvars.DiffImages object
-        The bject describing the diffraction images/patterns.
+        The object describing the diffraction images/patterns.
+
     datafile : one row from the prepared database of datafiles
-        The database of datafiles is created
-        in stemdiff.dbase.calc_database function.
-        Each row of the database contains
-        [filename, xc, yc, MaxInt, NumPeaks, S].
-    
+        The database of datafiles is created in
+        `stemdiff.dbase.calc_database`. Each row contains
+        ['DatafileName', 'Xcenter', 'Ycenter', 'MaxInt', 'Peaks', 'S'].
+
+    bkg, bkgp : int, dict
+        Background-subtraction method and its parameters -- see
+        `sum_datafiles` for the full per-method breakdown.
+
+    deconv, deconvp : int, dict
+        Deconvolution method and its parameters, and the PSF-selection
+        priority order -- see `sum_datafiles` for details. Note:
+        `deconvp` is copied internally before use, so the caller's own
+        dict (and any shared `psf` entry in it) is not mutated between
+        calls for different datafiles.
+
+    peaks, peaksp : int, dict
+        Peak-detection method and its parameters -- see `sum_datafiles`
+        for the full per-method breakdown.
+
+    nn : idiff.bkg2d.NeuralNetwork or None
+        Pre-initialized neural network background-subtraction session,
+        already loaded once by the caller (`sum_datafiles`) and reused
+        across every datafile -- avoids reloading the ONNX model on
+        every single call. Required (non-None) if bkg == 4; ignored
+        otherwise.
+
+    center_detection : str or None
+        Center-detection method for this datafile. If None, use the
+        already-stored (Xcenter, Ycenter) from `datafile` directly
+        instead of re-detecting. `"intensity"` routes to
+        `ediff.center.IntensityCenter`; any other string is passed as
+        the `detection` argument to `ediff.center.CenterLocator`.
+
+    centerp : dict
+        Parameters for the chosen center-detection method -- passed as
+        **kwargs to whichever of the two center-detection paths above
+        is used.
+
     Returns
     -------
     arr : 2D numpy array
-        The datafile in the form of the array.
-    
+        The single datafile, upscaled, background-subtracted/
+        deconvolved/peak-filtered as requested, and recentered -- ready
+        to be added directly into the running sum.
+
     Notes
     -----
-    * The parameters are transferred from the `sum_datafiles` function.
+    * Processing order: read -> background subtraction -> upscale ->
+      zero border edges -> determine center -> recenter -> (build PSF
+      if needed) -> deconvolution -> peak detection.
+    * Background subtraction happens *before* upscaling/recentering,
+      but deconvolution's own PSF (when derived from the datafile's own
+      central region, i.e. PSF priority option 3) is taken *after*
+      recentering -- so that per-datafile PSF is always centered
+      correctly regardless of where the diffraction pattern originally
+      sat in the raw frame.
+    * Centers are always taken from the *upscaled* image coordinates
+      (never the original/non-upscaled datafile) -- using centers
+      computed on non-upscaled data here would recenter incorrectly.
+    * Some border region is always zeroed after upscaling, for two
+      reasons: (i) weak/zero diffraction signal at the frame edges, and
+      (ii) detector edge artifacts.
     """
         
     # (0) Prepare variables
